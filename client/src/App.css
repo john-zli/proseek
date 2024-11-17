@@ -1,5 +1,6 @@
 #root {
   text-align: center;
+  color: black;
 }
 
 /* TODO fix this with google maps */
@@ -14,20 +15,327 @@
 .contents {
   max-width: 1280px;
   display: flex;
-  height: 100%;
+  height: 100vh;
   width: 100%;
   flex-direction: column;
+  justify-content: space-between;
   padding: 56px;
   background-color: transparent;
   align-self: center;
+  z-index: 1;
 }
 
 .header {
   display: flex;
   border-radius: 6px;
-  max-width: 100%;
   flex-direction: row;
   justify-content: space-between;
-  background-color: yellow;
+  background-color: white;
+  color: black;
   padding: 24px;
+  margin: 24px;
+  box-shadow: 1px 1px 4px rgb(180, 181, 183);
+}
+
+.mapPlacement {
+  position: absolute;
+  height: 100vh;
+  width: 100vw;
+  z-index: 0;
+}
+
+.bigger {
+  width: 380px;
+  font-weight: 500;
+  color: rgb(90, 88, 88);
+}
+
+.logo {
+  height: 24px;
+}
+
+.starttext {
+  text-align: left;
+  width: 150px;
+}
+
+.endtext {
+  text-align: right;
+  width: 150px;
+}
+
+.mainAction {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 24px;
+}
+.bigger {
+  text-align: left;
+  font-size: 36px;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: white;
+  color: black;
+  border-radius: 6px;
+  padding: 24px;
+  width: 50%;
+  z-index: 2;
+  box-shadow: 1px 1px 4px rgb(180, 181, 183);
+}
+
+.modalTitle {
+  font-weight: 800;
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.textRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.textColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.titleBold {
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.primarybutton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background-color: #6122e7;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  height: fit-content;
+  cursor: pointer;
+}
+
+.secondarybutton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid lightgray;
+  color: black;
+  background-color: white;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  height: fit-content;
+  cursor: pointer;
+}
+
+.zipCode {
+  font-size: 12px;
+  > a {
+    color: black;
+    text-decoration: underline;
+  }
+}
+
+.modalContainer {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+}
+
+.popupModal {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 8px;
+  margin: 48px;
+  width: 800px;
+  height: 600px;
+  padding: 24px;
+  background-color: white;
+  box-shadow: 1px 1px 4px rgb(180, 181, 183);
+}
+
+.confirmationModal {
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    margin: 48px;
+    width: 800px;
+    height: 600px;
+    padding: 24px;
+    background-color: white;
+    box-shadow: 1px 1px 4px rgb(180, 181, 183);
+}
+
+.tableModal {
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  margin: 48px;
+  width: 800px;
+  height: 600px;
+  background-color: white;
+  box-shadow: 1px 1px 4px rgb(180, 181, 183);
+}
+
+.webcamContainer {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 600px;
+  width: 800px;
+  z-index: 0;
+}
+
+.webcamImage {
+  height: 600px;
+  width: 800px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.modalHeader {
+  background-color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+  padding: 24px;
+  box-shadow: 1px 1px 4px rgb(180, 181, 183);
+  z-index: 2;
+}
+
+.modalTwoRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.caption {
+  font-size: 10px;
+  color: gray;
+  margin-bottom: 4px;
+}
+
+.prompt {
+  font-weight: 600;
+}
+
+.modalFooter {
+  display: flex;
+  flex-direction: row;
+  align-self: center;
+  justify-content: center;
+  z-index: 1;
+
+  > :first-child {
+    margin-right: 12px;
+  }
+}
+
+.confirmationContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.confirmationModal {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.checkmark {
+  color: green;
+}
+
+.hugetext {
+  font-size: 42px;
+  font-weight: 800;
+}
+
+.hugetextcaption {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.tableheader {
+  width: 100%;
+}
+
+.tableGrid {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr 1fr;
+  grid-gap: 0px;
+}
+
+.tablerow {
+  display: grid;
+  grid-template-columns: 1fr 3fr 1fr 1fr;
+  border-bottom: 1px solid rgb(234, 234, 234);
+  padding-top: 16px;
+  padding-bottom: 16px;
+}
+
+tr {
+  border-bottom: 1px solid rgb(234, 234, 234);
+}
+
+th {
+  text-align: left;
+  padding-left: 24px;
+  font-size: 12px;
+  padding: 12px 0px 12px 24px;
+}
+
+td {
+  text-align: left;
+  padding-left: 24px;
+}
+.requestName {
+  font-weight: 800;
+}
+
+.tableModalHeader {
+  padding: 12px 0 12px 24px;
+  text-align: left;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  font-weight: 800;
 }
