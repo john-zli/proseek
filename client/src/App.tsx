@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import GoogleMapReact from 'google-map-react';
 import Webcam from "react-webcam";
+
 import './App.css'
 
 enum ModalType {
@@ -113,7 +114,7 @@ function App() {
           defaultCenter={{ lat: 59.95, lng: 30.33 }}
           defaultZoom={11}
           bootstrapURLKeys={{
-            key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+            key: '', // TODO(johnli): Add API key
           }}
           options={() => ({
             gestureHandling: 'none',
