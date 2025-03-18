@@ -1,0 +1,116 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  color: black;
+  width: 100vw;
+  height: 100vh;
+
+  background-color: white; // TODO(johnli): Make this prettier.
+}
+
+.contents {
+  max-width: 1280px;
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 56px;
+  background-color: transparent;
+  align-self: center;
+  z-index: 1;
+}
+
+.header {
+  display: flex;
+  border-radius: 6px;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: white;
+  color: black;
+  padding: 24px;
+  margin: 24px;
+  box-shadow: 1px 1px 4px rgb(180, 181, 183);
+}
+
+.bigger {
+  width: 380px;
+  font-weight: 500;
+  color: rgb(90, 88, 88);
+}
+
+.logo {
+  height: 24px;
+}
+
+.starttext {
+  text-align: left;
+  width: 150px;
+}
+
+.endtext {
+  text-align: right;
+  width: 150px;
+}
+
+.mainAction {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 24px;
+}
+.bigger {
+  text-align: left;
+  font-size: 36px;
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: white;
+  color: black;
+  border-radius: 6px;
+  padding: 24px;
+  width: 50%;
+  z-index: 2;
+  box-shadow: 1px 1px 4px rgb(180, 181, 183);
+}
+
+.modalTitle {
+  font-weight: 800;
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.textRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.textColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.titleBold {
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.zipCode {
+  font-size: 12px;
+  > a {
+    color: black;
+    text-decoration: underline;
+  }
+}
