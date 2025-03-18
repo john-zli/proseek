@@ -1,3 +1,5 @@
+@import (reference) './styles/zindex.module.less';
+
 .root {
   display: flex;
   flex-direction: column;
@@ -6,7 +8,7 @@
   width: 100vw;
   height: 100vh;
 
-  background-color: white; // TODO(johnli): Make this prettier.
+  background-color: beige; // TODO(johnli): Make this prettier.
 }
 
 .contents {
@@ -19,7 +21,7 @@
   padding: 56px;
   background-color: transparent;
   align-self: center;
-  z-index: 1;
+  z-index: @zindex-app-contents;
 }
 
 .header {
@@ -74,7 +76,7 @@
   border-radius: 6px;
   padding: 24px;
   width: 50%;
-  z-index: 2;
+  z-index: @zindex-welcome-modal;
   box-shadow: 1px 1px 4px rgb(180, 181, 183);
 }
 
