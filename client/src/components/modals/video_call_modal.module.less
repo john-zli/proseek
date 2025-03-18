@@ -1,0 +1,58 @@
+@imageHeight: 600px;
+@imageWidth: 800px;
+
+.webcamContainer {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: @imageHeight;
+  width: @imageWidth;
+  z-index: 0;
+}
+
+.webcamImage {
+  height: @imageHeight;
+  width: @imageWidth;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.modalHeader {
+  background-color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+  padding: 24px;
+  box-shadow: 1px 1px 4px rgb(180, 181, 183);
+  z-index: 2; //TODO(johnli): Handle z index stuff.
+}
+
+.modalTwoRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.caption {
+  font-size: 10px;
+  color: gray;
+  margin-bottom: 4px;
+}
+
+.prompt {
+  color: black;
+  font-weight: 600;
+}
+
+.modalFooter {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  z-index: 1;
+
+  > * {
+    margin: 0 12px;
+  }
+}
