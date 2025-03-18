@@ -19,12 +19,6 @@ function App() {
   return (
     <div className={classes.root}>
       <div className={classes.contents}>
-        <div className={classes.header}>
-          <span className={classes.starttext}>About</span>
-          <img className={classes.logo} src="../assets/logo.png" onClick={onIconClick}/>
-          <span className="endtext">Invite my church</span>
-        </div>
-
         <div className={classes.mainAction}>
           <span className={classes.bigger}>
             What can your neighborhood pray for you about?
