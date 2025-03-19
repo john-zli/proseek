@@ -1,7 +1,7 @@
 import classes from './header.module.less';
 import clsx from 'clsx';
 // import {useLocation} from 'react-router-dom';
-import { Link } from '../shared-components/Link';
+import { Link } from '../shared-components/link';
 import { Button, ButtonStyle } from '../shared-components/button';
 
 export function Header() {

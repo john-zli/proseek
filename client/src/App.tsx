@@ -12,9 +12,9 @@ function App() {
   }, [openModal]);
 
   // TODO(johnli): Find a better place for this.
-  const onIconClick = useCallback(() => {
-    openModal(ModalType.PrayerList);
-  }, [openModal]);
+  // const onIconClick = useCallback(() => {
+  //   openModal(ModalType.PrayerList);
+  // }, [openModal]);
 
   return (
     <div className={classes.root}>
