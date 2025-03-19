@@ -10,6 +10,7 @@ import {apiRouter} from '@src/routes';
 import HttpStatusCodes from '@src/common/status_codes';
 import { RouteError } from '@src/common/route_errors';
 import { NodeEnvs } from '@src/common/constants';
+import config from './config';
 
 interface LocalServices {}
 
@@ -21,12 +22,12 @@ export function startServer(services: LocalServices): Express {
   app.use(express.urlencoded({extended: true}));
 
   // Show routes called in console during development
-  if (process.env.NODE_ENV === NodeEnvs.Dev) {
+  if (config.env === NodeEnvs.Dev) {
     app.use(morgan('dev'));
   }
 
   // Security
-  if (process.env.NODE_ENV === NodeEnvs.Production) {
+  if (config.env === NodeEnvs.Production) {
     // eslint-disable-next-line n/no-process-env
     if (!process.env.DISABLE_HELMET) {
       app.use(helmet());
@@ -40,7 +41,7 @@ export function startServer(services: LocalServices): Express {
 
   // Add error handler
   app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
-    if (process.env.NODE_ENV !== NodeEnvs.Test) {
+    if (config.env !== NodeEnvs.Test) {
       logger.error(err);
     }
     let status = HttpStatusCodes.BAD_REQUEST;
