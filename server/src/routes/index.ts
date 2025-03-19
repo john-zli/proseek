@@ -1,33 +1,17 @@
 import { Router } from 'express';
 
-import Paths from '../common/Paths';
-import UserRoutes from './UserRoutes';
+interface LocalServices {}
 
+export function apiRouter(_services: LocalServices): Router {
+  const apiRouter = Router();
 
-/******************************************************************************
-                                Variables
-******************************************************************************/
+  apiRouter.get(
+    '/',
+    (_req, res) => {
+      console.log('I made it here');
+      res.json({ message: 'Hello, world!' });
+    }
+  );
 
-const apiRouter = Router();
-
-
-// ** Add UserRouter ** //
-
-// Init router
-const userRouter = Router();
-
-// Get all users
-userRouter.get(Paths.Users.Get, UserRoutes.getAll);
-userRouter.post(Paths.Users.Add, UserRoutes.add);
-userRouter.put(Paths.Users.Update, UserRoutes.update);
-userRouter.delete(Paths.Users.Delete, UserRoutes.delete);
-
-// Add UserRouter
-apiRouter.use(Paths.Users.Base, userRouter);
-
-
-/******************************************************************************
-                                Export default
-******************************************************************************/
-
-export default apiRouter;
+  return apiRouter;
+}

@@ -1,14 +1,9 @@
-import logger from 'jet-logger';
+import {logger} from './logger';
+import {startServer} from './server';
 
-import ENV from '@src/common/ENV';
-import server from './server';
+const port = process.env.PORT || 3000;
+const SERVER_START_MSG = ('Express server started on port: ' + port);
 
-
-/******************************************************************************
-                                  Run
-******************************************************************************/
-
-const SERVER_START_MSG = ('Express server started on port: ' + 
-  ENV.Port.toString());
-
-server.listen(ENV.Port, () => logger.info(SERVER_START_MSG));
+// Initialize everything.
+const server = startServer({});
+server.listen(port, () => logger.info(SERVER_START_MSG));
