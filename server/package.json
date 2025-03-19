@@ -1,0 +1,49 @@
+{
+  "name": "server",
+  "version": "0.0.0",
+  "scripts": {
+    "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
+    "dev": "NODE_ENV=development ts-node ./src",
+    "dev:hot": "nodemon --exec \"npm run dev\" --watch ./src --ext .ts",
+    "lint": "eslint .",
+    "start": "NODE_ENV=production node -r ./config.js ./dist",
+    "test": "NODE_ENV=test ts-node ./spec",
+    "test:hot": "nodemon --exec \"npm run test\" --watch ./src --watch ./spec --ext .ts",
+    "type-check": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "helmet": "^8.1.0",
+    "module-alias": "^2.2.3",
+    "morgan": "^1.10.0",
+    "pino": "9.6.0",
+    "pino-pretty": "13.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.22.0",
+    "@stylistic/eslint-plugin-js": "^4.2.0",
+    "@stylistic/eslint-plugin-ts": "^4.2.0",
+    "@swc/core": "^1.11.11",
+    "@types/cookie-parser": "^1.4.8",
+    "@types/eslint__js": "^9.14.0",
+    "@types/express": "^5.0.0",
+    "@types/jsonfile": "^6.1.4",
+    "@types/module-alias": "^2.0.4",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.13.10",
+    "@types/pino": "7.0.5",
+    "eslint": "^9.22.0",
+    "eslint-plugin-n": "^17.16.2",
+    "nodemon": "^3.1.9",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1"
+  }
+}
