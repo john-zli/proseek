@@ -11,6 +11,7 @@ import HttpStatusCodes from '@src/common/status_codes';
 import { RouteError } from '@src/common/route_errors';
 import { NodeEnvs } from '@src/common/constants';
 import config from './config';
+import path from 'path';
 
 interface LocalServices {}
 
@@ -21,6 +22,9 @@ export function startServer(services: LocalServices): Express {
   app.use(express.json());
   app.use(express.urlencoded({extended: true}));
 
+  // Serving React CSS and JS
+  app.use(express.static(path.join(__dirname, '../../client/dist')));
+  
   // Show routes called in console during development
   if (config.env === NodeEnvs.Dev) {
     app.use(morgan('dev'));

@@ -1,3 +1,4 @@
+import { serveStaticHtmlFile } from '@src/middleware/serve_static_html_file';
 import { Router } from 'express';
 
 interface LocalServices {}
@@ -7,10 +8,7 @@ export function apiRouter(_services: LocalServices): Router {
 
   apiRouter.get(
     '/',
-    (_req, res) => {
-      console.log('I made it here');
-      res.json({ message: 'Hello, world!' });
-    }
+    serveStaticHtmlFile(),
   );
 
   return apiRouter;
