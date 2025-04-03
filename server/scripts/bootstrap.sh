@@ -1,3 +1,8 @@
+# Loading environment variables
+set -a
+source ./config/.env.development
+set +a
+
 # Install PostgreSQL using Homebrew
 echo "Installing PostgreSQL..."
 brew update
@@ -15,3 +20,11 @@ echo "PostgreSQL installation complete."
 
 # Install node stuff.
 sh ./scripts/packages.sh
+
+# Handle postgres scripts later
+echo "Running initialize.sql script for development environment..."
+psql -U postgres -f ./sql/initialize.sql
+echo "PostgreSQL database initialized."
+
+# Switch to proseek user and run SQL files
+psql $DATABASE_CONNECTION_STRING
