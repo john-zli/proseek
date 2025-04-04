@@ -30,8 +30,9 @@ fi
 # Install node packages
 if [ -f "package.json" ]; then
   echo "Installing node packages from package.json..."
-  npm install
+  npm install > /dev/null 2>&1
   echo "✅ Node packages installed."
+  echo
 else
   echo "❌ package.json not found. Skipping npm install."
 fi

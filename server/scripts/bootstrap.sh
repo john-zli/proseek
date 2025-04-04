@@ -1,6 +1,10 @@
+# Allowing script to run anywhere
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$SCRIPT_DIR/.."
+
 # Loading environment variables
 set -a
-source ./config/.env.development
+source "$ROOT_DIR/config/.env.development" > /dev/null 2>&1
 set +a
 
 # Install PostgreSQL using Homebrew
@@ -19,12 +23,17 @@ psql --version
 echo "PostgreSQL installation complete."
 
 # Install node stuff.
-sh ./scripts/packages.sh
+sh "$ROOT_DIR/scripts/packages.sh"
 
 # Handle postgres scripts later
-echo "Running initialize.sql script for development environment..."
-psql -U postgres -f ./sql/initialize.sql
+echo "Bootstrapping database..."
+
+# Create the database if it doesn't exist.
+psql -U $(whoami) -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'proseek'" | grep -q 1 || createdb -U $(whoami) -d postgres proseek > /dev/null 2>&1
+
+# Add new proseek_admin user if not created.
+psql -U $(whoami) -d proseek -f "$ROOT_DIR/src/sql/dev_initializaton.sql" > /dev/null 2>&1
 echo "PostgreSQL database initialized."
 
-# Switch to proseek user and run SQL files
-psql $DATABASE_CONNECTION_STRING
+NODE_ENV=development sh "$ROOT_DIR/scripts/migrations.sh"
+echo "Database bootstrapped successfully."

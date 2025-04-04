@@ -1,5 +1,8 @@
 CREATE SCHEMA core;
 
+GRANT ALL PRIVILEGES ON SEQUENCES IN SCHEMA core TO proseek_admin;
+GRANT ALL PRIVILEGES ON TABLES IN SCHEMA core TO proseek_admin;
+
 CREATE TABLE IF NOT EXISTS core.genders (
   gender        varchar(10) PRIMARY KEY
 );
@@ -10,7 +13,7 @@ INSERT INTO core.genders(gender) VALUES
 ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS core.users (
-  id                        uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                   uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
   church_id                 uuid                NOT NULL,
   first_name                varchar(50)         NOT NULL,
   last_name                 varchar(50)         NOT NULL,
@@ -52,6 +55,7 @@ CREATE TABLE IF NOT EXISTS core.churches (
 CREATE TABLE IF NOT EXISTS core.prayer_requests (
   request_id                uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
   assigned_user_id          uuid,
+  assigned_church_id        uuid,                
   responded                 boolean             NOT NULL DEFAULT false,
 
   -- TODO(johnli): How to store location and find closest areas?
@@ -67,4 +71,27 @@ CREATE TABLE IF NOT EXISTS core.prayer_requests (
   -- Metadata
   creation_timestamp        timestamp           DEFAULT now(),
   modification_timestamp    timestamp           DEFAULT now(),
+
+  CONSTRAINT assigned_church_fk FOREIGN KEY (assigned_church_id)
+    REFERENCES core.churches(church_id) ON DELETE CASCADE,
+  CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id) REFERENCES core.users(user_id)
 );
+
+-- Creating a unique index for churches, so no two churches can have same address.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'core'
+      AND tablename = 'churches'
+      AND indexname = 'churches_unique_idx'
+  ) THEN
+
+    -- We don't do unique index on just addres, because multiple churches can exist
+    -- at one addres.
+    CREATE UNIQUE INDEX churches_unique_idx
+      ON core.churches (name, address, city, state, zip, country)
+      WHERE deletion_timestamp IS NULL;
+  END IF;
+END $$;
