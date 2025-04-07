@@ -15,17 +15,18 @@ if [ -z "$DATABASE_CONNECTION_STRING" ]; then
   exit 1
 fi
 
+DATABASE_CONNECTION_STRING="$(echo "$DATABASE_CONNECTION_STRING" | tr -d '\r')"
+
 # Loop through all .sql files in the SQL directory
 for sql_file in "$SQL_DIR"/*.sql; do
   # Skip dev_initialization.sql.
   if [ -f "$sql_file" ] && [[ "$(basename "$sql_file")" != "dev_initialization.sql" ]]; then
     echo "Applying migration: $(basename "$sql_file")"
-    psql "$DATABASE_CONNECTION_STRING" -f "$sql_file" > /dev/null 2>&1
+
+    psql "$DATABASE_CONNECTION_STRING" -f "$sql_file" 2>&1
     if [ $? -ne 0 ]; then
       echo "Migration failed for: $sql_file"
       exit 1
     fi
   fi
 done
-
-echo "All migrations applied successfully."
