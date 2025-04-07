@@ -15,6 +15,7 @@ if [ -z "$DATABASE_CONNECTION_STRING" ]; then
   exit 1
 fi
 
+# For some reason, .env files sometimes preserve the \r character. Strip that.
 DATABASE_CONNECTION_STRING="$(echo "$DATABASE_CONNECTION_STRING" | tr -d '\r')"
 
 # Loop through all .sql files in the SQL directory
