@@ -143,57 +143,6 @@ BEGIN
   END IF;
 END $$;
 
--- TODO(johnli): Remove this later.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM information_schema.columns
-    WHERE table_schema = 'core'
-      AND table_name = 'churches'
-      AND column_name = 'county'
-  ) THEN
-    ALTER TABLE core.churches ADD COLUMN county varchar(50);
-  END IF;
-END $$;
-
--- TODO(johnli): Remove this later.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM information_schema.table_constraints
-    WHERE table_schema = 'core'
-      AND table_name = 'prayer_requests'
-      AND constraint_name = 'request_contact_method_fk'
-  ) THEN
-    ALTER TABLE core.prayer_requests
-      ADD CONSTRAINT request_contact_method_fk FOREIGN KEY (request_contact_method)
-        REFERENCES core.request_contact_methods(method);
-    
-    ALTER TABLE core.prayer_requests
-      ADD CONSTRAINT request_contact_email_check CHECK (
-        (request_contact_email IS NOT NULL AND request_contact_method = 'Email') OR (request_contact_phone IS NOT NULL AND request_contact_method = 'Text')
-      );
-  END IF;
-END $$;
-
--- TODO(johnli): Remove this later.
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1
-    FROM information_schema.table_constraints
-    WHERE table_schema = 'core'
-      AND table_name = 'prayer_requests'
-      AND constraint_name = 'request_contact_method_fk'
-  ) THEN
-    ALTER TABLE core.prayer_requests
-      ADD CONSTRAINT request_contact_method_fk FOREIGN KEY (request_contact_method)
-      REFERENCES core.request_contact_methods(method);
-  END IF;
-END $$;
-
 -- Creating a unique index for churches, so no two churches can have same address.
 DO $$
 BEGIN
