@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { createPrayerRequestWithChurchAssignment, listPrayerRequests, assignPrayerRequest } from '../models/prayer_requests_storage';
+
+import {
+  assignPrayerRequest,
+  createPrayerRequestWithChurchAssignment,
+  listPrayerRequests,
+} from '../models/prayer_requests_storage';
 import { getUser } from '../models/users_storage';
 
 const router = Router();
@@ -15,7 +20,7 @@ router.post('/', async (req, res) => {
       requestContactMethod,
       zip,
       county,
-      city
+      city,
     } = req.body;
 
     if (!requestSummary) {
@@ -30,7 +35,7 @@ router.post('/', async (req, res) => {
       requestContactMethod,
       zip,
       county,
-      city
+      city,
     });
 
     res.status(201).json(prayerRequest);
@@ -79,4 +84,4 @@ router.post('/:requestId/assign', async (req, res) => {
   }
 });
 
-export default router; 
+export default router;

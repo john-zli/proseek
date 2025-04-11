@@ -1,0 +1,8 @@
+{
+  "*.{ts,tsx,js,jsx}": [
+    "prettier --write --plugin=@trivago/prettier-plugin-sort-imports"
+  ],
+  "*.{json,md}": [
+    "prettier --write"
+  ]
+}

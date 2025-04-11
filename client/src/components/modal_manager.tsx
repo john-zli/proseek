@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { ModalContext, ModalType } from "../contexts/modal_context_provider";
-import { VideoCallModal } from "./modals/video_call_modal";
-import { ConfirmationModal } from "./modals/confirmation_modal";
-import { PrayerListModal } from "./modals/prayer_list_modal";
+import { useState } from 'react';
+
+import { ModalContext, ModalType } from '../contexts/modal_context_provider';
+import { ConfirmationModal } from './modals/confirmation_modal';
+import { PrayerListModal } from './modals/prayer_list_modal';
+import { VideoCallModal } from './modals/video_call_modal';
 
 interface Props {
   children?: React.ReactNode;
@@ -22,7 +23,7 @@ export function ModalManager(props: Props) {
     setIsOpen(false);
   };
 
-  const renderModal = () => { 
+  const renderModal = () => {
     if (!modalType) {
       return null;
     }

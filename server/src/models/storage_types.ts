@@ -1,9 +1,9 @@
 // At least one of them must be populated.
 export type ListChurchesNearUserParams =
-  | {zip: string; county?: string; city?: string}
-  | {zip?: string; county: string; city?: string}
-  | {zip?: string; county?: string; city: string};
- 
+  | { zip: string; county?: string; city?: string }
+  | { zip?: string; county: string; city?: string }
+  | { zip?: string; county?: string; city: string };
+
 export interface ListPrayerRequestsParams {
   churchId?: string;
   userId?: string;

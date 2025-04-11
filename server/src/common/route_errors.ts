@@ -1,6 +1,4 @@
-
 import HttpStatusCodes from '@src/common/status_codes';
-
 
 /******************************************************************************
                                  Classes
