@@ -1,8 +1,9 @@
+import nodePlugin from 'eslint-plugin-n';
+import tseslint from 'typescript-eslint';
+
 import eslint from '@eslint/js';
 import stylisticJs from '@stylistic/eslint-plugin-js';
 import stylisticTs from '@stylistic/eslint-plugin-ts';
-import nodePlugin from 'eslint-plugin-n';
-import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
   eslint.configs.recommended,

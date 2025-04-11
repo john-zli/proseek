@@ -1,4 +1,5 @@
 import { useCallback, useContext } from 'react';
+
 import { ModalContext, ModalType } from '../../contexts/modal_context_provider';
 import { Button, ButtonStyle } from '../../shared-components/button';
 import { ModalContainer } from '../../shared-components/modal_container';

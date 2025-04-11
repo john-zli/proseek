@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+
 import classes from './link.module.less';
 
 interface Props {

@@ -1,5 +1,4 @@
 /* eslint-disable n/no-process-env */
-
 import dotenv from 'dotenv';
 import moduleAlias from 'module-alias';
 import path from 'path';

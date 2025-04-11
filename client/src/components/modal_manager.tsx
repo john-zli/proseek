@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import { ModalContext, ModalType } from '../contexts/modal_context_provider';
 import { ConfirmationModal } from './modals/confirmation_modal';
 import { PrayerListModal } from './modals/prayer_list_modal';
