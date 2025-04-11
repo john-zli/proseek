@@ -1,7 +1,7 @@
-CREATE SCHEMA core;
+CREATE SCHEMA IF NOT EXISTS core;
 
-GRANT ALL PRIVILEGES ON SEQUENCES IN SCHEMA core TO proseek_admin;
-GRANT ALL PRIVILEGES ON TABLES IN SCHEMA core TO proseek_admin;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA core TO proseek_admin;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA core TO proseek_admin;
 
 CREATE TABLE IF NOT EXISTS core.genders (
   gender        varchar(10) PRIMARY KEY
@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS core.churches (
   state                     varchar(50)         NOT NULL,
   zip                       varchar(20)         NOT NULL,
   country                   varchar(50)         NOT NULL,
+  county                    varchar(50),
 
   -- Metadata
   creation_timestamp        timestamp           NOT NULL DEFAULT now(),
@@ -75,6 +76,15 @@ CREATE TABLE IF NOT EXISTS core.churches (
 
   CONSTRAINT church_name_unique UNIQUE (name, address, city, state, zip, country)
 );
+
+CREATE TABLE IF NOT EXISTS core.request_contact_methods(
+  method                   varchar(20)        PRIMARY KEY
+);
+
+INSERT INTO core.request_contact_methods(method) VALUES 
+  ('Email'),
+  ('Text')
+ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS core.prayer_requests (
   request_id                uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -98,8 +108,40 @@ CREATE TABLE IF NOT EXISTS core.prayer_requests (
 
   CONSTRAINT assigned_church_fk FOREIGN KEY (assigned_church_id)
     REFERENCES core.churches(church_id) ON DELETE CASCADE,
-  CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id) REFERENCES core.users(user_id)
+  CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id) REFERENCES core.users(user_id),
+  CONSTRAINT request_contact_method_fk FOREIGN KEY (request_contact_method)
+    REFERENCES core.request_contact_methods(method),
+  CONSTRAINT request_contact_email_check CHECK (
+    (request_contact_email IS NOT NULL AND request_contact_method = 'Email') OR (request_contact_phone IS NOT NULL AND request_contact_method = 'Text')
+  ) 
 );
+
+-- Indices on prayer_requests table for faster lookups.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'core'
+      AND tablename = 'prayer_requests'
+      AND indexname = 'prayer_requests_user_id_idx'
+  ) THEN
+    CREATE UNIQUE INDEX prayer_requests_user_id_idx ON core.prayer_requests(assigned_user_id);
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'core'
+      AND tablename = 'prayer_requests'
+      AND indexname = 'prayer_requests_church_id_idx'
+  ) THEN
+    CREATE UNIQUE INDEX prayer_requests_church_id_idx ON core.prayer_requests(assigned_church_id);
+  END IF;
+END $$;
 
 -- Creating a unique index for churches, so no two churches can have same address.
 DO $$

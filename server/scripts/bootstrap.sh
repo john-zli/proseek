@@ -29,10 +29,10 @@ sh "$ROOT_DIR/scripts/packages.sh"
 echo "Bootstrapping database..."
 
 # Create the database if it doesn't exist.
-psql -U $(whoami) -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'proseek'" | grep -q 1 || createdb -U $(whoami) -d postgres proseek > /dev/null 2>&1
+psql -U $(whoami) -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'proseek'" | grep -q 1 || createdb -U $(whoami) -d postgres proseek
 
 # Add new proseek_admin user if not created.
-psql -U $(whoami) -d proseek -f "$ROOT_DIR/src/sql/dev_initializaton.sql" > /dev/null 2>&1
+psql -U $(whoami) -d proseek -f "$ROOT_DIR/src/sql/dev_initialization.sql"
 echo "PostgreSQL database initialized."
 
 NODE_ENV=development sh "$ROOT_DIR/scripts/migrations.sh"

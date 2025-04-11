@@ -1,4 +1,5 @@
 import {getPool} from '../db';
+import { User } from './storage_types';
 
 const SqlCommands = {
   ListUsersFromChurch: `
@@ -28,13 +29,13 @@ const SqlCommands = {
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
 // Also different kind of db query wrappers.
-export async function listUsersFromChurch(churchId: string) {
+export async function listUsersFromChurch(churchId: string): Promise<User[]> {
   const pool = getPool();
   const result = await pool.query(SqlCommands.ListUsersFromChurch, [churchId]);
   return result.rows;
 }
 
-export async function getUser(userId: string) {
+export async function getUser(userId: string): Promise<User> {
   const pool = getPool();
   const result = await pool.query(SqlCommands.GetUser, [userId]);
   return result.rows[0];
