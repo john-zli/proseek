@@ -1,17 +1,16 @@
-import morgan from 'morgan';
+import { logger } from '@src/logger';
+import express, { Express, NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
-import express, { Request, Response, NextFunction, Express } from 'express';
-import {logger} from '@src/logger';
-
-import 'express-async-errors';
-
-import {apiRouter} from '@src/routes';
+import morgan from 'morgan';
 
 import HttpStatusCodes from '@src/common/status_codes';
-import { RouteError } from '@src/common/route_errors';
+import 'express-async-errors';
+
 import { NodeEnvs } from '@src/common/constants';
-import config from './config';
+import { RouteError } from '@src/common/route_errors';
+import { apiRouter } from '@src/routes';
 import path from 'path';
+import config from './config';
 
 interface LocalServices {}
 
@@ -20,11 +19,11 @@ export function startServer(services: LocalServices): Express {
 
   // Basic middleware
   app.use(express.json());
-  app.use(express.urlencoded({extended: true}));
+  app.use(express.urlencoded({ extended: true }));
 
   // Serving React CSS and JS
   app.use(express.static(path.join(__dirname, '../../client/dist')));
-  
+
   // Show routes called in console during development
   if (config.env === NodeEnvs.Dev) {
     app.use(morgan('dev'));

@@ -1,4 +1,4 @@
-import {getPool} from '../db';
+import { getPool } from '../db';
 import { Church, ListChurchesNearUserParams } from './storage_types';
 
 const SqlCommands = {

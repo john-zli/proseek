@@ -1,13 +1,13 @@
-import { useCallback, useContext } from "react";
-import { ModalContainer } from "../../shared-components/modal_container";
+import { useCallback, useContext } from 'react';
+import { ModalContext, ModalType } from '../../contexts/modal_context_provider';
+import { Button, ButtonStyle } from '../../shared-components/button';
+import { ModalContainer } from '../../shared-components/modal_container';
 import classes from './video_call_modal.module.less';
-import { ModalContext, ModalType } from "../../contexts/modal_context_provider";
-import { Button, ButtonStyle } from "../../shared-components/button";
 
 interface Props {}
 
 export function VideoCallModal(_props: Props) {
-  const {openModal, closeModal} = useContext(ModalContext);
+  const { openModal, closeModal } = useContext(ModalContext);
 
   // TODO(johnli): Send prayer to backend.
   const onRecordClick = useCallback(() => {

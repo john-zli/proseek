@@ -1,11 +1,10 @@
-import { useCallback, useContext } from 'react'
-
+import { useCallback, useContext } from 'react';
 import classes from './App.module.less';
-import { Button, ButtonStyle } from './shared-components/button';
 import { ModalContext, ModalType } from './contexts/modal_context_provider';
+import { Button, ButtonStyle } from './shared-components/button';
 
 function App() {
-  const {openModal} = useContext(ModalContext);
+  const { openModal } = useContext(ModalContext);
 
   const onRecordClick = useCallback(() => {
     openModal(ModalType.VideoCall);
@@ -20,13 +19,9 @@ function App() {
     <div className={classes.root}>
       <div className={classes.contents}>
         <div className={classes.mainAction}>
-          <span className={classes.bigger}>
-            What can your neighborhood pray for you about?
-          </span>
+          <span className={classes.bigger}>What can your neighborhood pray for you about?</span>
           <div className={classes.modal}>
-            <span className={classes.modalTitle}>
-              Need prayer?
-            </span>
+            <span className={classes.modalTitle}>Need prayer?</span>
 
             <div className={classes.textRow}>
               <div className={classes.textColumn}>
@@ -48,13 +43,13 @@ function App() {
             </div>
           </div>
         </div>
-        
+
         <div className={classes.zipCode}>
           Not your neighborhood? <a href="#">Enter your zip code</a>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default App;

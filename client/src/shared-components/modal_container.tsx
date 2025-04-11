@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react';
-import classes from './modal_container.module.less';
 import { ModalContext } from '../contexts/modal_context_provider';
+import classes from './modal_container.module.less';
 
 interface ModalContainerProps {
   onClose?: () => void;
@@ -9,7 +9,7 @@ interface ModalContainerProps {
 
 export function ModalContainer(props: ModalContainerProps) {
   const { onClose, children } = props;
-  const {closeModal, isOpen} = useContext(ModalContext);
+  const { closeModal, isOpen } = useContext(ModalContext);
 
   if (!isOpen) {
     return null;

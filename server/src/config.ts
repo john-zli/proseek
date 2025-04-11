@@ -1,4 +1,4 @@
-import { NodeEnvs } from "./common/constants";
+import { NodeEnvs } from './common/constants';
 
 interface ServerConfig {
   env: NodeEnvs;
@@ -16,6 +16,6 @@ const config: ServerConfig = {
   dbUser: process.env.DATABASE_USER,
   dbHost: process.env.DATABASE_HOST,
   dbPort: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT, 10) : 5432,
-}
+};
 
 export default config;
