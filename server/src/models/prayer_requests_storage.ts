@@ -26,7 +26,7 @@ const SqlCommands = {
     SELECT * FROM core.create_prayer_request_with_church_assignment(
       $1::text,
       $2::varchar(100),
-      $3::varchar(21),
+      $3::varchar(20),
       $4::varchar(100),
       $5::varchar(20),
       $6::varchar(20),

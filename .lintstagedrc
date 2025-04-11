@@ -1,6 +1,6 @@
 {
   "*.{ts,tsx,js,jsx}": [
-    "prettier --write"
+    "prettier --write --plugin=prettier-plugin-organize-imports"
   ],
   "*.{json,md}": [
     "prettier --write"
