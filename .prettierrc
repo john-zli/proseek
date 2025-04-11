@@ -8,20 +8,10 @@
   "bracketSpacing": true,
   "arrowParens": "avoid",
   "endOfLine": "lf",
-  "insertPragma": false,
-  "proseWrap": "preserve",
-  "requirePragma": false,
   "importOrder": [
-    "<THIRD_PARTY_MODULES>",
-    "^[A-Z]",
-    "^[a-z]"
+    "^[A-Z].*$",
+    "^[a-z].*$"
   ],
   "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true,
-  "importOrderParserPlugins": ["typescript", "decorators-legacy"],
-  "importOrderCaseInsensitive": false,
-  "importOrderGroupNamespaceSpecifiers": true,
-  "importOrderBuiltinModulesToTop": true,
-  "importOrderCombineTypeAndValueImports": true,
-  "importOrderSplitTypeImports": true
+  "importOrderSortSpecifiers": true
 } 
