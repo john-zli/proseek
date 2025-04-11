@@ -2,7 +2,7 @@
   "name": "server",
   "version": "0.0.0",
   "scripts": {
-    "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && bun install",
+    "clean-install": "rm -rf ./node_modules && bun install",
     "dev": "NODE_ENV=development bun run --bun ./src",
     "dev:hot": "bun run --bun nodemon --exec \"bun run dev\" --watch ./src --ext .ts",
     "lint": "bun run --bun eslint .",
