@@ -1,11 +1,11 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { createPrayerRequestWithChurchAssignment, listPrayerRequests, assignPrayerRequest } from '../models/prayer_requests_storage';
 import { getUser } from '../models/users_storage';
 
 const router = Router();
 
 // Create a new prayer request
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', async (req, res) => {
   try {
     const {
       requestSummary,
@@ -41,7 +41,7 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 // List prayer requests for a church
-router.get('/church/:churchId', async (req: Request, res: Response) => {
+router.get('/church/:churchId', async (req, res) => {
   try {
     const { churchId } = req.params;
     const prayerRequests = await listPrayerRequests({ churchId });
@@ -53,11 +53,16 @@ router.get('/church/:churchId', async (req: Request, res: Response) => {
 });
 
 // Assign a prayer request to a user
-router.post('/:requestId/assign', async (req: Request, res: Response) => {
+router.post('/:requestId/assign', async (req, res) => {
   try {
     const { requestId } = req.params;
-    const user = await getUser(req.user!.userId);
+    const { userId } = req.body;
 
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const user = await getUser(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
