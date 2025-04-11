@@ -39,5 +39,18 @@ export interface User {
 }
 
 export interface PrayerRequest {
-
+  requestId: string;
+  assignedUserId?: string;
+  assignedChurchId?: string;
+  responded: boolean;
+  requestContactEmail?: string;
+  requestContactPhone?: string;
+  requestContactName?: string;
+  requestContactMethod?: string;
+  requestSummary: string;
+  zip?: string;
+  county?: string;
+  city?: string;
+  creationTimestamp: Date;
+  modifiedTimestamp: Date;
 }
