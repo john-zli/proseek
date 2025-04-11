@@ -1,6 +1,6 @@
 import { getPool } from '../db';
-import { ListPrayerRequestsParams } from './storage_types';
 import { PrayerRequest } from './storage_types';
+import { ListPrayerRequestsParams } from './storage_types';
 
 const SqlCommands = {
   ListPrayerRequests: `
