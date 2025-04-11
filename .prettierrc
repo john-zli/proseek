@@ -12,8 +12,9 @@
   "proseWrap": "preserve",
   "requirePragma": false,
   "importOrder": [
-    "^[A-Z].*$",
-    "^[a-z].*$"
+    "^[A-Z][^/]*$",
+    "^[a-z][^/]*$",
+    "^[./]"
   ],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true,
