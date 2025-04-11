@@ -9,8 +9,8 @@
   "arrowParens": "avoid",
   "endOfLine": "lf",
   "importOrder": [
-    "^[A-Z].*$",
-    "^[a-z].*$"
+    "^[a-z].*$",
+    "^[A-Z].*$"
   ],
   "importOrderSeparation": true,
   "importOrderSortSpecifiers": true
