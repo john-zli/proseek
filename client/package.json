@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "bun run --bun vite",
+    "build": "bun run --bun tsc -b && bun run --bun vite build",
+    "lint": "bun run --bun eslint .",
+    "preview": "bun run --bun vite preview"
   },
   "dependencies": {
     "clsx": "2.1.1",
