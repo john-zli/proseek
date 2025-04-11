@@ -29,7 +29,7 @@ const SqlCommands = {
       $3::varchar(20),
       $4::varchar(100),
       $5::varchar(20),
-      $6::varchar(20),
+      $6::varchar(21),
       $7::varchar(50),
       $8::varchar(100)
     );`,
