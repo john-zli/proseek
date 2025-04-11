@@ -1,4 +1,3 @@
-import { logger } from '@src/logger';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -8,6 +7,7 @@ import 'express-async-errors';
 import { NodeEnvs } from '@src/common/constants';
 import { RouteError } from '@src/common/route_errors';
 import HttpStatusCodes from '@src/common/status_codes';
+import { logger } from '@src/logger';
 import { apiRouter } from '@src/routes';
 import path from 'path';
 import config from './config';
