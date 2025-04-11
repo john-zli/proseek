@@ -119,43 +119,6 @@ CREATE TABLE IF NOT EXISTS core.prayer_requests (
   )
 );
 
--- Add location columns if they don't exist
-DO $$
-BEGIN
-    -- Add zip column if it doesn't exist
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM information_schema.columns 
-        WHERE table_schema = 'core' 
-        AND table_name = 'prayer_requests' 
-        AND column_name = 'zip'
-    ) THEN
-        ALTER TABLE core.prayer_requests ADD COLUMN zip varchar(20);
-    END IF;
-
-    -- Add county column if it doesn't exist
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM information_schema.columns 
-        WHERE table_schema = 'core' 
-        AND table_name = 'prayer_requests' 
-        AND column_name = 'county'
-    ) THEN
-        ALTER TABLE core.prayer_requests ADD COLUMN county varchar(50);
-    END IF;
-
-    -- Add city column if it doesn't exist
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM information_schema.columns 
-        WHERE table_schema = 'core' 
-        AND table_name = 'prayer_requests' 
-        AND column_name = 'city'
-    ) THEN
-        ALTER TABLE core.prayer_requests ADD COLUMN city varchar(100);
-    END IF;
-END $$;
-
 -- Create index for location-based searches
 DO $$
 BEGIN
