@@ -9,13 +9,14 @@
   "scripts": {
     "prepare": "husky install",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\""
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "start": "bun run server/src/index.ts",
+    "dev": "bun --watch run server/src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
-    "prettier": "^3.2.5",
-    "prettier-plugin-organize-imports": "^3.2.3",
-    "@trivago/prettier-plugin-sort-imports": "^4.3.0"
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.5.3"
   }
-} 
+}
