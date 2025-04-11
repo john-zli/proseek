@@ -1,6 +1,6 @@
 {
   "*.{ts,tsx,js,jsx}": [
-    "prettier --write"
+    "prettier --write --plugin=prettier-plugin-organize-imports --plugin=@trivago/prettier-plugin-sort-imports --experimental-ternaries"
   ],
   "*.{json,md}": [
     "prettier --write"
