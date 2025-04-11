@@ -9,9 +9,10 @@
   "arrowParens": "avoid",
   "endOfLine": "lf",
   "importOrder": [
-    "^[A-Z].*$",
-    "^[a-z].*$"
+    "^[A-Z][^/]*$",
+    "^[a-z][^/]*$"
   ],
   "importOrderSeparation": true,
-  "importOrderSortSpecifiers": true
+  "importOrderSortSpecifiers": true,
+  "importOrderParserPlugins": ["typescript", "decorators-legacy"]
 } 
