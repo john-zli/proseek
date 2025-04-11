@@ -92,29 +92,83 @@ CREATE TABLE IF NOT EXISTS core.prayer_requests (
   assigned_church_id        uuid,                
   responded                 boolean             NOT NULL DEFAULT false,
 
-  -- TODO(johnli): How to store location and find closest areas?
-  -- request_location ?
+  -- Location information
+  zip                       varchar(20),
+  county                    varchar(50),
+  city                      varchar(100),
+
   request_contact_email     varchar(100),
   request_contact_phone     varchar(20),
   request_contact_name      varchar(100),
   request_contact_method    varchar(20)         NOT NULL,
   request_summary           text                NOT NULL,
 
-  -- Do we need responses?
-
   -- Metadata
-  creation_timestamp        timestamp           DEFAULT now(),
-  modification_timestamp    timestamp           DEFAULT now(),
+  creation_timestamp        timestamp           NOT NULL DEFAULT now(),
+  modified_timestamp        timestamp           NOT NULL DEFAULT now(),
 
+  CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id)
+    REFERENCES core.users(user_id) ON DELETE SET NULL,
   CONSTRAINT assigned_church_fk FOREIGN KEY (assigned_church_id)
-    REFERENCES core.churches(church_id) ON DELETE CASCADE,
-  CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id) REFERENCES core.users(user_id),
-  CONSTRAINT request_contact_method_fk FOREIGN KEY (request_contact_method)
+    REFERENCES core.churches(church_id) ON DELETE SET NULL,
+  CONSTRAINT contact_method_fk FOREIGN KEY (request_contact_method)
     REFERENCES core.request_contact_methods(method),
   CONSTRAINT request_contact_email_check CHECK (
-    (request_contact_email IS NOT NULL AND request_contact_method = 'Email') OR (request_contact_phone IS NOT NULL AND request_contact_method = 'Text')
-  ) 
+    (request_contact_email IS NOT NULL AND request_contact_method = 'Email') OR 
+    (request_contact_phone IS NOT NULL AND request_contact_method = 'Text')
+  )
 );
+
+-- Add location columns if they don't exist
+DO $$
+BEGIN
+    -- Add zip column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_schema = 'core' 
+        AND table_name = 'prayer_requests' 
+        AND column_name = 'zip'
+    ) THEN
+        ALTER TABLE core.prayer_requests ADD COLUMN zip varchar(20);
+    END IF;
+
+    -- Add county column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_schema = 'core' 
+        AND table_name = 'prayer_requests' 
+        AND column_name = 'county'
+    ) THEN
+        ALTER TABLE core.prayer_requests ADD COLUMN county varchar(50);
+    END IF;
+
+    -- Add city column if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_schema = 'core' 
+        AND table_name = 'prayer_requests' 
+        AND column_name = 'city'
+    ) THEN
+        ALTER TABLE core.prayer_requests ADD COLUMN city varchar(100);
+    END IF;
+END $$;
+
+-- Create index for location-based searches
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM pg_indexes 
+        WHERE schemaname = 'core' 
+        AND tablename = 'prayer_requests' 
+        AND indexname = 'idx_prayer_requests_location'
+    ) THEN
+        CREATE INDEX idx_prayer_requests_location ON core.prayer_requests(zip, county, city);
+    END IF;
+END $$;
 
 -- Indices on prayer_requests table for faster lookups.
 DO $$
@@ -161,3 +215,59 @@ BEGIN
       WHERE deletion_timestamp IS NULL;
   END IF;
 END $$;
+
+-- Function to create a prayer request and assign it to a nearby church
+CREATE OR REPLACE FUNCTION core.create_prayer_request_with_church_assignment(
+  PARAM_summary           text,
+  PARAM_contact_email     varchar(100),
+  PARAM_contact_phone     varchar(20),
+  PARAM_contact_name      varchar(100),
+  PARAM_contact_method    varchar(20),
+  PARAM_zip               varchar(20),
+  PARAM_county            varchar(50),
+  PARAM_city              varchar(100)
+) RETURNS core.prayer_requests AS $$
+DECLARE
+  VAR_church_id       UUID;
+  VAR_prayer_request  core.prayer_requests;
+BEGIN
+  -- Find a nearby church based on location
+  SELECT  church_id 
+  INTO    VAR_church_id
+  FROM    core.churches
+  WHERE   (PARAM_zip IS NULL OR zip = PARAM_zip) 
+  AND     (PARAM_county IS NULL OR county = PARAM_county) 
+  AND     (PARAM_city IS NULL OR city = PARAM_city)
+  LIMIT   1;
+
+  -- Create the prayer request
+  INSERT INTO core.prayer_requests (
+    request_summary,
+    request_contact_email,
+    request_contact_phone,
+    request_contact_name,
+    request_contact_method,
+    zip,
+    county,
+    city,
+    assigned_church_id,
+    creation_timestamp,
+    modified_timestamp
+  ) VALUES (
+    PARAM_summary,
+    PARAM_contact_email,
+    PARAM_contact_phone,
+    PARAM_contact_name,
+    PARAM_contact_method,
+    PARAM_zip,
+    PARAM_county,
+    PARAM_city,
+    VAR_church_id,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+  )
+  RETURNING * INTO VAR_prayer_request;
+
+  RETURN VAR_prayer_request;
+END;
+$$ LANGUAGE plpgsql;
