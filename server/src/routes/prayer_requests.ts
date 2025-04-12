@@ -1,16 +1,22 @@
 import { Router } from 'express';
 
+import { validate } from '../middleware/validate';
 import {
   assignPrayerRequest,
   createPrayerRequestWithChurchAssignment,
   listPrayerRequests,
 } from '../models/prayer_requests_storage';
 import { getUser } from '../models/users_storage';
+import {
+  AssignPrayerRequestSchema,
+  CreatePrayerRequestSchema,
+  ListPrayerRequestsSchema,
+} from '../schemas/prayer_requests';
 
 const router = Router();
 
 // Create a new prayer request
-router.post('/', async (req, res) => {
+router.post('/', validate(CreatePrayerRequestSchema), async (req, res) => {
   try {
     const {
       requestSummary,
@@ -22,10 +28,6 @@ router.post('/', async (req, res) => {
       county,
       city,
     } = req.body;
-
-    if (!requestSummary) {
-      return res.status(400).json({ error: 'Prayer request summary is required' });
-    }
 
     const prayerRequest = await createPrayerRequestWithChurchAssignment({
       requestSummary,
@@ -46,7 +48,7 @@ router.post('/', async (req, res) => {
 });
 
 // List prayer requests for a church
-router.get('/church/:churchId', async (req, res) => {
+router.get('/church/:churchId', validate(ListPrayerRequestsSchema), async (req, res) => {
   try {
     const { churchId } = req.params;
     const prayerRequests = await listPrayerRequests({ churchId });
@@ -58,14 +60,10 @@ router.get('/church/:churchId', async (req, res) => {
 });
 
 // Assign a prayer request to a user
-router.post('/:requestId/assign', async (req, res) => {
+router.post('/:requestId/assign', validate(AssignPrayerRequestSchema), async (req, res) => {
   try {
     const { requestId } = req.params;
     const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'User ID is required' });
-    }
 
     const user = await getUser(userId);
     if (!user) {
