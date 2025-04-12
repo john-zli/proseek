@@ -75,7 +75,7 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestSchema), async (re
       return res.status(404).json({ error: 'Prayer request not found or not assigned to your church' });
     }
 
-    res.json(prayerRequest);
+    res.status(200).json(prayerRequest);
   } catch (error) {
     console.error('Error assigning prayer request:', error);
     res.status(500).json({ error: 'Failed to assign prayer request' });
