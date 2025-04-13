@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { validate } from '../middleware/validate';
+import { createChurch } from '../models/churches_storage';
 import { CreateChurchSchema } from '../schemas/churches';
 
 const router = Router();
@@ -10,19 +11,17 @@ router.post('/', validate(CreateChurchSchema), async (req, res) => {
   try {
     const { name, address, city, state, zip, phone, email, website } = req.body;
 
-    // TODO: Implement church creation logic
-    const church = {
-      id: 'temp-id', // Replace with actual ID from database
+    const church = await createChurch({
       name,
       address,
       city,
       state,
       zip,
+      county: city, // Using city as county for now
       phone,
       email,
       website,
-      createdAt: new Date().toISOString(),
-    };
+    });
 
     res.status(201).json(church);
   } catch (error) {

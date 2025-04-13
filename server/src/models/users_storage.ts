@@ -25,6 +25,32 @@ const SqlCommands = {
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.user_id = $1::uuid;`,
+  CreateUser: `
+    INSERT INTO core.users (
+      church_id,
+      first_name,
+      last_name,
+      email,
+      phone,
+      gender
+    )
+    VALUES (
+      $1::uuid,
+      $2::varchar(50),
+      $3::varchar(50),
+      $4::varchar(100),
+      $5::varchar(20),
+      $6::varchar(10)
+    )
+    RETURNING
+      user_id,
+      church_id,
+      first_name,
+      last_name,
+      email,
+      phone,
+      gender,
+      creation_timestamp;`,
 };
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
@@ -38,5 +64,25 @@ export async function listUsersFromChurch(churchId: string): Promise<User[]> {
 export async function getUser(userId: string): Promise<User> {
   const pool = getPool();
   const result = await pool.query(SqlCommands.GetUser, [userId]);
+  return result.rows[0];
+}
+
+export async function createUser(params: {
+  churchId?: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  gender?: string;
+}): Promise<User> {
+  const pool = getPool();
+  const result = await pool.query(SqlCommands.CreateUser, [
+    params.churchId,
+    params.firstName,
+    params.lastName,
+    params.email,
+    params.phone,
+    params.gender,
+  ]);
   return result.rows[0];
 }
