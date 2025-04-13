@@ -7,7 +7,7 @@ import { Button, ButtonStyle } from './shared-components/button';
 function App() {
   const { openModal } = useContext(ModalContext);
 
-  const onRecordClick = useCallback(() => {
+  const onSpeakClick = useCallback(() => {
     openModal(ModalType.VideoCall);
   }, [openModal]);
 
@@ -19,34 +19,14 @@ function App() {
   return (
     <div className={classes.root}>
       <div className={classes.contents}>
-        <div className={classes.mainAction}>
-          <span className={classes.bigger}>What can your neighborhood pray for you about?</span>
-          <div className={classes.modal}>
-            <span className={classes.modalTitle}>Need prayer?</span>
-
-            <div className={classes.textRow}>
-              <div className={classes.textColumn}>
-                <span className={classes.titleBold}>Record a video</span>
-                <span>Max 30 seconds, tell us what we can pray for you about.</span>
-              </div>
-              <Button buttonStyle={ButtonStyle.Primary} onClick={onRecordClick}>
-                Start now
-              </Button>
-            </div>
-            <div className={classes.textRow}>
-              <div className={classes.textColumn}>
-                <span className={classes.titleBold}>Video shy?</span>
-                <span>You can write a request, we'll give you a few prompts to start</span>
-              </div>
-              <Button buttonStyle={ButtonStyle.Secondary} onClick={() => {}}>
-                Start now
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        <div className={classes.zipCode}>
-          Not your neighborhood? <a href="#">Enter your zip code</a>
+        <div className={classes.mainContent}>
+          <h1 className={classes.mainHeading}>Need someone to pray with?</h1>
+          <p className={classes.subtitle}>
+            Connect with compassionate prayer partners ready to join you in faith and support
+          </p>
+          <Button buttonStyle={ButtonStyle.Primary} onClick={onSpeakClick}>
+            Speak with someone now
+          </Button>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import HttpStatusCodes from '@src/common/status_codes';
+import HttpStatusCodes from '@server/common/status_codes';
 
 /******************************************************************************
                                  Classes

@@ -16,5 +16,5 @@ if (result2.error) {
 
 // Configure moduleAlias
 if (__filename.endsWith('js')) {
-  moduleAlias.addAlias('@src', __dirname + '/dist');
+  moduleAlias.addAlias('@server', __dirname + '/dist');
 }
