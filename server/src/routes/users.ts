@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { validate } from '../middleware/validate';
+import { createUser } from '../models/users_storage';
 import { CreateUserSchema } from '../schemas/users';
 
 const router = Router();
@@ -10,15 +11,12 @@ router.post('/', validate(CreateUserSchema), async (req, res) => {
   try {
     const { email, firstName, lastName, churchId } = req.body;
 
-    // TODO: Implement user creation logic
-    const user = {
-      id: 'temp-id', // Replace with actual ID from database
-      churchId,
+    const user = await createUser({
       email,
       firstName,
       lastName,
-      createdAt: new Date().toISOString(),
-    };
+      churchId,
+    });
 
     res.status(201).json(user);
   } catch (error) {
