@@ -67,12 +67,14 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestSchema), async (re
 
     const user = await getUser(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      res.status(404).json({ error: 'User not found' });
+      return;
     }
 
     const prayerRequest = await assignPrayerRequest(requestId, user.userId, user.churchId);
     if (!prayerRequest) {
-      return res.status(404).json({ error: 'Prayer request not found or not assigned to your church' });
+      res.status(404).json({ error: 'Prayer request not found or not assigned to your church' });
+      return;
     }
 
     res.status(200).json(prayerRequest);
