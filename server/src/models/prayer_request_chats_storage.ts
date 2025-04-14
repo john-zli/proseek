@@ -15,8 +15,8 @@ const SqlCommands = {
                 prayer_request_chats.zip,
                 prayer_request_chats.county,
                 prayer_request_chats.city,
-                prayer_request_chats.creation_timestamp,
-                prayer_request_chats.modified_timestamp
+                EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp) AS creation_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.modified_timestamp) AS modified_timestamp
     FROM        core.prayer_request_chats
     WHERE       ($1::uuid IS NULL OR prayer_request_chats.assigned_user_id = $1::uuid) AND
                 ($2::uuid IS NULL OR prayer_request_chats.assigned_church_id = $2::uuid)
