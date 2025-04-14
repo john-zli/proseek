@@ -1,3 +1,5 @@
+@import (reference) '../styles/colors.module.less';
+
 .base() {
   display: flex;
   align-items: center;
@@ -8,18 +10,28 @@
   padding: 8px 12px;
   height: fit-content;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
 .primaryButton {
   .base();
 
-  background-color: #6122e7;
-  color: white;
+  background-color: @color-button-primary;
+  color: @color-text-button;
+
+  &:hover {
+    background-color: @color-button-primary-hover;
+  }
 }
+
 .secondaryButton {
   .base();
 
-  border: 1px solid lightgray;
-  color: black;
-  background-color: white;
+  border: 1px solid @color-button-secondary-border;
+  color: @color-text-button-secondary;
+  background-color: @color-button-secondary-bg;
+
+  &:hover {
+    background-color: @color-button-secondary-hover;
+  }
 }

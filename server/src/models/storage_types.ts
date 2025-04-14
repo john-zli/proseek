@@ -1,56 +1,38 @@
+import type { ListPrayerRequestsParams, PrayerRequest } from '@common/server-api/types/prayer_requests';
+
+// Re-export the shared types
+export type { PrayerRequest, ListPrayerRequestsParams };
+
+// Additional server-specific types can go here
+
 // At least one of them must be populated.
 export type ListChurchesNearUserParams =
-  | { zip: string; county?: string; city?: string }
-  | { zip?: string; county: string; city?: string }
-  | { zip?: string; county?: string; city: string };
-
-export interface ListPrayerRequestsParams {
-  churchId?: string;
-  userId?: string;
-}
-
-/**
- * Return types from DB.
- */
-export enum Gender {
-  Male = 'Male',
-  Female = 'Female',
-}
+  | {
+      zip: string;
+      county?: never;
+      city?: never;
+    }
+  | {
+      zip?: never;
+      county: string;
+      city: string;
+    };
 
 export interface Church {
   churchId: string;
   name: string;
-  address: string;
-  city: string;
-  state: string;
   zip: string;
   county: string;
-  country: string;
+  city: string;
+  creationTimestamp: Date;
+  modifiedTimestamp: Date;
 }
 
 export interface User {
   userId: string;
   churchId: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
-  phone: string;
-  gender: Gender;
-}
-
-export interface PrayerRequest {
-  requestId: string;
-  assignedUserId?: string;
-  assignedChurchId?: string;
-  responded: boolean;
-  requestContactEmail?: string;
-  requestContactPhone?: string;
-  requestContactName?: string;
-  requestContactMethod?: string;
-  requestSummary: string;
-  zip?: string;
-  county?: string;
-  city?: string;
   creationTimestamp: Date;
   modifiedTimestamp: Date;
 }

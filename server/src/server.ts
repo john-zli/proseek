@@ -4,12 +4,12 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 
-import config from './config';
-import { NodeEnvs } from '@src/common/constants';
-import { RouteError } from '@src/common/route_errors';
-import HttpStatusCodes from '@src/common/status_codes';
-import { logger } from '@src/logger';
-import { apiRouter } from '@src/routes';
+import { NodeEnvs } from '@server/common/constants';
+import { RouteError } from '@server/common/route_errors';
+import HttpStatusCodes from '@server/common/status_codes';
+import config from '@server/config';
+import { logger } from '@server/logger';
+import { apiRouter } from '@server/routes';
 
 interface LocalServices {}
 

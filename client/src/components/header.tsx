@@ -11,23 +11,30 @@ export function Header() {
 
   return (
     <div className={classes.headerContainer}>
-      <div className={classes.leftContainer}>
-        <div className={classes.logoContainer} />
-        <Link
-          className={clsx(classes.text, {
-            [classes.active]: location.pathname === '/',
-          })}
-          href="/"
-        >
-          Home
-        </Link>
-      </div>
+      <div className={classes.nav}>
+        <div className={classes.leftContainer}>
+          <div className={classes.logoContainer} />
+          <div className={classes.navLinks}>
+            <Link
+              className={clsx(classes.text, {
+                [classes.active]: location.pathname === '/',
+              })}
+              href="/"
+            >
+              Home
+            </Link>
+          </div>
+        </div>
 
-      <div className={classes.rightContainer}>
-        {/* TODO search bar */}
-        <Button buttonStyle={ButtonStyle.Primary} onClick={() => {}}>
-          Join the Network
-        </Button>
+        {/* Users should only be created via a referral. */}
+        <div className={classes.rightContainer}>
+          <Button buttonStyle={ButtonStyle.Secondary} onClick={() => {}}>
+            Log in
+          </Button>
+          <Button buttonStyle={ButtonStyle.Primary} onClick={() => {}}>
+            Register
+          </Button>
+        </div>
       </div>
     </div>
   );

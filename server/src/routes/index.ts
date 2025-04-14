@@ -3,7 +3,7 @@ import { Router } from 'express';
 import churchesRouter from './churches';
 import prayerRequestsRouter from './prayer_requests';
 import usersRouter from './users';
-import { serveStaticHtmlFile } from '@src/middleware/serve_static_html_file';
+import { serveStaticHtmlFile } from '@server/middleware/serve_static_html_file';
 
 interface LocalServices {}
 
