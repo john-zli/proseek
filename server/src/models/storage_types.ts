@@ -1,8 +1,3 @@
-import type { ListPrayerRequestsParams, PrayerRequest } from '@common/server-api/types/prayer_requests';
-
-// Re-export the shared types
-export type { PrayerRequest, ListPrayerRequestsParams };
-
 // Additional server-specific types can go here
 
 // At least one of them must be populated.

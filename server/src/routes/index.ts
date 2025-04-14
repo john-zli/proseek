@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
 import churchesRouter from './churches';
-import prayerRequestsRouter from './prayer_requests';
+import prayerRequestChatsRouter from './prayer_request_chats';
 import usersRouter from './users';
 import { serveStaticHtmlFile } from '@server/middleware/serve_static_html_file';
 
@@ -13,7 +13,7 @@ export function apiRouter(_services: LocalServices): Router {
   apiRouter.get('/', serveStaticHtmlFile());
 
   // Prayer requests routes
-  apiRouter.use('/api/prayer-requests', prayerRequestsRouter);
+  apiRouter.use('/api/prayer-requests', prayerRequestChatsRouter);
 
   // Church routes
   apiRouter.use('/api/churches', churchesRouter);

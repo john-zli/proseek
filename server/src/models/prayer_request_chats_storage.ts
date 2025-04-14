@@ -1,8 +1,8 @@
 import { getPool } from '../db';
-import { ListPrayerRequestsParams, PrayerRequest } from './storage_types';
+import { ListPrayerRequestChatsParams, PrayerRequestChat } from '@common/server-api/types/prayer_request_chats';
 
 const SqlCommands = {
-  ListPrayerRequests: `
+  ListPrayerRequestChats: `
     SELECT      prayer_request_chats.request_id,
                 prayer_request_chats.assigned_user_id,
                 prayer_request_chats.assigned_church_id,
@@ -22,7 +22,7 @@ const SqlCommands = {
                 ($2::uuid IS NULL OR prayer_request_chats.assigned_church_id = $2::uuid)
     ORDER BY    prayer_request_chats.creation_timestamp DESC;`,
 
-  CreatePrayerRequest: `
+  CreatePrayerRequestChat: `
     SELECT * FROM core.create_prayer_request_with_church_assignment(
       $1::text,
       $2::varchar(100),
@@ -34,7 +34,7 @@ const SqlCommands = {
       $8::varchar(100)
     );`,
 
-  AssignPrayerRequest: `
+  AssignPrayerRequestChat: `
     UPDATE core.prayer_request_chats
     SET assigned_user_id = $1::uuid,
         modified_timestamp = CURRENT_TIMESTAMP
@@ -45,24 +45,24 @@ const SqlCommands = {
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
 // Also different kind of db query wrappers.
-export async function listPrayerRequests(params: ListPrayerRequestsParams): Promise<PrayerRequest[]> {
+export async function listPrayerRequestChats(params: ListPrayerRequestChatsParams): Promise<PrayerRequestChat[]> {
   const { userId, churchId } = params;
   const pool = getPool();
-  const result = await pool.query(SqlCommands.ListPrayerRequests, [userId, churchId]);
+  const result = await pool.query(SqlCommands.ListPrayerRequestChats, [userId, churchId]);
   return result.rows;
 }
 
-export async function assignPrayerRequest(
+export async function assignPrayerRequestChat(
   requestId: string,
   userId: string,
   churchId: string
-): Promise<PrayerRequest | null> {
+): Promise<PrayerRequestChat | null> {
   const pool = getPool();
-  const result = await pool.query(SqlCommands.AssignPrayerRequest, [userId, requestId, churchId]);
+  const result = await pool.query(SqlCommands.AssignPrayerRequestChat, [userId, requestId, churchId]);
   return result.rows[0] || null;
 }
 
-export async function createPrayerRequestWithChurchAssignment(request: {
+export async function createPrayerRequestChatWithChurchAssignment(request: {
   requestSummary: string;
   requestContactEmail?: string;
   requestContactPhone?: string;
@@ -71,9 +71,9 @@ export async function createPrayerRequestWithChurchAssignment(request: {
   zip?: string;
   county?: string;
   city?: string;
-}): Promise<PrayerRequest> {
+}): Promise<PrayerRequestChat> {
   const pool = getPool();
-  const result = await pool.query(SqlCommands.CreatePrayerRequest, [
+  const result = await pool.query(SqlCommands.CreatePrayerRequestChat, [
     request.requestSummary,
     request.requestContactEmail,
     request.requestContactPhone,
