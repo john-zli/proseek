@@ -1,4 +1,4 @@
-export interface PrayerRequest {
+export interface PrayerRequestChat {
   requestId: string;
   assignedUserId?: string;
   assignedChurchId?: string;
@@ -15,7 +15,7 @@ export interface PrayerRequest {
   modifiedTimestamp: Date;
 }
 
-export interface CreatePrayerRequestParams {
+export interface CreatePrayerRequestChatParams {
   requestSummary: string;
   requestContactEmail?: string;
   requestContactPhone?: string;
@@ -26,12 +26,12 @@ export interface CreatePrayerRequestParams {
   city?: string;
 }
 
-export interface AssignPrayerRequestParams {
+export interface AssignPrayerRequestChatParams {
   requestId: string;
   userId: string;
 }
 
-export interface ListPrayerRequestsParams {
+export interface ListPrayerRequestChatsParams {
   userId?: string;
   churchId?: string;
 }

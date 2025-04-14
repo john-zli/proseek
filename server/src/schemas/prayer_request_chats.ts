@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-// Schema for creating a new prayer request
-export const CreatePrayerRequestSchema = z.object({
+// Schema for creating a new prayer request chat
+export const CreatePrayerRequestChatSchema = z.object({
   body: z.object({
     requestSummary: z.string().min(1, 'Prayer request summary is required'),
     requestContactEmail: z.string().email().optional(),
@@ -14,15 +14,15 @@ export const CreatePrayerRequestSchema = z.object({
   }),
 });
 
-// Schema for listing prayer requests by church
-export const ListPrayerRequestsSchema = z.object({
+// Schema for listing prayer request chats by church
+export const ListPrayerRequestChatsSchema = z.object({
   params: z.object({
     churchId: z.string().min(1, 'Church ID is required'),
   }),
 });
 
-// Schema for assigning a prayer request
-export const AssignPrayerRequestSchema = z.object({
+// Schema for assigning a prayer request chat
+export const AssignPrayerRequestChatSchema = z.object({
   params: z.object({
     requestId: z.string().min(1, 'Request ID is required'),
   }),

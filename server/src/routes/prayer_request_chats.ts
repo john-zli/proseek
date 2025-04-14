@@ -2,21 +2,21 @@ import { Router } from 'express';
 
 import { validate } from '../middleware/validate';
 import {
-  assignPrayerRequest,
-  createPrayerRequestWithChurchAssignment,
-  listPrayerRequests,
-} from '../models/prayer_requests_storage';
+  assignPrayerRequestChat,
+  createPrayerRequestChatWithChurchAssignment,
+  listPrayerRequestChats,
+} from '../models/prayer_request_chats_storage';
 import { getUser } from '../models/users_storage';
 import {
-  AssignPrayerRequestSchema,
-  CreatePrayerRequestSchema,
-  ListPrayerRequestsSchema,
-} from '../schemas/prayer_requests';
+  AssignPrayerRequestChatSchema,
+  CreatePrayerRequestChatSchema,
+  ListPrayerRequestChatsSchema,
+} from '../schemas/prayer_request_chats';
 
 const router = Router();
 
 // Create a new prayer request
-router.post('/', validate(CreatePrayerRequestSchema), async (req, res) => {
+router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
   try {
     const {
       requestSummary,
@@ -29,7 +29,7 @@ router.post('/', validate(CreatePrayerRequestSchema), async (req, res) => {
       city,
     } = req.body;
 
-    const prayerRequest = await createPrayerRequestWithChurchAssignment({
+    const prayerRequest = await createPrayerRequestChatWithChurchAssignment({
       requestSummary,
       requestContactEmail,
       requestContactPhone,
@@ -48,10 +48,10 @@ router.post('/', validate(CreatePrayerRequestSchema), async (req, res) => {
 });
 
 // List prayer requests for a church
-router.get('/church/:churchId', validate(ListPrayerRequestsSchema), async (req, res) => {
+router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (req, res) => {
   try {
     const { churchId } = req.params;
-    const prayerRequests = await listPrayerRequests({ churchId });
+    const prayerRequests = await listPrayerRequestChats({ churchId });
     res.json(prayerRequests);
   } catch (error) {
     console.error('Error listing prayer requests:', error);
@@ -60,7 +60,7 @@ router.get('/church/:churchId', validate(ListPrayerRequestsSchema), async (req, 
 });
 
 // Assign a prayer request to a user
-router.post('/:requestId/assign', validate(AssignPrayerRequestSchema), async (req, res) => {
+router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async (req, res) => {
   try {
     const { requestId } = req.params;
     const { userId } = req.body;
@@ -71,7 +71,7 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestSchema), async (re
       return;
     }
 
-    const prayerRequest = await assignPrayerRequest(requestId, user.userId, user.churchId);
+    const prayerRequest = await assignPrayerRequestChat(requestId, user.userId, user.churchId);
     if (!prayerRequest) {
       res.status(404).json({ error: 'Prayer request not found or not assigned to your church' });
       return;

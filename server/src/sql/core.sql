@@ -86,7 +86,9 @@ INSERT INTO core.request_contact_methods(method) VALUES
   ('Text')
 ON CONFLICT DO NOTHING;
 
-CREATE TABLE IF NOT EXISTS core.prayer_requests (
+-- Each prayer request corresponds to a chat that starts from a request 
+-- user. 
+CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
   request_id                uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
   assigned_user_id          uuid,
   assigned_church_id        uuid,                
@@ -126,24 +128,24 @@ BEGIN
         SELECT 1 
         FROM pg_indexes 
         WHERE schemaname = 'core' 
-        AND tablename = 'prayer_requests' 
+        AND tablename = 'prayer_request_chats' 
         AND indexname = 'idx_prayer_requests_location'
     ) THEN
-        CREATE INDEX idx_prayer_requests_location ON core.prayer_requests(zip, county, city);
+        CREATE INDEX idx_prayer_requests_location ON core.prayer_request_chats(zip, county, city);
     END IF;
 END $$;
 
--- Indices on prayer_requests table for faster lookups.
+-- Indices on prayer_request_chats table for faster lookups.
 DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1
     FROM pg_indexes
     WHERE schemaname = 'core'
-      AND tablename = 'prayer_requests'
+      AND tablename = 'prayer_request_chats'
       AND indexname = 'prayer_requests_user_id_idx'
   ) THEN
-    CREATE UNIQUE INDEX prayer_requests_user_id_idx ON core.prayer_requests(assigned_user_id);
+    CREATE UNIQUE INDEX prayer_requests_user_id_idx ON core.prayer_request_chats(assigned_user_id);
   END IF;
 END $$;
 
@@ -153,10 +155,10 @@ BEGIN
     SELECT 1
     FROM pg_indexes
     WHERE schemaname = 'core'
-      AND tablename = 'prayer_requests'
+      AND tablename = 'prayer_request_chats'
       AND indexname = 'prayer_requests_church_id_idx'
   ) THEN
-    CREATE UNIQUE INDEX prayer_requests_church_id_idx ON core.prayer_requests(assigned_church_id);
+    CREATE UNIQUE INDEX prayer_requests_church_id_idx ON core.prayer_request_chats(assigned_church_id);
   END IF;
 END $$;
 
@@ -180,7 +182,7 @@ BEGIN
 END $$;
 
 -- Function to create a prayer request and assign it to a nearby church
-CREATE OR REPLACE FUNCTION core.create_prayer_request_with_church_assignment(
+CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignment(
   PARAM_summary           text,
   PARAM_contact_email     varchar(100),
   PARAM_contact_phone     varchar(20),
@@ -189,10 +191,10 @@ CREATE OR REPLACE FUNCTION core.create_prayer_request_with_church_assignment(
   PARAM_zip               varchar(20),
   PARAM_county            varchar(50),
   PARAM_city              varchar(100)
-) RETURNS core.prayer_requests AS $$
+) RETURNS core.prayer_request_chats AS $$
 DECLARE
   VAR_church_id       UUID;
-  VAR_prayer_request  core.prayer_requests;
+  VAR_prayer_request  core.prayer_request_chats;
 BEGIN
   -- Find a nearby church based on location
   SELECT  church_id 
@@ -204,7 +206,7 @@ BEGIN
   LIMIT   1;
 
   -- Create the prayer request
-  INSERT INTO core.prayer_requests (
+  INSERT INTO core.prayer_request_chats (
     request_summary,
     request_contact_email,
     request_contact_phone,
