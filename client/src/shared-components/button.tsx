@@ -1,3 +1,5 @@
+import clsx from 'clsx';
+
 import classes from './button.module.less';
 
 export enum ButtonStyle {
@@ -10,6 +12,7 @@ interface Props {
   onClick: () => void;
   disabled?: boolean;
   children?: React.ReactNode;
+  className?: string;
 }
 
 function mapButtonStyleToClassName(buttonStyle: ButtonStyle): string {
@@ -21,10 +24,11 @@ function mapButtonStyleToClassName(buttonStyle: ButtonStyle): string {
       return classes.secondaryButton;
   }
 }
+
 export function Button(props: Props) {
-  const { buttonStyle, onClick, children } = props;
+  const { buttonStyle, onClick, children, className } = props;
   return (
-    <button className={mapButtonStyleToClassName(buttonStyle)} onClick={onClick}>
+    <button className={clsx(className, mapButtonStyleToClassName(buttonStyle))} onClick={onClick}>
       {children}
     </button>
   );
