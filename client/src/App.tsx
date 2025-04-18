@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import attachmentIcon from '../assets/attachment.svg';
@@ -69,14 +70,14 @@ function App() {
   return (
     <div className={classes.root}>
       <div className={classes.contents}>
-        {!isExpanded && <h1 className={classes.initialHeading}>What can I help with?</h1>}
+        {!isExpanded && <h1 className={classes.initialHeading}>How can we pray for you?</h1>}
         <div className={`${classes.chatContainer} ${isExpanded ? classes.expandedChat : ''}`}>
           {!isExpanded ? (
             <div className={classes.inputForm}>
               <textarea
                 ref={initialInputRef}
                 rows={1}
-                placeholder="Ask anything"
+                placeholder="Start typing..."
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -108,16 +109,18 @@ function App() {
                   ))}
                 </div>
               </div>
-              <div className={classes.inputForm}>
-                <textarea
-                  ref={expandedInputRef}
-                  rows={1}
-                  placeholder="Ask anything"
-                  value={inputValue}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  className={classes.chatInput}
-                />
+              <div className={clsx(classes.inputForm, classes.expanded)}>
+                <div className={classes.textAreaContainer}>
+                  <textarea
+                    ref={expandedInputRef}
+                    rows={1}
+                    placeholder="Start typing..."
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    className={clsx(classes.chatInput, classes.expanded)}
+                  />
+                </div>
                 <div className={classes.inputActions}>
                   <button type="button" className={classes.actionButton}>
                     <img src={attachmentIcon} alt="Attach" />
