@@ -38,7 +38,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   max-width: 600px;
   min-height: 24px;
-  padding: 16px;
   transition: all 0.5s ease-in-out;
   display: flex;
   flex-direction: column;
@@ -47,7 +46,6 @@
 .expandedChat {
   max-width: @max-width;
   height: 80vh;
-  max-height: 80vh;
 }
 
 .initialHeading {
@@ -70,7 +68,7 @@
   border: none;
   background: transparent;
   font-size: 16px;
-  padding: 8px;
+  padding: 12px 18px;
   outline: none;
   color: #333;
   resize: none;
@@ -85,6 +83,7 @@
   align-self: flex-end;
   display: flex;
   gap: 8px;
+  padding: 12px 18px;
 }
 
 .actionButton {
@@ -107,24 +106,43 @@
 }
 
 .messagesContainer {
-  flex: 1 1 auto;
+  flex: 1;
   min-height: 0;
   overflow-y: auto;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  flex-direction: column-reverse;
+  padding: 0px 18px;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
 }
 
 .messages {
   padding: 16px 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   gap: 16px;
 }
 
 .message {
-  max-width: 10%;
+  max-width: 80%;
   padding: 12px 16px;
   border-radius: 12px;
   font-size: 15px;
@@ -161,4 +179,11 @@
   &:hover {
     transform: scale(1.05);
   }
+}
+
+// Padding with scrollbar is different than without scrollbar.
+// If we have a scrollbar, let's account for that.
+.hasScrollbar {
+  padding-right: 8px;
+  margin-right: 2px;
 }

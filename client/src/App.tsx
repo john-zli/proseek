@@ -9,8 +9,10 @@ function App() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [messages, setMessages] = useState<Array<{ text: string; isUser: boolean; id: number }>>([]);
   const [inputValue, setInputValue] = useState('');
+  const [hasScroll, setHasScroll] = useState(false);
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -40,6 +42,18 @@ function App() {
     },
     [sendMessage]
   );
+
+  const checkScroll = useCallback(() => {
+    if (messagesContainerRef.current) {
+      const hasScrollbar = messagesContainerRef.current.scrollHeight > messagesContainerRef.current.clientHeight;
+      setHasScroll(hasScrollbar);
+    }
+  }, []);
+
+  // Check scroll when messages change or on expand
+  useEffect(() => {
+    checkScroll();
+  }, [messages, isExpanded, checkScroll]);
 
   // Focus the appropriate input when available and adjust height
   useEffect(() => {
@@ -79,7 +93,10 @@ function App() {
             </div>
           ) : (
             <>
-              <div className={classes.messagesContainer}>
+              <div
+                ref={messagesContainerRef}
+                className={`${classes.messagesContainer} ${hasScroll ? classes.hasScrollbar : ''}`}
+              >
                 <div className={classes.messages}>
                   {messages.map(message => (
                     <div
