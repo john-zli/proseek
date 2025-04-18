@@ -1,124 +1,205 @@
 @import (reference) './styles/zindex.module.less';
 @import (reference) './styles/colors.module.less';
+@import (reference) './styles/constants.module.less';
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 .root {
-  min-height: 100vh;
+  margin-top: @header-height;
+  min-height: calc(100vh - @header-height);
   display: flex;
   flex-direction: column;
+  background-color: #f5f5f5;
 }
 
 .contents {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 32px;
+  transition: all 0.5s ease-in-out;
 }
 
-.mainContent {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 32px;
+.chatContainer {
+  width: 100%;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 600px;
+  min-height: 64px;
+  max-height: 80vh;
+  transition: all 0.5s ease-in-out;
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
-.mainHeading {
-  font-size: 56px;
-  font-weight: bold;
+.expandedChat {
+  max-width: @max-width;
+  min-height: 80vh;
+}
+
+.initialHeading {
+  font-size: 32px;
+  font-weight: 600;
+  color: #333;
   margin-bottom: 24px;
-  color: @color-text-primary;
-}
-
-.subtitle {
-  font-size: 24px;
-  color: @color-text-secondary;
-  margin-bottom: 40px;
-  line-height: 1.4;
-  max-width: 700px;
-}
-
-.ctaButton {
-  font-size: 18px;
-  padding: 16px 32px;
-  border-radius: 8px;
-}
-
-.bigger {
-  width: 380px;
-  font-weight: 500;
-  color: rgb(90, 88, 88);
-}
-
-.starttext {
-  text-align: left;
-  width: 150px;
-}
-
-.endtext {
-  text-align: right;
-  width: 150px;
-}
-
-.mainAction {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding: 24px;
-}
-.bigger {
-  text-align: left;
-  font-size: 36px;
-}
-
-.modal {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background-color: white;
-  color: black;
-  border-radius: 6px;
-  padding: 24px;
-  width: 50%;
-  z-index: @zindex-welcome-modal;
-  box-shadow: 1px 1px 4px rgb(180, 181, 183);
-}
-
-.modalTitle {
-  font-weight: 800;
-  font-size: 16px;
   text-align: center;
-  margin-bottom: 16px;
 }
 
-.textRow {
+.inputForm {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  margin-bottom: 16px;
+  margin-top: auto;
+  &.expanded {
+    border-top: 1px solid @color-border-light;
+  }
 }
 
-.textColumn {
+.textAreaContainer {
+  flex: 1;
+  display: flex; 
+  padding: 12px 0 12px 18px;
+}
+
+.chatInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  padding: 12px 18px;
+
+  outline: none;
+  color: #333;
+  resize: none;
+  box-sizing: border-box;
+  width: 100%;
+  &::placeholder {
+    color: #999;
+  }
+
+  &.expanded {
+    border-radius: 12px;
+    padding: 12px;
+    background: @color-text-area;
+  }
+}
+
+.inputActions {
+  align-self: flex-end;
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #eee;
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.6;
+  }
+}
+
+.messagesContainer {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column-reverse;
+  padding: 0px 18px;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  // Firefox
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.messages {
+  padding: 16px 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
+  gap: 16px;
 }
 
-.titleBold {
-  font-weight: 800;
-  font-size: 16px;
-  margin-bottom: 6px;
+.message {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 15px;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease-out forwards;
+  opacity: 0;
+  word-break: break-word;
 }
 
-.zipCode {
-  font-size: 12px;
-  > a {
-    color: black;
-    text-decoration: underline;
+.userMessage {
+  align-self: flex-end;
+  background-color: @color-button-primary;
+  color: white;
+}
+
+.aiMessage {
+  align-self: flex-start;
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.rounded.rounded {
+  border-radius: 50%;
+  padding: 8px;
+  width: 36px;
+  height: 36px;
+
+  img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
   }
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// Padding with scrollbar is different than without scrollbar.
+// If we have a scrollbar, let's account for that.
+.hasScrollbar {
+  padding-right: 8px;
+  margin-right: 2px;
 }

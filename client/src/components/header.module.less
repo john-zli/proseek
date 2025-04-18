@@ -4,15 +4,22 @@
 
 .headerContainer {
   display: flex;
+  height: @header-height;
   padding: 16px 0;
   border-bottom: 1px solid @color-border-light;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: @zindex-header;
+  background-color: @color-background-main;
 }
 
 .nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  max-width: 1200px;
+  max-width: @max-width;
   margin: 0 auto;
   flex: 1;
   padding: 0 32px;
