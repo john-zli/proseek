@@ -212,20 +212,34 @@ BEGIN
   END IF;
 END $$;
 
+-- Drop the function if it exists
+DROP FUNCTION IF EXISTS core.create_prayer_request_chat_with_church_assignment(
+  text,
+  varchar(100),
+  varchar(20), 
+  varchar(100),
+  varchar(20),
+  varchar(20),
+  varchar(50),
+  varchar(100)
+);
+
 -- Function to create a prayer request and assign it to a nearby church
 CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignment(
-  PARAM_summary           text,
-  PARAM_contact_email     varchar(100),
-  PARAM_contact_phone     varchar(20),
-  PARAM_contact_name      varchar(100),
-  PARAM_contact_method    varchar(20),
-  PARAM_zip               varchar(20),
-  PARAM_county            varchar(50),
-  PARAM_city              varchar(100)
-) RETURNS core.prayer_request_chats AS $$
+  PARAM_summary             text,
+  PARAM_contact_email       varchar(100),
+  PARAM_contact_phone       varchar(20),
+  PARAM_contact_name        varchar(100),
+  PARAM_contact_method      varchar(20),
+  PARAM_zip                 varchar(20),
+  PARAM_county              varchar(50),
+  PARAM_city                varchar(100),
+  PARAM_messages            text[],
+  PARAM_message_timestamps  integer[]
+) RETURNS UUID AS $$
 DECLARE
   VAR_church_id       UUID;
-  VAR_prayer_request  core.prayer_request_chats;
+  VAR_prayer_chat_id  UUID;
 BEGIN
   -- Find a nearby church based on location
   SELECT  church_id 
@@ -264,6 +278,19 @@ BEGIN
   )
   RETURNING * INTO VAR_prayer_request;
 
-  RETURN VAR_prayer_request;
+  -- Insert the messages into the prayer request chat messages table
+  INSERT INTO core.prayer_request_chat_messages (
+    request_id,
+    message,
+    message_timestamp,
+    assigned_user_id
+  ) VALUES (
+    VAR_prayer_chat_id,
+    UNNEST(PARAM_messages),
+    UNNEST(PARAM_message_timestamps),
+    NULL
+  );
+
+  RETURN VAR_prayer_chat_id;
 END;
 $$ LANGUAGE plpgsql;
