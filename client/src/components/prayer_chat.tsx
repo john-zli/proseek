@@ -7,7 +7,7 @@ import clearIcon from '../../assets/clear.svg';
 import sendIcon from '../../assets/send.svg';
 import classes from '../App.module.less';
 import { Button, ButtonStyle } from '../shared-components/button';
-import { TooltipPosition, withTooltip } from '../shared-components/with_tooltip';
+import { withTooltip } from '../shared-components/with_tooltip';
 import { Callout } from '@client/shared-components/callout';
 
 interface Message {
@@ -115,7 +115,7 @@ export const PrayerChat = () => {
             </div>
             {showCallout && (
               <div className={classes.calloutContainer}>
-                <Callout>
+                <Callout delaySeconds={0.3}>
                   <div className={classes.calloutContent}>
                     <h3>Share your prayer requests</h3>
                     <p>
