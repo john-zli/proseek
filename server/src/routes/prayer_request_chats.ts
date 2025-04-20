@@ -3,13 +3,16 @@ import { Router } from 'express';
 import { validate } from '../middleware/validate';
 import {
   assignPrayerRequestChat,
+  createPrayerRequestChatMessage,
   createPrayerRequestChatWithChurchAssignment,
+  listPrayerRequestChatMessages,
   listPrayerRequestChats,
 } from '../models/prayer_request_chats_storage';
-import { getUser } from '../models/users_storage';
 import {
   AssignPrayerRequestChatSchema,
+  CreatePrayerRequestChatMessageSchema,
   CreatePrayerRequestChatSchema,
+  ListPrayerRequestChatMessagesSchema,
   ListPrayerRequestChatsSchema,
 } from '../schemas/prayer_request_chats';
 
@@ -18,29 +21,8 @@ const router = Router();
 // Create a new prayer request
 router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
   try {
-    const {
-      requestSummary,
-      requestContactEmail,
-      requestContactPhone,
-      requestContactName,
-      requestContactMethod,
-      zip,
-      county,
-      city,
-    } = req.body;
-
-    const prayerRequest = await createPrayerRequestChatWithChurchAssignment({
-      requestSummary,
-      requestContactEmail,
-      requestContactPhone,
-      requestContactName,
-      requestContactMethod,
-      zip,
-      county,
-      city,
-    });
-
-    res.status(201).json(prayerRequest);
+    const chat = await createPrayerRequestChatWithChurchAssignment(req.body);
+    res.status(201).json(chat);
   } catch (error) {
     console.error('Error creating prayer request:', error);
     res.status(500).json({ error: 'Failed to create prayer request' });
@@ -55,7 +37,7 @@ router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (r
     res.json(prayerRequests);
   } catch (error) {
     console.error('Error listing prayer requests:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Failed to list prayer requests' });
   }
 });
 
@@ -64,23 +46,46 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async
   try {
     const { requestId } = req.params;
     const { userId } = req.body;
-
-    const user = await getUser(userId);
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
-      return;
+    // TODO(johnli): User should ideally be set on req object. Haven't gotten there yet.
+    const chat = await assignPrayerRequestChat(requestId, userId, req.user?.churchId);
+    if (!chat) {
+      res.status(404).json({ error: 'Prayer request not found' });
     }
-
-    const prayerRequest = await assignPrayerRequestChat(requestId, user.userId, user.churchId);
-    if (!prayerRequest) {
-      res.status(404).json({ error: 'Prayer request not found or not assigned to your church' });
-      return;
-    }
-
-    res.status(200).json(prayerRequest);
+    res.json(chat);
   } catch (error) {
     console.error('Error assigning prayer request:', error);
     res.status(500).json({ error: 'Failed to assign prayer request' });
+  }
+});
+
+// Prayer Request Chat Message Routes
+router.post('/:requestId/messages', validate(CreatePrayerRequestChatMessageSchema), async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { message, assignedUserId } = req.body;
+
+    // TODO(johnli): If assignedUserId is authenticated, then use that and remove from body.
+    const chatMessage = await createPrayerRequestChatMessage({
+      requestId,
+      message,
+      assignedUserId,
+    });
+
+    res.status(201).json(chatMessage);
+  } catch (error) {
+    console.error('Error creating prayer request chat message:', error);
+    res.status(500).json({ error: 'Failed to create prayer request chat message' });
+  }
+});
+
+router.get('/:requestId/messages', validate(ListPrayerRequestChatMessagesSchema), async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const chatMessages = await listPrayerRequestChatMessages({ requestId });
+    res.json(chatMessages);
+  } catch (error) {
+    console.error('Error listing prayer request chat messages:', error);
+    res.status(500).json({ error: 'Failed to list prayer request chat messages' });
   }
 });
 

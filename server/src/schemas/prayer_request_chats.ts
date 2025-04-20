@@ -8,6 +8,12 @@ export const CreatePrayerRequestChatSchema = z.object({
     requestContactPhone: z.string().optional(),
     requestContactName: z.string().optional(),
     requestContactMethod: z.string().optional(),
+    messages: z.array(
+      z.object({
+        text: z.string().min(1, 'Message is required'),
+        timestamp: z.number().int().nonnegative(),
+      })
+    ),
     zip: z.string().optional(),
     county: z.string().optional(),
     city: z.string().optional(),
@@ -28,5 +34,23 @@ export const AssignPrayerRequestChatSchema = z.object({
   }),
   body: z.object({
     userId: z.string().min(1, 'User ID is required'),
+  }),
+});
+
+// Schema for creating a new prayer request chat message
+export const CreatePrayerRequestChatMessageSchema = z.object({
+  params: z.object({
+    requestId: z.string().min(1, 'Request ID is required'),
+  }),
+  body: z.object({
+    message: z.string().min(1, 'Message is required'),
+    assignedUserId: z.string().optional(),
+  }),
+});
+
+// Schema for listing prayer request chat messages
+export const ListPrayerRequestChatMessagesSchema = z.object({
+  params: z.object({
+    requestId: z.string().min(1, 'Request ID is required'),
   }),
 });
