@@ -122,7 +122,7 @@ CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
 );
 
 CREATE TABLE IF NOT EXISTS core.prayer_request_chat_messages (
-  message_id                uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
+  message_id                uuid                PRIMARY KEY,
   request_id                uuid                NOT NULL,
   message                   text                NOT NULL,
   message_timestamp         timestamp           NOT NULL DEFAULT now(),
@@ -212,18 +212,6 @@ BEGIN
   END IF;
 END $$;
 
--- Drop the function if it exists
-DROP FUNCTION IF EXISTS core.create_prayer_request_chat_with_church_assignment(
-  text,
-  varchar(100),
-  varchar(20), 
-  varchar(100),
-  varchar(20),
-  varchar(20),
-  varchar(50),
-  varchar(100)
-);
-
 -- Function to create a prayer request and assign it to a nearby church
 CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignment(
   PARAM_summary             text,
@@ -235,11 +223,12 @@ CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignmen
   PARAM_county              varchar(50),
   PARAM_city                varchar(100),
   PARAM_messages            text[],
-  PARAM_message_timestamps  integer[]
+  PARAM_message_timestamps  integer[],
+  PARAM_message_ids         uuid[]
 ) RETURNS UUID AS $$
 DECLARE
-  VAR_church_id       UUID;
-  VAR_prayer_chat_id  UUID;
+  VAR_church_id               UUID;
+  VAR_prayer_request_chat_id  UUID;
 BEGIN
   -- Find a nearby church based on location
   SELECT  church_id 
@@ -276,21 +265,21 @@ BEGIN
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
   )
-  RETURNING * INTO VAR_prayer_request;
+  RETURNING request_id INTO VAR_prayer_request_chat_id;
 
   -- Insert the messages into the prayer request chat messages table
   INSERT INTO core.prayer_request_chat_messages (
     request_id,
     message,
     message_timestamp,
-    assigned_user_id
+    message_id
   ) VALUES (
-    VAR_prayer_chat_id,
+    VAR_prayer_request_chat_id,
     UNNEST(PARAM_messages),
     UNNEST(PARAM_message_timestamps),
-    NULL
+    UNNEST(PARAM_message_ids)
   );
 
-  RETURN VAR_prayer_chat_id;
+  RETURN VAR_prayer_request_chat_id;
 END;
 $$ LANGUAGE plpgsql;

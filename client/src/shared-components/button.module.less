@@ -35,3 +35,26 @@
     background-color: @color-button-secondary-hover;
   }
 }
+
+.iconButton {
+  .base();
+
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+  }
+}

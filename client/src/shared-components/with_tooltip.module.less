@@ -1,0 +1,87 @@
+@import (reference) '../styles/zindex.module.less';
+
+.tooltipWrapper {
+  position: relative;
+  display: inline-block;
+
+  &:hover {
+    .tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+}
+
+.tooltip {
+  position: absolute;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: @zindex-tooltip;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.2s ease;
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    border-width: 6px;
+    border-style: solid;
+  }
+}
+
+.bottom {
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+
+  &::before {
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
+  }
+}
+
+.top {
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+
+  &::before {
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+  }
+}
+
+.left {
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+
+  &::before {
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
+  }
+}
+
+.right {
+  left: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+
+  &::before {
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-color: transparent rgba(0, 0, 0, 0.8) transparent transparent;
+  }
+} 
