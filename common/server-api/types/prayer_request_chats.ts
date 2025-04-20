@@ -24,6 +24,7 @@ export interface CreatePrayerRequestChatParams {
   zip?: string;
   county?: string;
   city?: string;
+  messages: { text: string; userId?: string; messageId: string; timestamp: number }[];
 }
 
 export interface AssignPrayerRequestChatParams {

@@ -1,15 +1,19 @@
 import clsx from 'clsx';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
+import attachmentIcon from '../../assets/attachment.svg';
+import clearIcon from '../../assets/clear.svg';
+import sendIcon from '../../assets/send.svg';
 import classes from '../App.module.less';
-import attachmentIcon from '../assets/attachment.svg';
-import sendIcon from '../assets/send.svg';
 import { Button, ButtonStyle } from '../shared-components/button';
+import { TooltipPosition, withTooltip } from '../shared-components/with_tooltip';
+import { Callout } from '@client/shared-components/callout';
 
 interface Message {
   text: string;
-  isUser: boolean;
-  id: number;
+  userId?: string;
+  messageId: string;
   timestamp: number;
 }
 
@@ -18,6 +22,7 @@ export const PrayerChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [hasScroll, setHasScroll] = useState(false);
+  const [showCallout, setShowCallout] = useState(true);
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -30,8 +35,9 @@ export const PrayerChat = () => {
   const sendMessage = useCallback(() => {
     if (!inputValue.trim()) return;
 
-    const messageId = Date.now();
-    setMessages(prev => [...prev, { text: inputValue, isUser: true, id: messageId, timestamp: Date.now() }]);
+    const messageId = uuidv4();
+    // TODO(johnli): Add userId to the message if we are authenticated.
+    setMessages(prev => [...prev, { text: inputValue, messageId, timestamp: Date.now() }]);
     setInputValue('');
     setIsExpanded(true);
   }, [inputValue]);
@@ -74,10 +80,65 @@ export const PrayerChat = () => {
     }
   }, [isExpanded, inputValue]);
 
+  const handleClearChat = useCallback(() => {
+    setMessages([]);
+    setInputValue('');
+  }, []);
+
+  const handleSendRequest = useCallback(() => {
+    setShowCallout(false);
+    // TODO: Add logic for sending request
+  }, []);
+
+  const clearButton = (
+    <Button buttonStyle={ButtonStyle.Icon} onClick={handleClearChat}>
+      <img src={clearIcon} alt="Clear chat" />
+    </Button>
+  );
+
   return (
     <div className={classes.contents}>
       {!isExpanded && <h1 className={classes.initialHeading}>How can we pray for you?</h1>}
       <div className={`${classes.chatContainer} ${isExpanded ? classes.expandedChat : ''}`}>
+        {isExpanded && (
+          <>
+            <div className={classes.chatHeader}>
+              <div className={classes.chatHeaderLeft}>
+                <span className={classes.chatTitle}>Prayer Chat</span>
+              </div>
+              <div className={classes.chatControls}>
+                <Button buttonStyle={ButtonStyle.Primary} onClick={handleSendRequest} className={classes.matchButton}>
+                  Send Request
+                </Button>
+                {withTooltip(clearButton, 'Clear chat history')}
+              </div>
+            </div>
+            {showCallout && (
+              <div className={classes.calloutContainer}>
+                <Callout>
+                  <div className={classes.calloutContent}>
+                    <h3>Share your prayer requests</h3>
+                    <p>
+                      Type your thoughts, concerns, or prayer needs in the chat. When you're ready to send them to the
+                      church, click <strong>Send Request</strong>!
+                    </p>
+                    <p>
+                      When you send a request, we will match you with a local church who will pray through your request.
+                    </p>
+                    <p>
+                      It may take a while for someone to respond. We'll notify you when someone from the church has
+                      matched responds, and we'll send you a link to this chatroom via email or text.
+                    </p>
+                    <p>
+                      Your prayer partner will follow up with you through this chat. Once matched, this chat can also
+                      support video calls if you would prefer chatting in person while keeping your identity private.
+                    </p>
+                  </div>
+                </Callout>
+              </div>
+            )}
+          </>
+        )}
         {!isExpanded ? (
           <div className={classes.inputForm}>
             <textarea
@@ -90,9 +151,9 @@ export const PrayerChat = () => {
               className={classes.chatInput}
             />
             <div className={classes.inputActions}>
-              <button type="button" className={classes.actionButton}>
+              <Button buttonStyle={ButtonStyle.Icon} onClick={() => {}}>
                 <img src={attachmentIcon} alt="Attach" />
-              </button>
+              </Button>
               <Button buttonStyle={ButtonStyle.Primary} onClick={sendMessage} className={classes.rounded}>
                 <img src={sendIcon} alt="Send" />
               </Button>
@@ -107,8 +168,8 @@ export const PrayerChat = () => {
               <div className={classes.messages}>
                 {messages.map(message => (
                   <div
-                    key={message.id}
-                    className={`${classes.message} ${message.isUser ? classes.userMessage : classes.aiMessage}`}
+                    key={message.messageId}
+                    className={`${classes.message} ${!message.userId ? classes.userMessage : classes.aiMessage}`}
                   >
                     {message.text}
                   </div>
@@ -128,9 +189,9 @@ export const PrayerChat = () => {
                 />
               </div>
               <div className={classes.inputActions}>
-                <button type="button" className={classes.actionButton}>
+                <Button buttonStyle={ButtonStyle.Icon} onClick={() => {}}>
                   <img src={attachmentIcon} alt="Attach" />
-                </button>
+                </Button>
                 <Button buttonStyle={ButtonStyle.Primary} onClick={sendMessage} className={classes.rounded}>
                   <img src={sendIcon} alt="Send" />
                 </Button>

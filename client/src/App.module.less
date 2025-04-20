@@ -32,6 +32,7 @@
 }
 
 .chatContainer {
+  position: relative;
   width: 100%;
   background: white;
   border-radius: 16px;
@@ -100,25 +101,6 @@
   display: flex;
   gap: 8px;
   padding: 12px 18px;
-}
-
-.actionButton {
-  background: none;
-  border: none;
-  padding: 8px;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #eee;
-  }
-
-  img {
-    width: 20px;
-    height: 20px;
-    opacity: 0.6;
-  }
 }
 
 .messagesContainer {
@@ -202,4 +184,95 @@
 .hasScrollbar {
   padding-right: 8px;
   margin-right: 2px;
+}
+
+.chatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid @color-border-light;
+  border-radius: 16px 16px 0 0;
+  background-color: white;
+}
+
+.chatHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chatTitle {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+}
+
+.chatControls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.iconButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #f5f5f5;
+  }
+
+  img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+  }
+}
+
+.matchButton {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.calloutContainer {
+  position: absolute;
+  top: 80px;
+  left: 24px;
+  background: white;
+}
+
+.calloutContent {
+  display: flex;
+  flex-direction: column;
+  max-width: 450px;
+
+  > *:not(:last-child) {
+    margin-bottom: 8px;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #666;
+  }
+
+  strong {
+    color: #333;
+  }
 }

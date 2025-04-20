@@ -5,6 +5,7 @@ import classes from './button.module.less';
 export enum ButtonStyle {
   Primary = 'Primary',
   Secondary = 'Secondary',
+  Icon = 'Icon',
 }
 
 interface Props {
@@ -18,10 +19,13 @@ interface Props {
 function mapButtonStyleToClassName(buttonStyle: ButtonStyle): string {
   switch (buttonStyle) {
     case ButtonStyle.Primary:
-    default:
       return classes.primaryButton;
     case ButtonStyle.Secondary:
       return classes.secondaryButton;
+    case ButtonStyle.Icon:
+      return classes.iconButton;
+    default:
+      return classes.primaryButton;
   }
 }
 
