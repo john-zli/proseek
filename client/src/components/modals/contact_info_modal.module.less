@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
   width: 500px;
-  height: 420px;
+  height: 450px;
   padding: 24px;
 
   h2 {
@@ -32,22 +32,6 @@
   gap: 8px;
 }
 
-.checkboxContent {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
-  cursor: pointer;
-  user-select: none;
-
-  &:hover {
-    .checkbox {
-      border-color: @color-primary;
-    }
-  }
-}
-
 .customCheckbox {
   display: flex;
   flex-direction: column;
@@ -62,36 +46,6 @@
   &.checked {
     background-color: rgba(99, 102, 241, 0.05);
   }
-}
-
-.checkbox {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #ddd;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  background-color: white;
-  color: white;
-
-  &.checked {
-    background-color: @color-primary;
-    border-color: @color-primary;
-  }
-}
-
-.checkboxLabel {
-  font-size: 14px;
-  font-weight: 600;
-  color: @color-text-primary;
-}
-
-.checkboxDescription {
-  font-size: 12px;
-  color: @color-text-secondary;
 }
 
 .inputGroup {
