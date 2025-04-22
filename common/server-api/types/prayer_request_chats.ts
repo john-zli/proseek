@@ -16,7 +16,6 @@ export interface PrayerRequestChat {
 }
 
 export interface CreatePrayerRequestChatParams {
-  requestSummary: string;
   requestContactEmail?: string;
   requestContactPhone?: string;
   requestContactName?: string;

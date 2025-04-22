@@ -4,6 +4,7 @@ export enum ModalType {
   VideoCall = 'VideoCall',
   Confirmation = 'Confirmation',
   PrayerList = 'PrayerList',
+  ContactInfo = 'ContactInfo',
 }
 
 interface ModalContext {

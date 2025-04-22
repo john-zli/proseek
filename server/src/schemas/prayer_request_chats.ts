@@ -3,7 +3,6 @@ import { z } from 'zod';
 // Schema for creating a new prayer request chat
 export const CreatePrayerRequestChatSchema = z.object({
   body: z.object({
-    requestSummary: z.string().min(1, 'Prayer request summary is required'),
     requestContactEmail: z.string().email().optional(),
     requestContactPhone: z.string().optional(),
     requestContactName: z.string().optional(),

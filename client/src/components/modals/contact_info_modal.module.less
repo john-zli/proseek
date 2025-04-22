@@ -1,0 +1,141 @@
+@import (reference) '../../styles/colors.module.less';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  height: 420px;
+  padding: 24px;
+
+  h2 {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 24px 0;
+    color: #666;
+  }
+}
+
+.form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checkboxContent {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    .checkbox {
+      border-color: @color-primary;
+    }
+  }
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  background-color: white;
+  color: white;
+
+  &.checked {
+    background-color: @color-primary;
+    border-color: @color-primary;
+  }
+}
+
+.customCheckbox {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background-color: @color-background-main;
+  transition: background-color 0.4s ease;
+
+  &:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+
+  &.checked {
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+}
+
+.checkboxLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: @color-text-primary;
+}
+
+.checkboxDescription {
+  font-size: 12px;
+  color: @color-text-secondary;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  padding: 0px 12px 12px 44px;
+}
+
+.input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background-color: @color-text-area;
+  color: @color-text-primary;
+
+  &:focus {
+    border-color: @color-primary;
+  }
+
+  &::placeholder {
+    color: @color-text-placeholder;
+  }
+
+  &.error {
+    border-color: @color-error;
+    
+    &:focus {
+      border-color: @color-error;
+    }
+  }
+}
+
+.errorText {
+  color: @color-error;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+} 
