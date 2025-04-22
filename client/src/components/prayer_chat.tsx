@@ -8,7 +8,6 @@ import sendIcon from '../../assets/send.svg';
 import classes from '../App.module.less';
 import { Button, ButtonStyle } from '../shared-components/button';
 import { withTooltip } from '../shared-components/with_tooltip';
-import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
 import { ModalContext, ModalType } from '@client/contexts/modal_context_provider';
 import { Callout } from '@client/shared-components/callout';
 
@@ -24,7 +23,7 @@ export const PrayerChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [hasScroll, setHasScroll] = useState(false);
-  const [showCallout, setShowCallout] = useState(true);
+  const [showCallout] = useState(true); // TODO(johnli): Add the setter later too.
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -89,6 +88,7 @@ export const PrayerChat = () => {
   }, []);
 
   const handleSendRequest = useCallback(() => {
+    // TODO(johnli): Pass in payload to the modal too.
     openModal(ModalType.ContactInfo);
   }, [openModal]);
 
