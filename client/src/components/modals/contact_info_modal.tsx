@@ -56,11 +56,6 @@ export function ContactInfoModal({ onSubmit }: Props) {
   });
   const { closeModal } = useContext(ModalContext);
 
-  const handlePhoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedPhone = formatPhoneNumber(e.target.value);
-    setPhone(formattedPhone);
-  }, []);
-
   const handleContactMethodChange = useCallback(
     (method: keyof ContactMethods) => {
       setContactMethods(prev => ({
@@ -79,6 +74,19 @@ export function ContactInfoModal({ onSubmit }: Props) {
     },
     [contactMethods]
   );
+
+  const onEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setEmail(e.target.value);
+  }, []);
+
+  const onPhoneChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const formattedPhone = formatPhoneNumber(e.target.value);
+    setPhone(formattedPhone);
+  }, []);
 
   const handleSubmit = useCallback(() => {
     // Validate phone if text is selected
@@ -103,7 +111,10 @@ export function ContactInfoModal({ onSubmit }: Props) {
 
         <div className={classes.form}>
           <div className={classes.checkboxGroup}>
-            <div className={classes.customCheckbox} onClick={() => handleContactMethodChange('email')}>
+            <div
+              className={clsx(classes.customCheckbox, { [classes.checked]: contactMethods.email })}
+              onClick={() => handleContactMethodChange('email')}
+            >
               <div className={classes.checkboxContent}>
                 <div className={clsx(classes.checkbox, { [classes.checked]: contactMethods.email })}>
                   {contactMethods.email && <CheckIcon />}
@@ -111,12 +122,13 @@ export function ContactInfoModal({ onSubmit }: Props) {
                 <span className={classes.checkboxLabel}>Email</span>
               </div>
               {contactMethods.email && (
-                <div className={classes.inputGroup}>
+                // We don't want to uncheck the checkbox when the input is focused
+                <div className={classes.inputGroup} onClick={e => e.stopPropagation()}>
                   <input
                     type="email"
                     id="email"
                     value={email}
-                    onChange={e => setEmail(e.target.value)}
+                    onChange={onEmailChange}
                     placeholder="your@email.com"
                     className={classes.input}
                   />
@@ -124,7 +136,10 @@ export function ContactInfoModal({ onSubmit }: Props) {
               )}
             </div>
 
-            <div className={classes.customCheckbox} onClick={() => handleContactMethodChange('text')}>
+            <div
+              className={clsx(classes.customCheckbox, { [classes.checked]: contactMethods.text })}
+              onClick={() => handleContactMethodChange('text')}
+            >
               <div className={classes.checkboxContent}>
                 <div className={clsx(classes.checkbox, { [classes.checked]: contactMethods.text })}>
                   {contactMethods.text && <CheckIcon />}
@@ -132,12 +147,13 @@ export function ContactInfoModal({ onSubmit }: Props) {
                 <span className={classes.checkboxLabel}>Text Message</span>
               </div>
               {contactMethods.text && (
-                <div className={classes.inputGroup}>
+                // We don't want to uncheck the checkbox when the input is focused
+                <div className={classes.inputGroup} onClick={e => e.stopPropagation()}>
                   <input
                     type="tel"
                     id="phone"
                     value={phone}
-                    onChange={handlePhoneChange}
+                    onChange={onPhoneChange}
                     placeholder="(123) 456-7890"
                     className={`${classes.input} ${phoneError ? classes.error : ''}`}
                   />

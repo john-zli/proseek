@@ -48,6 +48,22 @@
   }
 }
 
+.customCheckbox {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background-color: @color-background-main;
+  transition: background-color 0.3s ease-in-out;
+
+  &:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+
+  &.checked {
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+}
+
 .checkbox {
   width: 20px;
   height: 20px;
@@ -64,22 +80,6 @@
   &.checked {
     background-color: @color-primary;
     border-color: @color-primary;
-  }
-}
-
-.customCheckbox {
-  display: flex;
-  flex-direction: column;
-  border-radius: 8px;
-  background-color: @color-background-main;
-  transition: background-color 0.4s ease;
-
-  &:hover {
-    background-color: rgba(99, 102, 241, 0.05);
-  }
-
-  &.checked {
-    background-color: rgba(99, 102, 241, 0.05);
   }
 }
 
