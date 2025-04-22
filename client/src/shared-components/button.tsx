@@ -30,9 +30,12 @@ function mapButtonStyleToClassName(buttonStyle: ButtonStyle): string {
 }
 
 export function Button(props: Props) {
-  const { buttonStyle, onClick, children, className } = props;
+  const { buttonStyle, onClick, children, className, disabled } = props;
   return (
-    <button className={clsx(className, mapButtonStyleToClassName(buttonStyle))} onClick={onClick}>
+    <button
+      className={clsx(className, mapButtonStyleToClassName(buttonStyle), { [classes.disabled]: disabled })}
+      onClick={onClick}
+    >
       {children}
     </button>
   );

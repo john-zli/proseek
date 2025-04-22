@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 import attachmentIcon from '../../assets/attachment.svg';
@@ -8,6 +8,7 @@ import sendIcon from '../../assets/send.svg';
 import classes from '../App.module.less';
 import { Button, ButtonStyle } from '../shared-components/button';
 import { withTooltip } from '../shared-components/with_tooltip';
+import { ModalContext, ModalType } from '@client/contexts/modal_context_provider';
 import { Callout } from '@client/shared-components/callout';
 
 interface Message {
@@ -22,10 +23,11 @@ export const PrayerChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [hasScroll, setHasScroll] = useState(false);
-  const [showCallout, setShowCallout] = useState(true);
+  const [showCallout] = useState(true); // TODO(johnli): Add the setter later too.
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const { openModal } = useContext(ModalContext);
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -86,9 +88,9 @@ export const PrayerChat = () => {
   }, []);
 
   const handleSendRequest = useCallback(() => {
-    setShowCallout(false);
-    // TODO: Add logic for sending request
-  }, []);
+    // TODO(johnli): Pass in payload to the modal too.
+    openModal(ModalType.ContactInfo);
+  }, [openModal]);
 
   const clearButton = (
     <Button buttonStyle={ButtonStyle.Icon} onClick={handleClearChat}>

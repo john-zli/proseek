@@ -1,0 +1,95 @@
+@import (reference) '../../styles/colors.module.less';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  height: 450px;
+  padding: 24px;
+
+  h2 {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 24px 0;
+    color: #666;
+  }
+}
+
+.form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.customCheckbox {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background-color: @color-background-main;
+  transition: background-color 0.3s ease-in-out;
+
+  &:hover {
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+
+  &.checked {
+    background-color: rgba(99, 102, 241, 0.05);
+  }
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  padding: 0px 12px 12px 44px;
+}
+
+.input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background-color: @color-text-area;
+  color: @color-text-primary;
+
+  &:focus {
+    border-color: @color-primary;
+  }
+
+  &::placeholder {
+    color: @color-text-placeholder;
+  }
+
+  &.error {
+    border-color: @color-error;
+    
+    &:focus {
+      border-color: @color-error;
+    }
+  }
+}
+
+.errorText {
+  color: @color-error;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+} 
