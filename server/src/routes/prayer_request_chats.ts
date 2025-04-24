@@ -21,7 +21,6 @@ const router = Router();
 // Create a new prayer request
 router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
   try {
-    console.log('req.body', req.body);
     const chatroomId = await createPrayerRequestChat(req.body);
     res.status(201).json({ chatroomId });
   } catch (error) {
