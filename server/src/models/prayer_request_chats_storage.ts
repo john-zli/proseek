@@ -31,16 +31,13 @@ const SqlCommands = {
 
   CreatePrayerRequestChatroom: `
     SELECT * FROM core.create_prayer_request_chat_with_church_assignment(
-      $1::text,
-      $2::varchar(100),
+      $1::varchar(100),
+      $2::varchar(20),
       $3::varchar(20),
       $4::varchar(100),
-      $5::varchar(20),
-      $6::varchar(20),
-      $7::varchar(50),
-      $8::varchar(100),
-      $9::text[],
-      $10::integer[]
+      $5::text[],
+      $6::bigint[],
+      $7::uuid[]
     );`,
 
   AssignPrayerRequestChat: `
@@ -91,30 +88,24 @@ export async function assignPrayerRequestChat(
 }
 
 export async function createPrayerRequestChat(request: {
-  requestSummary: string;
   requestContactEmail?: string;
   requestContactPhone?: string;
-  requestContactName?: string;
-  requestContactMethod?: string;
   zip?: string;
-  county?: string;
   city?: string;
-  messages: { text: string; timestamp: number }[];
+  messages: { text: string; timestamp: number; messageId: string }[];
 }): Promise<string> {
-  const messageArrays = extractArraysByKeys(request.messages, ['text', 'timestamp']);
-  const [messageTexts, messageTimestamps] = messageArrays;
+  const messageArrays = extractArraysByKeys(request.messages, ['text', 'timestamp', 'messageId']);
+  const [messageTexts, messageTimestamps, messageIds] = messageArrays;
   const pool = getPool();
+
   const result = await pool.query(SqlCommands.CreatePrayerRequestChatroom, [
-    request.requestSummary,
     request.requestContactEmail,
     request.requestContactPhone,
-    request.requestContactName,
-    request.requestContactMethod,
     request.zip,
-    request.county,
     request.city,
     messageTexts,
     messageTimestamps,
+    messageIds,
   ]);
 
   return result.rows[0];

@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { ModalContext, ModalPayload, ModalType } from '../contexts/modal_context_provider';
 import { ConfirmationModal } from './modals/confirmation_modal';
 import { ContactInfoModal } from './modals/contact_info_modal';
-import { VideoCallModal } from './modals/video_call_modal';
 
 type ModalState = {
   [K in ModalType]: { type: K; payload: ModalPayload[K] };
@@ -11,7 +10,6 @@ type ModalState = {
 
 interface Props {
   children?: React.ReactNode;
-  onContactInfoSubmit?: (email: string, phone: string) => void;
 }
 
 export function ModalManager(props: Props) {
@@ -34,8 +32,6 @@ export function ModalManager(props: Props) {
     }
 
     switch (modal.type) {
-      case ModalType.VideoCall:
-        return <VideoCallModal {...modal.payload} />;
       case ModalType.Confirmation:
         return <ConfirmationModal {...modal.payload} />;
       case ModalType.ContactInfo:

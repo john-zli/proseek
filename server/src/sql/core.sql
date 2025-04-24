@@ -77,15 +77,6 @@ CREATE TABLE IF NOT EXISTS core.churches (
   CONSTRAINT church_name_unique UNIQUE (name, address, city, state, zip, country)
 );
 
-CREATE TABLE IF NOT EXISTS core.request_contact_methods(
-  method                   varchar(20)        PRIMARY KEY
-);
-
-INSERT INTO core.request_contact_methods(method) VALUES 
-  ('Email'),
-  ('Text')
-ON CONFLICT DO NOTHING;
-
 -- Each prayer request corresponds to a chat that starts from a request 
 -- user. 
 CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
@@ -96,14 +87,10 @@ CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
 
   -- Location information
   zip                       varchar(20),
-  county                    varchar(50),
   city                      varchar(100),
 
   request_contact_email     varchar(100),
   request_contact_phone     varchar(20),
-  request_contact_name      varchar(100),
-  request_contact_method    varchar(20)         NOT NULL,
-  request_summary           text                NOT NULL,
 
   -- Metadata
   creation_timestamp        timestamp           NOT NULL DEFAULT now(),
@@ -112,13 +99,7 @@ CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
   CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id)
     REFERENCES core.users(user_id) ON DELETE SET NULL,
   CONSTRAINT assigned_church_fk FOREIGN KEY (assigned_church_id)
-    REFERENCES core.churches(church_id) ON DELETE SET NULL,
-  CONSTRAINT contact_method_fk FOREIGN KEY (request_contact_method)
-    REFERENCES core.request_contact_methods(method),
-  CONSTRAINT request_contact_email_check CHECK (
-    (request_contact_email IS NOT NULL AND request_contact_method = 'Email') OR 
-    (request_contact_phone IS NOT NULL AND request_contact_method = 'Text')
-  )
+    REFERENCES core.churches(church_id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS core.prayer_request_chat_messages (
@@ -162,7 +143,7 @@ BEGIN
         AND tablename = 'prayer_request_chats' 
         AND indexname = 'idx_prayer_requests_location'
     ) THEN
-        CREATE INDEX idx_prayer_requests_location ON core.prayer_request_chats(zip, county, city);
+        CREATE INDEX idx_prayer_requests_location ON core.prayer_request_chats(zip, city);
     END IF;
 END $$;
 
@@ -214,54 +195,39 @@ END $$;
 
 -- Function to create a prayer request and assign it to a nearby church
 CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignment(
-  PARAM_summary             text,
   PARAM_contact_email       varchar(100),
   PARAM_contact_phone       varchar(20),
-  PARAM_contact_name        varchar(100),
-  PARAM_contact_method      varchar(20),
   PARAM_zip                 varchar(20),
-  PARAM_county              varchar(50),
   PARAM_city                varchar(100),
   PARAM_messages            text[],
-  PARAM_message_timestamps  integer[],
+  PARAM_message_timestamps  bigint[],
   PARAM_message_ids         uuid[]
 ) RETURNS UUID AS $$
 DECLARE
-  VAR_church_id               UUID;
   VAR_prayer_request_chat_id  UUID;
 BEGIN
-  -- Find a nearby church based on location
-  SELECT  church_id 
-  INTO    VAR_church_id
-  FROM    core.churches
-  WHERE   (PARAM_zip IS NULL OR zip = PARAM_zip) 
-  AND     (PARAM_county IS NULL OR county = PARAM_county) 
-  AND     (PARAM_city IS NULL OR city = PARAM_city)
-  LIMIT   1;
+  -- -- Find a nearby church based on location
+  -- SELECT  church_id 
+  -- INTO    VAR_church_id
+  -- FROM    core.churches
+  -- WHERE   (PARAM_zip IS NULL OR zip = PARAM_zip) 
+  -- AND     (PARAM_county IS NULL OR county = PARAM_county) 
+  -- AND     (PARAM_city IS NULL OR city = PARAM_city)
+  -- LIMIT   1;
 
   -- Create the prayer request
   INSERT INTO core.prayer_request_chats (
-    request_summary,
     request_contact_email,
     request_contact_phone,
-    request_contact_name,
-    request_contact_method,
     zip,
-    county,
     city,
-    assigned_church_id,
     creation_timestamp,
     modified_timestamp
   ) VALUES (
-    PARAM_summary,
     PARAM_contact_email,
     PARAM_contact_phone,
-    PARAM_contact_name,
-    PARAM_contact_method,
     PARAM_zip,
-    PARAM_county,
     PARAM_city,
-    VAR_church_id,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
   )
@@ -273,12 +239,13 @@ BEGIN
     message,
     message_timestamp,
     message_id
-  ) VALUES (
+  ) SELECT
     VAR_prayer_request_chat_id,
-    UNNEST(PARAM_messages),
-    UNNEST(PARAM_message_timestamps),
-    UNNEST(PARAM_message_ids)
-  );
+    mes,
+    to_timestamp(epoch / 1000),
+    mes_id
+  FROM UNNEST(PARAM_messages, PARAM_message_timestamps, PARAM_message_ids)
+    AS t(mes, epoch, mes_id);
 
   RETURN VAR_prayer_request_chat_id;
 END;

@@ -17,7 +17,8 @@ export const PrayerRequestChatsApi = {
     params: CreatePrayerRequestChatParams
   ): Promise<CreatePrayerRequestChatResponse> => {
     try {
-      const response = await api.post<CreatePrayerRequestChatResponse>('/prayer-request-chats', params);
+      console.log('params', params);
+      const response = await api.post<CreatePrayerRequestChatResponse>('/prayer-requests', params);
       return response;
     } catch (error) {
       throw new Error('Failed to create prayer request');
@@ -27,7 +28,7 @@ export const PrayerRequestChatsApi = {
   // List prayer requests for a church
   listPrayerRequestChatroomsForChurch: async (churchId: string): Promise<ListPrayerRequestChatsResponse> => {
     try {
-      const response = await api.get<ListPrayerRequestChatsResponse>(`/prayer-request-chats/church/${churchId}`);
+      const response = await api.get<ListPrayerRequestChatsResponse>(`/prayer-requests/church/${churchId}`);
       return response;
     } catch (error) {
       throw new Error('Failed to list prayer requests');
@@ -39,12 +40,9 @@ export const PrayerRequestChatsApi = {
     params: AssignPrayerRequestChatParams
   ): Promise<AssignPrayerRequestChatResponse> => {
     try {
-      const response = await api.post<AssignPrayerRequestChatResponse>(
-        `/prayer-request-chats/${params.requestId}/assign`,
-        {
-          userId: params.userId,
-        }
-      );
+      const response = await api.post<AssignPrayerRequestChatResponse>(`/prayer-requests/${params.requestId}/assign`, {
+        userId: params.userId,
+      });
       return response;
     } catch (error) {
       throw new Error('Failed to assign prayer request');
@@ -56,7 +54,13 @@ export const PrayerRequestChatsApi = {
     params: CreatePrayerRequestChatMessageParams
   ): Promise<CreatePrayerRequestChatMessageResponse> => {
     try {
-      const response = await api.post<CreatePrayerRequestChatMessageResponse>('/prayer-request-chat-messages', params);
+      const response = await api.post<CreatePrayerRequestChatMessageResponse>(
+        `/prayer-requests/${params.requestId}/message`,
+        {
+          message: params.message,
+          assignedUserId: params.assignedUserId,
+        }
+      );
       return response;
     } catch (error) {
       throw new Error('Failed to create prayer request chat message');
@@ -66,7 +70,7 @@ export const PrayerRequestChatsApi = {
   listMessages: async (params: ListPrayerRequestChatMessagesParams): Promise<ListPrayerRequestChatMessagesResponse> => {
     try {
       const response = await api.get<ListPrayerRequestChatMessagesResponse>(
-        `/prayer-request-chat-messages/${params.requestId}`
+        `/prayer-requests/${params.requestId}/messages`
       );
       return response;
     } catch (error) {

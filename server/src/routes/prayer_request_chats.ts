@@ -21,6 +21,7 @@ const router = Router();
 // Create a new prayer request
 router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
   try {
+    console.log('req.body', req.body);
     const chatroomId = await createPrayerRequestChat(req.body);
     res.status(201).json({ chatroomId });
   } catch (error) {
@@ -32,6 +33,7 @@ router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
 // List prayer requests for a church
 router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (req, res) => {
   try {
+    console.log('req.params', req.params);
     const { churchId } = req.params;
     const prayerRequests = await listPrayerRequestChats({ churchId });
     res.json(prayerRequests);
@@ -59,7 +61,7 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async
 });
 
 // Prayer Request Chat Message Routes
-router.post('/:requestId/messages', validate(CreatePrayerRequestChatMessageSchema), async (req, res) => {
+router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res) => {
   try {
     const { requestId } = req.params;
     const { message, assignedUserId } = req.body;

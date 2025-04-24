@@ -1,14 +1,8 @@
 import { createContext } from 'react';
 
 export enum ModalType {
-  VideoCall = 'VideoCall',
   Confirmation = 'Confirmation',
   ContactInfo = 'ContactInfo',
-}
-
-// Payload interfaces for each modal type
-interface VideoCallPayload {
-  prompt?: string;
 }
 
 interface ConfirmationPayload {
@@ -17,12 +11,11 @@ interface ConfirmationPayload {
 }
 
 interface ContactInfoPayload {
-  onSubmit: (email: string, phone: string) => void;
+  onSubmit: (email: string | undefined, phone: string | undefined) => void;
 }
 
 // Union type for all possible payloads
 export type ModalPayload = {
-  [ModalType.VideoCall]: VideoCallPayload;
   [ModalType.Confirmation]: ConfirmationPayload;
   [ModalType.ContactInfo]: ContactInfoPayload;
 };
@@ -35,7 +28,7 @@ interface ModalContext {
 }
 
 export const ModalContext = createContext<ModalContext>({
-  modalType: ModalType.VideoCall,
+  modalType: ModalType.ContactInfo,
   isOpen: false,
   openModal: () => {},
   closeModal: () => {},

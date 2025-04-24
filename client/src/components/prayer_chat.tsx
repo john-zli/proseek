@@ -89,9 +89,9 @@ export const PrayerChat = () => {
   }, []);
 
   const onSubmit = useCallback(
-    async (email: string, phone: string) => {
+    async (email: string | undefined, phone: string | undefined) => {
       // Create a new chatroom with the user's contact info
-      const chatroom = await PrayerRequestChatsApi.createPrayerRequestChatroom({
+      await PrayerRequestChatsApi.createPrayerRequestChatroom({
         requestContactEmail: email,
         requestContactPhone: phone,
         messages: messages.map(msg => ({
