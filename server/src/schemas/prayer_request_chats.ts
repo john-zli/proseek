@@ -14,6 +14,7 @@ export const CreatePrayerRequestChatSchema = z.object({
     ),
     zip: z.string().optional(),
     city: z.string().optional(),
+    token: z.string(), // CAPTCHA token
   }),
 });
 

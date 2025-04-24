@@ -15,12 +15,24 @@ import {
   ListPrayerRequestChatMessagesSchema,
   ListPrayerRequestChatsSchema,
 } from '../schemas/prayer_request_chats';
+import Cap from '@cap.js/server';
+
+const cap = new Cap({
+  tokens_store_path: '.data/tokensList.json',
+});
 
 const router = Router();
 
 // Create a new prayer request
 router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
   try {
+    const { token } = req.body;
+    const { success } = await cap.validateToken(token);
+    if (!success) {
+      res.status(400).json({ error: 'Invalid CAPTCHA token' });
+      return;
+    }
+
     const chatroomId = await createPrayerRequestChat(req.body);
     res.status(201).json({ chatroomId });
   } catch (error) {
