@@ -17,6 +17,9 @@ export const CreatePrayerRequestChatSchema = z.object({
     county: z.string().optional(),
     city: z.string().optional(),
   }),
+  response: z.object({
+    chatroomId: z.string().min(1, 'Chatroom ID is required'),
+  }),
 });
 
 // Schema for listing prayer request chats by church

@@ -5,9 +5,11 @@ import { Button, ButtonStyle } from '../../shared-components/button';
 import { ModalContainer } from '../../shared-components/modal_container';
 import classes from './video_call_modal.module.less';
 
-interface Props {}
+interface Props {
+  prompt?: string;
+}
 
-export function VideoCallModal(_props: Props) {
+export function VideoCallModal({ prompt = "What's keeping you up at night this week?" }: Props) {
   const { openModal, closeModal } = useContext(ModalContext);
 
   // TODO(johnli): Send prayer to backend.
@@ -27,7 +29,7 @@ export function VideoCallModal(_props: Props) {
       <div className={classes.modalHeader}>
         <div className={classes.modalTwoRow}>
           <span className={classes.caption}>PROMPT</span>
-          <span className={classes.prompt}>What's keeping you up at night this week?</span>
+          <span className={classes.prompt}>{prompt}</span>
         </div>
 
         <Button buttonStyle={ButtonStyle.Secondary} onClick={() => {}}>

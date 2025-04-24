@@ -8,6 +8,7 @@ import sendIcon from '../../assets/send.svg';
 import classes from '../App.module.less';
 import { Button, ButtonStyle } from '../shared-components/button';
 import { withTooltip } from '../shared-components/with_tooltip';
+import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
 import { ModalContext, ModalType } from '@client/contexts/modal_context_provider';
 import { Callout } from '@client/shared-components/callout';
 
@@ -27,7 +28,7 @@ export const PrayerChat = () => {
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const { openModal } = useContext(ModalContext);
+  const { openModal, closeModal } = useContext(ModalContext);
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -87,9 +88,26 @@ export const PrayerChat = () => {
     setInputValue('');
   }, []);
 
+  const onSubmit = useCallback(
+    async (email: string, phone: string) => {
+      // Create a new chatroom with the user's contact info
+      const chatroom = await PrayerRequestChatsApi.createPrayerRequestChatroom({
+        requestContactEmail: email,
+        requestContactPhone: phone,
+        messages: messages.map(msg => ({
+          text: msg.text,
+          messageId: msg.messageId,
+          timestamp: msg.timestamp,
+        })),
+      });
+      closeModal();
+    },
+    [closeModal, messages]
+  );
+
   const handleSendRequest = useCallback(() => {
     // TODO(johnli): Pass in payload to the modal too.
-    openModal(ModalType.ContactInfo);
+    openModal(ModalType.ContactInfo, { onSubmit });
   }, [openModal]);
 
   const clearButton = (

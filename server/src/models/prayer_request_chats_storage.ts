@@ -90,7 +90,7 @@ export async function assignPrayerRequestChat(
   return result.rows[0] || null;
 }
 
-export async function createPrayerRequestChatWithChurchAssignment(request: {
+export async function createPrayerRequestChat(request: {
   requestSummary: string;
   requestContactEmail?: string;
   requestContactPhone?: string;
