@@ -13,7 +13,7 @@ interface ContactMethods {
 }
 
 interface Props {
-  onSubmit: (email: string, phone: string) => void;
+  onSubmit: (email: string | undefined, phone: string | undefined) => void;
 }
 
 const formatPhoneNumber = (value: string): string => {
@@ -30,14 +30,17 @@ const formatPhoneNumber = (value: string): string => {
   }
 };
 
-const isValidPhoneNumber = (phone: string): boolean => {
+const isValidPhoneNumber = (phone: string | undefined): boolean => {
+  if (!phone) {
+    return false;
+  }
   const numbers = phone.replace(/\D/g, '');
   return numbers.length === 10;
 };
 
 export function ContactInfoModal({ onSubmit }: Props) {
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState<string | undefined>();
+  const [phone, setPhone] = useState<string | undefined>();
   const [phoneError, setPhoneError] = useState('');
   const [contactMethods, setContactMethods] = useState<ContactMethods>({
     email: false,
@@ -54,10 +57,10 @@ export function ContactInfoModal({ onSubmit }: Props) {
 
       // Clear the fields when unchecking
       if (method === 'email' && !contactMethods.email) {
-        setEmail('');
+        setEmail(undefined);
       }
       if (method === 'text' && !contactMethods.text) {
-        setPhone('');
+        setPhone(undefined);
         setPhoneError('');
       }
     },
@@ -87,7 +90,7 @@ export function ContactInfoModal({ onSubmit }: Props) {
     if (contactMethods.email && !email) {
       return;
     }
-    onSubmit(contactMethods.email ? email : '', contactMethods.text ? phone : '');
+    onSubmit(contactMethods.email ? email : undefined, contactMethods.text ? phone : undefined);
     setPhoneError('');
     closeModal();
   }, [email, phone, contactMethods, onSubmit, closeModal]);

@@ -3,8 +3,8 @@ import { Router } from 'express';
 import { validate } from '../middleware/validate';
 import {
   assignPrayerRequestChat,
+  createPrayerRequestChat,
   createPrayerRequestChatMessage,
-  createPrayerRequestChatWithChurchAssignment,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
 } from '../models/prayer_request_chats_storage';
@@ -21,8 +21,8 @@ const router = Router();
 // Create a new prayer request
 router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
   try {
-    const chat = await createPrayerRequestChatWithChurchAssignment(req.body);
-    res.status(201).json(chat);
+    const chatroomId = await createPrayerRequestChat(req.body);
+    res.status(201).json({ chatroomId });
   } catch (error) {
     console.error('Error creating prayer request:', error);
     res.status(500).json({ error: 'Failed to create prayer request' });
@@ -32,6 +32,7 @@ router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
 // List prayer requests for a church
 router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (req, res) => {
   try {
+    console.log('req.params', req.params);
     const { churchId } = req.params;
     const prayerRequests = await listPrayerRequestChats({ churchId });
     res.json(prayerRequests);
@@ -59,7 +60,7 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async
 });
 
 // Prayer Request Chat Message Routes
-router.post('/:requestId/messages', validate(CreatePrayerRequestChatMessageSchema), async (req, res) => {
+router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res) => {
   try {
     const { requestId } = req.params;
     const { message, assignedUserId } = req.body;

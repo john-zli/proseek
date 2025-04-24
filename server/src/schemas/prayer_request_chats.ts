@@ -5,16 +5,14 @@ export const CreatePrayerRequestChatSchema = z.object({
   body: z.object({
     requestContactEmail: z.string().email().optional(),
     requestContactPhone: z.string().optional(),
-    requestContactName: z.string().optional(),
-    requestContactMethod: z.string().optional(),
     messages: z.array(
       z.object({
         text: z.string().min(1, 'Message is required'),
         timestamp: z.number().int().nonnegative(),
+        messageId: z.string().uuid(),
       })
     ),
     zip: z.string().optional(),
-    county: z.string().optional(),
     city: z.string().optional(),
   }),
 });

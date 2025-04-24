@@ -1,7 +1,15 @@
 import { ModalContainer } from '../../shared-components/modal_container';
 import classes from './confirmation_modal.module.less';
 
-export function ConfirmationModal() {
+interface Props {
+  title?: string;
+  message?: string;
+}
+
+export function ConfirmationModal({
+  title = 'Prayer request submitted',
+  message = "You'll get updates about your prayer request soon!",
+}: Props) {
   return (
     <ModalContainer>
       <div className={classes.confirmationContainer}>
@@ -22,8 +30,8 @@ export function ConfirmationModal() {
             <polyline points="22 4 12 14.01 9 11.01"></polyline>
           </svg>
         </div>
-        <span className={classes.hugetext}>Prayer request submitted</span>
-        <span className={classes.hugetextcaption}>You'll get updates about your prayer request soon!</span>
+        <span className={classes.hugetext}>{title}</span>
+        <span className={classes.hugetextcaption}>{message}</span>
       </div>
     </ModalContainer>
   );

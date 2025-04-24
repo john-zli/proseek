@@ -1,6 +1,8 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { AnyZodObject, ZodError } from 'zod';
 
+import { logger } from '@server/logger';
+
 export const validate = (schema: AnyZodObject): RequestHandler => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {

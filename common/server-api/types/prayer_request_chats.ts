@@ -55,3 +55,23 @@ export interface CreatePrayerRequestChatMessageParams {
 export interface ListPrayerRequestChatMessagesParams {
   requestId: string;
 }
+
+export interface CreatePrayerRequestChatResponse {
+  chatroomId: string;
+}
+
+export interface ListPrayerRequestChatsResponse {
+  chatrooms: PrayerRequestChat[];
+}
+
+export interface AssignPrayerRequestChatResponse {
+  chatroomId: string;
+}
+
+export interface CreatePrayerRequestChatMessageResponse {
+  messageId: string;
+}
+
+export interface ListPrayerRequestChatMessagesResponse {
+  messages: PrayerRequestChatMessage[];
+}

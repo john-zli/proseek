@@ -1,21 +1,34 @@
 import { createContext } from 'react';
 
 export enum ModalType {
-  VideoCall = 'VideoCall',
   Confirmation = 'Confirmation',
-  PrayerList = 'PrayerList',
   ContactInfo = 'ContactInfo',
 }
+
+interface ConfirmationPayload {
+  title?: string;
+  message?: string;
+}
+
+interface ContactInfoPayload {
+  onSubmit: (email: string | undefined, phone: string | undefined) => void;
+}
+
+// Union type for all possible payloads
+export type ModalPayload = {
+  [ModalType.Confirmation]: ConfirmationPayload;
+  [ModalType.ContactInfo]: ContactInfoPayload;
+};
 
 interface ModalContext {
   modalType?: ModalType;
   isOpen: boolean;
-  openModal: (modalType: ModalType) => void;
+  openModal: <T extends ModalType>(type: T, payload: ModalPayload[T]) => void;
   closeModal: () => void;
 }
 
 export const ModalContext = createContext<ModalContext>({
-  modalType: ModalType.VideoCall,
+  modalType: ModalType.ContactInfo,
   isOpen: false,
   openModal: () => {},
   closeModal: () => {},
