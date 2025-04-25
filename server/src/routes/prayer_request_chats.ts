@@ -31,7 +31,7 @@ router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
     }
 
     const chatroomId = await createPrayerRequestChat(req.body);
-    res.status(201).json({ chatroomId });
+    res.status(201).json({ chatroomId: Object.values(chatroomId)[0] });
   } catch (error) {
     console.error('Error creating prayer request:', error);
     res.status(500).json({ error: 'Failed to create prayer request' });

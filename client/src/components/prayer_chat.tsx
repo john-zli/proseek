@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
 import attachmentIcon from '../../assets/attachment.svg';
@@ -20,17 +21,33 @@ interface Message {
   timestamp: number;
 }
 
-export const PrayerChat = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
+interface Props {
+  startsExpanded?: boolean;
+}
+
+export const PrayerChat = (props: Props) => {
+  const { startsExpanded = false } = props;
+  const [isExpanded, setIsExpanded] = useState(startsExpanded);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [hasScroll, setHasScroll] = useState(false);
-  const [showCallout] = useState(true); // TODO(johnli): Add the setter later too.
+  const [currentChatroomId, setCurrentChatroomId] = useState<string | undefined>();
+
+  const [showCallout, setShowCallout] = useState(true); // TODO(johnli): Add the setter later too.
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { openModal, closeModal } = useContext(ModalContext);
   const { solve } = useCaptcha();
+  const navigate = useNavigate();
+  const { chatroomId } = useParams();
+
+  useEffect(() => {
+    if (chatroomId) {
+      setCurrentChatroomId(chatroomId);
+      setShowCallout(false);
+    }
+  }, [chatroomId]);
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -99,19 +116,28 @@ export const PrayerChat = () => {
         return;
       }
 
-      await PrayerRequestChatsApi.createPrayerRequestChatroom({
-        requestContactEmail: email,
-        requestContactPhone: phone,
-        token,
-        messages: messages.map(msg => ({
-          text: msg.text,
-          messageId: msg.messageId,
-          timestamp: msg.timestamp,
-        })),
-      });
+      try {
+        const response = await PrayerRequestChatsApi.createPrayerRequestChatroom({
+          requestContactEmail: email,
+          requestContactPhone: phone,
+          token,
+          messages: messages.map(msg => ({
+            text: msg.text,
+            messageId: msg.messageId,
+            timestamp: msg.timestamp,
+          })),
+        });
+
+        // Navigate to the new chatroom URL
+        navigate(`/chats/${response.chatroomId}`, { replace: true });
+        setCurrentChatroomId(response.chatroomId);
+        setShowCallout(false);
+      } catch (err) {
+        console.error(err);
+      }
       closeModal();
     },
-    [closeModal, messages]
+    [closeModal, messages, navigate, solve]
   );
 
   const handleSendRequest = useCallback(() => {
@@ -135,12 +161,19 @@ export const PrayerChat = () => {
               <div className={classes.chatHeaderLeft}>
                 <span className={classes.chatTitle}>Prayer Chat</span>
               </div>
-              <div className={classes.chatControls}>
-                <Button buttonStyle={ButtonStyle.Primary} onClick={handleSendRequest} className={classes.matchButton}>
-                  Send Request
-                </Button>
-                {withTooltip(clearButton, 'Clear chat history')}
-              </div>
+              {/* Only show the upper header if we don't have a chatroom ID. */}
+              {!currentChatroomId ? (
+                <div className={classes.chatControls}>
+                  <Button buttonStyle={ButtonStyle.Primary} onClick={handleSendRequest} className={classes.matchButton}>
+                    Send Request
+                  </Button>
+                  {withTooltip(clearButton, 'Clear chat history')}
+                </div>
+              ) : (
+                <div className={classes.chatControls}>
+                  <p>Matching with a local church...</p>
+                </div>
+              )}
             </div>
             {showCallout && (
               <div className={classes.calloutContainer}>
