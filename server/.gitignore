@@ -3,3 +3,6 @@ dist/
 temp/
 **/**/*.log
 config.js
+
+# Captcha tokens don't store.
+.data/

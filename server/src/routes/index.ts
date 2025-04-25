@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import captchaRouter from './captcha';
 import churchesRouter from './churches';
 import prayerRequestChatsRouter from './prayer_request_chats';
 import usersRouter from './users';
@@ -20,6 +21,9 @@ export function apiRouter(_services: LocalServices): Router {
 
   // User routes
   apiRouter.use('/api/users', usersRouter);
+
+  // Captcha routes
+  apiRouter.use('/api/captcha', captchaRouter);
 
   return apiRouter;
 }

@@ -2,6 +2,7 @@ import { getPool } from '../db';
 import { extractArraysByKeys } from './db_helpers';
 import {
   CreatePrayerRequestChatMessageParams,
+  CreatePrayerRequestChatParams,
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatsParams,
   PrayerRequestChat,
@@ -87,22 +88,16 @@ export async function assignPrayerRequestChat(
   return result.rows[0] || null;
 }
 
-export async function createPrayerRequestChat(request: {
-  requestContactEmail?: string;
-  requestContactPhone?: string;
-  zip?: string;
-  city?: string;
-  messages: { text: string; timestamp: number; messageId: string }[];
-}): Promise<string> {
-  const messageArrays = extractArraysByKeys(request.messages, ['text', 'timestamp', 'messageId']);
+export async function createPrayerRequestChat(params: CreatePrayerRequestChatParams): Promise<string> {
+  const messageArrays = extractArraysByKeys(params.messages, ['text', 'timestamp', 'messageId']);
   const [messageTexts, messageTimestamps, messageIds] = messageArrays;
   const pool = getPool();
 
   const result = await pool.query(SqlCommands.CreatePrayerRequestChatroom, [
-    request.requestContactEmail,
-    request.requestContactPhone,
-    request.zip,
-    request.city,
+    params.requestContactEmail,
+    params.requestContactPhone,
+    params.zip,
+    params.city,
     messageTexts,
     messageTimestamps,
     messageIds,

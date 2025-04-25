@@ -18,10 +18,7 @@ export interface PrayerRequestChat {
 export interface CreatePrayerRequestChatParams {
   requestContactEmail?: string;
   requestContactPhone?: string;
-  requestContactName?: string;
-  requestContactMethod?: string;
   zip?: string;
-  county?: string;
   city?: string;
   messages: { text: string; userId?: string; messageId: string; timestamp: number }[];
 }

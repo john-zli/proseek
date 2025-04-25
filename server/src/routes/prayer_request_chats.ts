@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { getCap } from '../captcha';
 import { validate } from '../middleware/validate';
 import {
   assignPrayerRequestChat,
@@ -21,6 +22,14 @@ const router = Router();
 // Create a new prayer request
 router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
   try {
+    const { token } = req.body;
+    const cap = getCap();
+    const { success } = await cap.validateToken(token);
+    if (!success) {
+      res.status(400).json({ error: 'Invalid CAPTCHA token' });
+      return;
+    }
+
     const chatroomId = await createPrayerRequestChat(req.body);
     res.status(201).json({ chatroomId });
   } catch (error) {
@@ -32,7 +41,6 @@ router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
 // List prayer requests for a church
 router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (req, res) => {
   try {
-    console.log('req.params', req.params);
     const { churchId } = req.params;
     const prayerRequests = await listPrayerRequestChats({ churchId });
     res.json(prayerRequests);
