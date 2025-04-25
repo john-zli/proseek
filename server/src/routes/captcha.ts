@@ -1,15 +1,12 @@
 import { Router } from 'express';
 
-import Cap from '@cap.js/server';
+import { getCap } from '@server/captcha';
 
 const router = Router();
-const cap = new Cap({
-  tokens_store_path: '.data/tokensList.json',
-});
 
 // Create a new challenge
 router.post('/challenge', (req, res) => {
-  res.json(cap.createChallenge());
+  res.json(getCap().createChallenge());
 });
 
 // Redeem a challenge
@@ -21,6 +18,7 @@ router.post('/redeem', async (req, res) => {
     return;
   }
 
+  const cap = getCap();
   res.json(await cap.redeemChallenge({ token, solutions }));
 });
 

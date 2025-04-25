@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 export function useCaptcha() {
-  const widgetRef = useRef<HTMLDivElement>(null);
   const capInstanceRef = useRef<any>(null); // Store the Cap instance
 
   useEffect(() => {
@@ -21,8 +20,8 @@ export function useCaptcha() {
     };
 
     loadScript().then(() => {
-      if (window.Cap && widgetRef.current) {
-        capInstanceRef.current = new window.Cap(widgetRef.current, {
+      if (window.Cap) {
+        capInstanceRef.current = new window.Cap({
           apiEndpoint: '/api/captcha/',
         });
       }

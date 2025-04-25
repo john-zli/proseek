@@ -11,13 +11,14 @@ import type {
   ListPrayerRequestChatsResponse,
 } from '@common/server-api/types/prayer_request_chats';
 
+export type CaptchaProtected<T> = T & { token: string };
+
 export const PrayerRequestChatsApi = {
   // Create a new prayer request chatroom
   createPrayerRequestChatroom: async (
-    params: CreatePrayerRequestChatParams
+    params: CaptchaProtected<CreatePrayerRequestChatParams>
   ): Promise<CreatePrayerRequestChatResponse> => {
     try {
-      console.log('params', params);
       const response = await api.post<CreatePrayerRequestChatResponse>('/prayer-requests', params);
       return response;
     } catch (error) {

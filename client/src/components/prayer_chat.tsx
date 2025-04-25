@@ -11,6 +11,7 @@ import { withTooltip } from '../shared-components/with_tooltip';
 import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
 import { ModalContext, ModalType } from '@client/contexts/modal_context_provider';
 import { Callout } from '@client/shared-components/callout';
+import { useCaptcha } from '@client/widget/use_captcha';
 
 interface Message {
   text: string;
@@ -29,6 +30,7 @@ export const PrayerChat = () => {
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { openModal, closeModal } = useContext(ModalContext);
+  const { solve } = useCaptcha();
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -91,9 +93,16 @@ export const PrayerChat = () => {
   const onSubmit = useCallback(
     async (email: string | undefined, phone: string | undefined) => {
       // Create a new chatroom with the user's contact info
+      const token = await solve();
+      if (!token) {
+        console.error('Failed to solve CAPTCHA');
+        return;
+      }
+
       await PrayerRequestChatsApi.createPrayerRequestChatroom({
         requestContactEmail: email,
         requestContactPhone: phone,
+        token,
         messages: messages.map(msg => ({
           text: msg.text,
           messageId: msg.messageId,

@@ -3,5 +3,5 @@ interface CapConfig {
 }
 
 interface Window {
-  Cap: new (element: HTMLElement, config: CapConfig) => any;
+  Cap: new (config: CapConfig) => any;
 }
