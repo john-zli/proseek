@@ -1,11 +1,13 @@
+@import './styles/colors.module.less';
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light dark;
-  color: #213547;
-  background-color: white;
+  color: @color-text-primary;
+  background-color: @color-background-main;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -15,19 +17,19 @@
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: @color-link;
   text-decoration: inherit;
 }
 
 a:hover {
-  color: #535bf2;
+  color: @color-link-hover;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: white;
+  background-color: @color-background-main;
   display: flex;
 }
 
@@ -38,6 +40,24 @@ div {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
+}
+
+h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+  color: @color-text-primary;
+}
+
+p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: @color-text-secondary;
+}
+
+strong {
+  color: @color-text-primary;
 }
 
 textarea {
@@ -51,12 +71,12 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: @color-button-primary;
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: @color-button-primary-hover;
 }
 button:focus,
 button:focus-visible {
@@ -65,14 +85,14 @@ button:focus-visible {
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
-    background-color: #ffffff;
+    color: @color-text-primary;
+    background-color: @color-background-main;
   }
   a:hover {
-    color: #747bff;
+    color: @color-link-hover;
   }
   button {
-    background-color: #f9f9f9;
+    background-color: @color-button-secondary-bg;
   }
 }
 
@@ -81,4 +101,4 @@ button:focus-visible {
   flex-direction: column;
   flex: 1;
   min-height: 100vh;
-}
+} 

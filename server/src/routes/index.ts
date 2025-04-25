@@ -11,7 +11,9 @@ interface LocalServices {}
 export function apiRouter(_services: LocalServices): Router {
   const apiRouter = Router();
 
+  // Routes that are accessible via UI
   apiRouter.get('/', serveStaticHtmlFile());
+  apiRouter.get('/chats/:chatroomId', /* Add validation for chatroomId */ serveStaticHtmlFile());
 
   // Prayer requests routes
   apiRouter.use('/api/prayer-requests', prayerRequestChatsRouter);
