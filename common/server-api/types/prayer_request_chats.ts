@@ -16,7 +16,7 @@ export interface CreatePrayerRequestChatParams {
   requestContactPhone?: string;
   zip?: string;
   city?: string;
-  messages: { text: string; userId?: string; messageId: string; timestamp: number }[];
+  messages: Omit<PrayerRequestChatMessage, 'requestId'>[];
 }
 
 export interface AssignPrayerRequestChatParams {

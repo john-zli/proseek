@@ -10,9 +10,10 @@ export const CreatePrayerRequestChatSchema = z.object({
     requestContactPhone: z.string().optional().transform(normalizePhoneNumber),
     messages: z.array(
       z.object({
-        text: z.string().min(1, 'Message is required'),
-        timestamp: z.number().int().nonnegative(),
+        message: z.string().min(1, 'Message is required'),
         messageId: z.string().uuid(),
+        messageTimestamp: z.number().int().nonnegative(),
+        assignedUserId: z.string().uuid().optional(),
       })
     ),
     zip: z.string().optional(),
