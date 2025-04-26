@@ -4,12 +4,14 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 
+import { apiRouter } from './routes/api_router';
 import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
 import { logger } from '@server/logger';
-import { apiRouter } from '@server/routes';
+import { pageRouter } from '@server/routes/page_router';
+import { sessionMiddleware } from '@server/session';
 
 interface LocalServices {}
 
@@ -19,6 +21,7 @@ export function startServer(services: LocalServices): Express {
   // Basic middleware
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
+  app.use(sessionMiddleware);
 
   // Serving React CSS and JS
   app.use(express.static(path.join(__dirname, '../../client/dist')));
@@ -37,9 +40,10 @@ export function startServer(services: LocalServices): Express {
   }
 
   // Router for '/' established here.
-  app.use('/', apiRouter(services));
+  app.use('/', pageRouter(services));
 
-  // TODO(johnli): Load API routes.
+  // API routes
+  app.use('/api', apiRouter(services));
 
   // Add error handler
   app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
