@@ -179,9 +179,8 @@ export const PrayerChat = (props: Props) => {
   );
 
   const handleSendRequest = useCallback(() => {
-    // TODO(johnli): Pass in payload to the modal too.
     openModal(ModalType.ContactInfo, { onSubmit });
-  }, [openModal]);
+  }, [openModal, onSubmit]);
 
   const clearButton = (
     <Button buttonStyle={ButtonStyle.Icon} onClick={handleClearChat}>
