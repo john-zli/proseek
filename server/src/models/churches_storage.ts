@@ -1,5 +1,18 @@
 import { getPool } from '../db';
+import { queryRows, queryScalar } from './db_query_helper';
 import { Church, ListChurchesNearUserParams } from './storage_types';
+
+const ColumnKeyMappings = {
+  Church: {
+    churchId: 'church_id',
+    name: 'name',
+    zip: 'zip',
+    county: 'county',
+    city: 'city',
+    creationTimestamp: 'creation_timestamp',
+    modifiedTimestamp: 'modification_timestamp',
+  },
+};
 
 const SqlCommands = {
   ListChurchesNearUser: `
@@ -44,28 +57,19 @@ const SqlCommands = {
       $8::varchar(100),
       $9::varchar(200)
     )
-    RETURNING
-      church_id,
-      name,
-      address,
-      city,
-      state,
-      zip,
-      county,
-      country,
-      phone,
-      email,
-      website,
-      creation_timestamp;`,
+    RETURNING church_id;`,
 };
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
 // Also different kind of db query wrappers.
 export async function listChurchesNearUser(params: ListChurchesNearUserParams): Promise<Church[]> {
   const { zip, city, county } = params;
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.ListChurchesNearUser, [zip, city, county]);
-  return result.rows;
+  return queryRows<Church>({
+    commandIdentifier: 'ListChurchesNearUser',
+    query: SqlCommands.ListChurchesNearUser,
+    params: [zip, city, county],
+    mapping: ColumnKeyMappings.Church,
+  });
 }
 
 export async function createChurch(params: {
@@ -78,18 +82,21 @@ export async function createChurch(params: {
   phone?: string;
   email?: string;
   website?: string;
-}): Promise<Church> {
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.CreateChurch, [
-    params.name,
-    params.address,
-    params.city,
-    params.state,
-    params.zip,
-    params.county,
-    params.phone,
-    params.email,
-    params.website,
-  ]);
-  return result.rows[0];
+}): Promise<string> {
+  return queryScalar<string>({
+    commandIdentifier: 'CreateChurch',
+    query: SqlCommands.CreateChurch,
+    allowNull: false,
+    params: [
+      params.name,
+      params.address,
+      params.city,
+      params.state,
+      params.zip,
+      params.county,
+      params.phone,
+      params.email,
+      params.website,
+    ],
+  });
 }
