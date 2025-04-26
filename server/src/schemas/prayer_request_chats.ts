@@ -1,10 +1,13 @@
 import { z } from 'zod';
 
+// Helper function to normalize phone numbers
+const normalizePhoneNumber = (phone: string | undefined) => (phone ? phone.replace(/[^0-9]/g, '') : undefined);
+
 // Schema for creating a new prayer request chat
 export const CreatePrayerRequestChatSchema = z.object({
   body: z.object({
     requestContactEmail: z.string().email().optional(),
-    requestContactPhone: z.string().optional(),
+    requestContactPhone: z.string().optional().transform(normalizePhoneNumber),
     messages: z.array(
       z.object({
         text: z.string().min(1, 'Message is required'),
@@ -60,7 +63,7 @@ export const VerifyPrayerRequestChatSchema = z.object({
   }),
   body: z.object({
     requestContactEmail: z.string().email().optional(),
-    requestContactPhone: z.string().optional(),
+    requestContactPhone: z.string().optional().transform(normalizePhoneNumber),
     token: z.string(), // CAPTCHA token
   }),
 });
