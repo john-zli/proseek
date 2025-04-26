@@ -16,7 +16,7 @@ import { useCaptcha } from '@client/widget/use_captcha';
 
 interface PrayerRequestChatMessage {
   messageId: string;
-  requestId: string;
+  requestId?: string;
   message: string;
   messageTimestamp: number;
   assignedUserId?: string;
@@ -34,7 +34,7 @@ export const PrayerChat = (props: Props) => {
   const [inputValue, setInputValue] = useState('');
   const [hasScroll, setHasScroll] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-  const [chatroomJustCreated, setChatroomJustCreated] = useState(false);
+  const [chatroomInitialized, setChatroomInitialized] = useState(false);
   const [showCallout, setShowCallout] = useState(true);
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
@@ -46,27 +46,28 @@ export const PrayerChat = (props: Props) => {
 
   // Only show verification on initial page load with chatroomId in URL
   useEffect(() => {
-    if (chatroomId && !isVerified && !chatroomJustCreated) {
+    if (chatroomId && !isVerified && !chatroomInitialized) {
       setShowCallout(false);
       // Show verification modal immediately if we have a chatroomId
       openModal(ModalType.ChatroomVerification, {
         onSubmit: handleVerification,
       });
     }
-  }, [chatroomId, isVerified, chatroomJustCreated]);
+  }, [chatroomId, isVerified, chatroomInitialized]);
 
   // Only load messages if we are entering a chatroom via params on page load,
   // and we've finished verification.
   const loadMessages = useCallback(async () => {
-    if (!chatroomId || chatroomJustCreated || !isVerified) {
+    if (!chatroomId || chatroomInitialized || !isVerified) {
       return;
     }
 
     const response = await PrayerRequestChatsApi.listMessages({
       requestId: chatroomId,
     });
+    setChatroomInitialized(true);
     setMessages(response.messages);
-  }, [chatroomId, chatroomJustCreated, isVerified]);
+  }, [chatroomId, chatroomInitialized, isVerified]);
 
   useEffect(() => {
     void loadMessages();
@@ -108,18 +109,25 @@ export const PrayerChat = (props: Props) => {
     textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
-  const sendMessage = useCallback(() => {
+  const sendMessage = useCallback(async () => {
     if (!inputValue.trim()) return;
 
     const messageId = uuidv4();
+    const messageTimestamp = Date.now();
     // TODO(johnli): Add userId to the message if we are authenticated.
-    setMessages(prev => [
-      ...prev,
-      { messageId, requestId: chatroomId!, message: inputValue, messageTimestamp: Date.now() },
-    ]);
+    setMessages(prev => [...prev, { messageId, requestId: chatroomId, message: inputValue, messageTimestamp }]);
     setInputValue('');
     setIsExpanded(true);
-  }, [inputValue]);
+
+    if (chatroomId) {
+      await PrayerRequestChatsApi.createMessage({
+        requestId: chatroomId,
+        message: inputValue,
+        messageId,
+        messageTimestamp,
+      });
+    }
+  }, [inputValue, chatroomInitialized, chatroomId]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);
@@ -186,7 +194,7 @@ export const PrayerChat = (props: Props) => {
         });
 
         // Navigate to the new chatroom URL
-        setChatroomJustCreated(true);
+        setChatroomInitialized(true);
         setIsVerified(true);
         setShowCallout(false);
         navigate(`/chats/${response.chatroomId}`, { replace: true });

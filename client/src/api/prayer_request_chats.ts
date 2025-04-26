@@ -3,7 +3,6 @@ import type {
   AssignPrayerRequestChatParams,
   AssignPrayerRequestChatResponse,
   CreatePrayerRequestChatMessageParams,
-  CreatePrayerRequestChatMessageResponse,
   CreatePrayerRequestChatParams,
   CreatePrayerRequestChatResponse,
   ListPrayerRequestChatMessagesParams,
@@ -69,19 +68,16 @@ export const PrayerRequestChatsApi = {
   },
 
   // Prayer Request Chat Message Functions
-  createMessage: async (
-    params: CreatePrayerRequestChatMessageParams
-  ): Promise<CreatePrayerRequestChatMessageResponse> => {
+  createMessage: async (params: CreatePrayerRequestChatMessageParams): Promise<void> => {
     try {
-      const response = await api.post<CreatePrayerRequestChatMessageResponse>(
-        `/prayer-requests/${params.requestId}/message`,
-        {
-          message: params.message,
-          assignedUserId: params.assignedUserId,
-        }
-      );
-      return response;
+      await api.post(`/prayer-requests/${params.requestId}/message`, {
+        message: params.message,
+        messageId: params.messageId,
+        messageTimestamp: params.messageTimestamp,
+        assignedUserId: params.assignedUserId,
+      });
     } catch (error) {
+      console.error(error);
       throw new Error('Failed to create prayer request chat message');
     }
   },

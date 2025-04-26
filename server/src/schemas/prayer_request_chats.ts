@@ -48,6 +48,7 @@ export const CreatePrayerRequestChatMessageSchema = z.object({
     message: z.string().min(1, 'Message is required'),
     assignedUserId: z.string().optional(),
     messageId: z.string().uuid(),
+    messageTimestamp: z.number().int().nonnegative(),
   }),
 });
 
