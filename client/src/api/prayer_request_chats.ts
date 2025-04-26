@@ -9,6 +9,8 @@ import type {
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatMessagesResponse,
   ListPrayerRequestChatsResponse,
+  VerifyPrayerRequestChatParams,
+  VerifyPrayerRequestChatResponse,
 } from '@common/server-api/types/prayer_request_chats';
 
 export type CaptchaProtected<T> = T & { token: string };
@@ -47,6 +49,22 @@ export const PrayerRequestChatsApi = {
       return response;
     } catch (error) {
       throw new Error('Failed to assign prayer request');
+    }
+  },
+
+  // Verify chatroom access
+  verifyChatroomAccess: async (
+    params: CaptchaProtected<VerifyPrayerRequestChatParams>
+  ): Promise<VerifyPrayerRequestChatResponse> => {
+    try {
+      const response = await api.post<VerifyPrayerRequestChatResponse>(`/prayer-requests/${params.requestId}/verify`, {
+        requestContactEmail: params.requestContactEmail,
+        requestContactPhone: params.requestContactPhone,
+        token: params.token,
+      });
+      return response;
+    } catch (error) {
+      throw new Error('Failed to verify chatroom access');
     }
   },
 

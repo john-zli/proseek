@@ -7,6 +7,7 @@ import {
   ListPrayerRequestChatsParams,
   PrayerRequestChat,
   PrayerRequestChatMessage,
+  VerifyPrayerRequestChatParams,
 } from '@common/server-api/types/prayer_request_chats';
 
 const ColumnKeyMappings = {
@@ -48,7 +49,16 @@ const SqlCommands = {
     WHERE       ($1::uuid IS NULL OR prayer_request_chats.assigned_user_id = $1::uuid) AND
                 ($2::uuid IS NULL OR prayer_request_chats.assigned_church_id = $2::uuid)
     ORDER BY    prayer_request_chats.creation_timestamp DESC;`,
-
+  VerifyPrayerRequestChat: `
+    SELECT      prayer_request_chats.request_id
+    FROM        core.prayer_request_chats
+    WHERE       ($1::varchar(100) IS NOT NULL OR $2::varchar(20) IS NOT NULL) AND
+                (
+                  ($1::varchar(100) IS NOT NULL AND prayer_request_chats.request_contact_email = $1::varchar(100)) OR
+                  ($2::varchar(20) IS NOT NULL AND prayer_request_chats.request_contact_phone = $2::varchar(20))
+                ) AND
+                prayer_request_chats.request_id = $3::uuid;
+  `,
   CreatePrayerRequestChatroom: `
     SELECT * FROM core.create_prayer_request_chat_with_church_assignment(
       $1::varchar(100),
@@ -146,5 +156,14 @@ export async function createPrayerRequestChatMessage(params: CreatePrayerRequest
     commandIdentifier: 'CreatePrayerRequestChatMessage',
     query: SqlCommands.CreatePrayerRequestChatMessage,
     params: [requestId, message, assignedUserId],
+  });
+}
+
+export async function verifyPrayerRequestChat(params: VerifyPrayerRequestChatParams): Promise<string> {
+  const { requestId, requestContactEmail, requestContactPhone } = params;
+  return queryScalar<string>({
+    commandIdentifier: 'VerifyPrayerRequestChat',
+    query: SqlCommands.VerifyPrayerRequestChat,
+    params: [requestContactEmail, requestContactPhone, requestId],
   });
 }

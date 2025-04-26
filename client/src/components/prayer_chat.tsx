@@ -32,8 +32,9 @@ export const PrayerChat = (props: Props) => {
   const [inputValue, setInputValue] = useState('');
   const [hasScroll, setHasScroll] = useState(false);
   const [currentChatroomId, setCurrentChatroomId] = useState<string | undefined>();
+  const [isVerified, setIsVerified] = useState(false);
 
-  const [showCallout, setShowCallout] = useState(true); // TODO(johnli): Add the setter later too.
+  const [showCallout, setShowCallout] = useState(true);
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -42,12 +43,48 @@ export const PrayerChat = (props: Props) => {
   const navigate = useNavigate();
   const { chatroomId } = useParams();
 
+  // Only show verification on initial page load with chatroomId in URL
   useEffect(() => {
-    if (chatroomId) {
+    if (chatroomId && !isVerified) {
       setCurrentChatroomId(chatroomId);
       setShowCallout(false);
+      // Show verification modal immediately if we have a chatroomId
+      openModal(ModalType.ChatroomVerification, {
+        onSubmit: handleVerification,
+      });
     }
-  }, [chatroomId]);
+  }, [chatroomId, isVerified]);
+
+  const handleVerification = useCallback(
+    async (email: string | undefined, phone: string | undefined) => {
+      const token = await solve();
+      if (!token) {
+        console.error('Failed to solve CAPTCHA');
+        return;
+      }
+
+      try {
+        // Verify the user's contact info matches the chatroom
+        const response = await PrayerRequestChatsApi.verifyChatroomAccess({
+          requestId: chatroomId!,
+          requestContactEmail: email,
+          requestContactPhone: phone,
+          token,
+        });
+
+        if (response.isVerified) {
+          setIsVerified(true);
+          closeModal();
+        } else {
+          // If verification fails, keep the modal open
+          console.error('Verification failed');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    [chatroomId, solve, closeModal]
+  );
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -129,9 +166,10 @@ export const PrayerChat = (props: Props) => {
         });
 
         // Navigate to the new chatroom URL
-        navigate(`/chats/${response.chatroomId}`, { replace: true });
         setCurrentChatroomId(response.chatroomId);
+        setIsVerified(true);
         setShowCallout(false);
+        navigate(`/chats/${response.chatroomId}`, { replace: true });
       } catch (err) {
         console.error(err);
       }
@@ -151,6 +189,11 @@ export const PrayerChat = (props: Props) => {
     </Button>
   );
 
+  // If we have a chatroomId but haven't verified the user yet, don't render anything
+  if (chatroomId && !isVerified) {
+    return null;
+  }
+
   return (
     <div className={classes.contents}>
       {!isExpanded && <h1 className={classes.initialHeading}>How can we pray for you?</h1>}
@@ -161,7 +204,6 @@ export const PrayerChat = (props: Props) => {
               <div className={classes.chatHeaderLeft}>
                 <span className={classes.chatTitle}>Prayer Chat</span>
               </div>
-              {/* Only show the upper header if we don't have a chatroom ID. */}
               {!currentChatroomId ? (
                 <div className={classes.chatControls}>
                   <Button buttonStyle={ButtonStyle.Primary} onClick={handleSendRequest} className={classes.matchButton}>

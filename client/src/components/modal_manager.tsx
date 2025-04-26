@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import { ModalContext, ModalPayload, ModalType } from '../contexts/modal_context_provider';
+import { ChatroomVerificationModal } from './modals/chatroom_verification_modal';
 import { ConfirmationModal } from './modals/confirmation_modal';
 import { ContactInfoModal } from './modals/contact_info_modal';
 
@@ -36,6 +37,8 @@ export function ModalManager(props: Props) {
         return <ConfirmationModal {...modal.payload} />;
       case ModalType.ContactInfo:
         return <ContactInfoModal {...modal.payload} />;
+      case ModalType.ChatroomVerification:
+        return <ChatroomVerificationModal {...modal.payload} />;
       default:
         return null;
     }

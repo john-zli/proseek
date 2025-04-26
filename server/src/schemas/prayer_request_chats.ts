@@ -53,3 +53,14 @@ export const ListPrayerRequestChatMessagesSchema = z.object({
     requestId: z.string().min(1, 'Request ID is required'),
   }),
 });
+
+export const VerifyPrayerRequestChatSchema = z.object({
+  params: z.object({
+    requestId: z.string().min(1, 'Request ID is required'),
+  }),
+  body: z.object({
+    requestContactEmail: z.string().email().optional(),
+    requestContactPhone: z.string().optional(),
+    token: z.string(), // CAPTCHA token
+  }),
+});
