@@ -11,6 +11,7 @@ import { Button, ButtonStyle } from '../shared-components/button';
 import { withTooltip } from '../shared-components/with_tooltip';
 import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
 import { ModalContext, ModalType } from '@client/contexts/modal_context_provider';
+import { SessionContext } from '@client/contexts/session_context_provider';
 import { Callout } from '@client/shared-components/callout';
 import { useCaptcha } from '@client/widget/use_captcha';
 
@@ -40,38 +41,11 @@ export const PrayerChat = (props: Props) => {
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const { openModal, closeModal } = useContext(ModalContext);
+  const { session, sessionLoading } = useContext(SessionContext);
+
   const { solve } = useCaptcha();
   const navigate = useNavigate();
   const { chatroomId } = useParams();
-
-  // Only show verification on initial page load with chatroomId in URL
-  useEffect(() => {
-    if (chatroomId && !isVerified && !chatroomInitialized) {
-      setShowCallout(false);
-      // Show verification modal immediately if we have a chatroomId
-      openModal(ModalType.ChatroomVerification, {
-        onSubmit: handleVerification,
-      });
-    }
-  }, [chatroomId, isVerified, chatroomInitialized]);
-
-  // Only load messages if we are entering a chatroom via params on page load,
-  // and we've finished verification.
-  const loadMessages = useCallback(async () => {
-    if (!chatroomId || chatroomInitialized || !isVerified) {
-      return;
-    }
-
-    const response = await PrayerRequestChatsApi.listMessages({
-      requestId: chatroomId,
-    });
-    setChatroomInitialized(true);
-    setMessages(response.messages);
-  }, [chatroomId, chatroomInitialized, isVerified]);
-
-  useEffect(() => {
-    void loadMessages();
-  }, [loadMessages]);
 
   const handleVerification = useCallback(
     async (email: string | undefined, phone: string | undefined) => {
@@ -103,6 +77,47 @@ export const PrayerChat = (props: Props) => {
     },
     [chatroomId, solve, closeModal]
   );
+
+  const loadMessages = useCallback(async () => {
+    if (!chatroomId || chatroomInitialized || !isVerified) {
+      return;
+    }
+
+    const response = await PrayerRequestChatsApi.listMessages({
+      requestId: chatroomId,
+    });
+    setChatroomInitialized(true);
+    setMessages(response.messages);
+  }, [chatroomId, chatroomInitialized, isVerified]);
+
+  // Only show verification on initial page load with chatroomId in URL
+  useEffect(() => {
+    // If session has already verified this chatroom, load messages and skip verification.
+    if (chatroomId && !chatroomInitialized && !sessionLoading) {
+      if (session?.verifiedChatIds?.includes(chatroomId)) {
+        setIsVerified(true);
+        setShowCallout(false);
+      } else if (!isVerified) {
+        setShowCallout(false);
+        // Show verification modal immediately if we have a chatroomId
+        openModal(ModalType.ChatroomVerification, {
+          onSubmit: handleVerification,
+        });
+      }
+    }
+  }, [
+    chatroomId,
+    chatroomInitialized,
+    session?.verifiedChatIds,
+    sessionLoading,
+    openModal,
+    handleVerification,
+    isVerified,
+  ]);
+
+  useEffect(() => {
+    void loadMessages();
+  }, [loadMessages]);
 
   const adjustTextareaHeight = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';

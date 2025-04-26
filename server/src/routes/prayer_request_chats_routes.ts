@@ -1,7 +1,7 @@
 import { Router } from 'express';
 
-import { getCap } from '../captcha';
 import { validate } from '../middleware/validate';
+import { verifyCaptcha } from '../middleware/verify_captcha';
 import {
   assignPrayerRequestChat,
   createPrayerRequestChat,
@@ -23,16 +23,8 @@ import { logger } from '@server/logger';
 const router = Router();
 
 // Create a new prayer request
-router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
+router.post('/', validate(CreatePrayerRequestChatSchema), verifyCaptcha, async (req, res) => {
   try {
-    const { token } = req.body;
-    const cap = getCap();
-    const { success } = await cap.validateToken(token);
-    if (!success) {
-      res.status(400).json({ error: 'Invalid CAPTCHA token' });
-      return;
-    }
-
     const chatroomId = await createPrayerRequestChat(req.body);
     res.status(201).json({ chatroomId });
   } catch (error) {
@@ -103,17 +95,10 @@ router.get('/:requestId/messages', validate(ListPrayerRequestChatMessagesSchema)
   }
 });
 
-router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), async (req, res) => {
+router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), verifyCaptcha, async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { requestContactEmail, requestContactPhone, token } = req.body;
-    const cap = getCap();
-    const { success } = await cap.validateToken(token);
-
-    if (!success) {
-      res.status(400).json({ error: 'Invalid CAPTCHA token' });
-      return;
-    }
+    const { requestContactEmail, requestContactPhone } = req.body;
 
     const verifiedChatId = await verifyPrayerRequestChat({ requestId, requestContactEmail, requestContactPhone });
     if (!verifiedChatId) {
@@ -122,6 +107,8 @@ router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), async
     }
 
     logger.info(`Verified prayer request chat: ${verifiedChatId}`);
+    req.session.verifiedChatIds = [...(req.session.verifiedChatIds || []), verifiedChatId];
+
     res.status(200).json({ isVerified: true });
   } catch (error) {
     logger.error('Error verifying prayer request chat:', error);

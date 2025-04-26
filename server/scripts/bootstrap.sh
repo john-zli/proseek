@@ -22,6 +22,20 @@ psql --version
 
 echo "PostgreSQL installation complete."
 
+# Install Redis using Homebrew
+echo "Installing Redis..."
+brew install redis
+
+# Start Redis service
+echo "Starting Redis service..."
+brew services start redis
+
+# Verify Redis installation
+echo "Redis version:"
+redis-cli --version
+
+echo "Redis installation complete."
+
 # Install node stuff.
 sh "$ROOT_DIR/scripts/packages.sh"
 
