@@ -14,11 +14,13 @@ import { ModalContext, ModalType } from '@client/contexts/modal_context_provider
 import { Callout } from '@client/shared-components/callout';
 import { useCaptcha } from '@client/widget/use_captcha';
 
-interface Message {
-  text: string;
-  userId?: string;
+interface PrayerRequestChatMessage {
   messageId: string;
-  timestamp: number;
+  requestId: string;
+  message: string;
+  messageTimestamp: number;
+  assignedUserId?: string;
+  deletionTimestamp?: number;
 }
 
 interface Props {
@@ -28,12 +30,11 @@ interface Props {
 export const PrayerChat = (props: Props) => {
   const { startsExpanded = false } = props;
   const [isExpanded, setIsExpanded] = useState(startsExpanded);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<PrayerRequestChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [hasScroll, setHasScroll] = useState(false);
-  const [currentChatroomId, setCurrentChatroomId] = useState<string | undefined>();
   const [isVerified, setIsVerified] = useState(false);
-
+  const [chatroomJustCreated, setChatroomJustCreated] = useState(false);
   const [showCallout, setShowCallout] = useState(true);
   const initialInputRef = useRef<HTMLTextAreaElement>(null);
   const expandedInputRef = useRef<HTMLTextAreaElement>(null);
@@ -45,15 +46,31 @@ export const PrayerChat = (props: Props) => {
 
   // Only show verification on initial page load with chatroomId in URL
   useEffect(() => {
-    if (chatroomId && !isVerified) {
-      setCurrentChatroomId(chatroomId);
+    if (chatroomId && !isVerified && !chatroomJustCreated) {
       setShowCallout(false);
       // Show verification modal immediately if we have a chatroomId
       openModal(ModalType.ChatroomVerification, {
         onSubmit: handleVerification,
       });
     }
-  }, [chatroomId, isVerified]);
+  }, [chatroomId, isVerified, chatroomJustCreated]);
+
+  // Only load messages if we are entering a chatroom via params on page load,
+  // and we've finished verification.
+  const loadMessages = useCallback(async () => {
+    if (!chatroomId || chatroomJustCreated || !isVerified) {
+      return;
+    }
+
+    const response = await PrayerRequestChatsApi.listMessages({
+      requestId: chatroomId,
+    });
+    setMessages(response.messages);
+  }, [chatroomId, chatroomJustCreated, isVerified]);
+
+  useEffect(() => {
+    void loadMessages();
+  }, [loadMessages]);
 
   const handleVerification = useCallback(
     async (email: string | undefined, phone: string | undefined) => {
@@ -96,7 +113,10 @@ export const PrayerChat = (props: Props) => {
 
     const messageId = uuidv4();
     // TODO(johnli): Add userId to the message if we are authenticated.
-    setMessages(prev => [...prev, { text: inputValue, messageId, timestamp: Date.now() }]);
+    setMessages(prev => [
+      ...prev,
+      { messageId, requestId: chatroomId!, message: inputValue, messageTimestamp: Date.now() },
+    ]);
     setInputValue('');
     setIsExpanded(true);
   }, [inputValue]);
@@ -159,14 +179,14 @@ export const PrayerChat = (props: Props) => {
           requestContactPhone: phone,
           token,
           messages: messages.map(msg => ({
-            text: msg.text,
+            message: msg.message,
             messageId: msg.messageId,
-            timestamp: msg.timestamp,
+            messageTimestamp: msg.messageTimestamp,
           })),
         });
 
         // Navigate to the new chatroom URL
-        setCurrentChatroomId(response.chatroomId);
+        setChatroomJustCreated(true);
         setIsVerified(true);
         setShowCallout(false);
         navigate(`/chats/${response.chatroomId}`, { replace: true });
@@ -203,7 +223,7 @@ export const PrayerChat = (props: Props) => {
               <div className={classes.chatHeaderLeft}>
                 <span className={classes.chatTitle}>Prayer Chat</span>
               </div>
-              {!currentChatroomId ? (
+              {!chatroomId ? (
                 <div className={classes.chatControls}>
                   <Button buttonStyle={ButtonStyle.Primary} onClick={handleSendRequest} className={classes.matchButton}>
                     Send Request
@@ -269,12 +289,12 @@ export const PrayerChat = (props: Props) => {
               className={`${classes.messagesContainer} ${hasScroll ? classes.hasScrollbar : ''}`}
             >
               <div className={classes.messages}>
-                {messages.map(message => (
+                {messages?.map(message => (
                   <div
                     key={message.messageId}
-                    className={`${classes.message} ${!message.userId ? classes.userMessage : classes.aiMessage}`}
+                    className={`${classes.message} ${!message.assignedUserId ? classes.userMessage : classes.aiMessage}`}
                   >
-                    {message.text}
+                    {message.message}
                   </div>
                 ))}
               </div>

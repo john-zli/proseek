@@ -93,9 +93,10 @@ router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema
 
 router.get('/:requestId/messages', validate(ListPrayerRequestChatMessagesSchema), async (req, res) => {
   try {
+    // TODO(johnli): Add auth, set via verify endpoint or captcha.
     const { requestId } = req.params;
     const chatMessages = await listPrayerRequestChatMessages({ requestId });
-    res.json(chatMessages);
+    res.json({ messages: chatMessages });
   } catch (error) {
     console.error('Error listing prayer request chat messages:', error);
     res.status(500).json({ error: 'Failed to list prayer request chat messages' });

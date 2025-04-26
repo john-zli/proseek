@@ -118,7 +118,7 @@ export async function assignPrayerRequestChat(requestId: string, userId: string,
 }
 
 export async function createPrayerRequestChat(params: CreatePrayerRequestChatParams): Promise<string> {
-  const messageArrays = extractArraysByKeys(params.messages, ['text', 'timestamp', 'messageId']);
+  const messageArrays = extractArraysByKeys(params.messages, ['message', 'messageTimestamp', 'messageId']);
   const [messageTexts, messageTimestamps, messageIds] = messageArrays;
 
   return queryScalar<string>({
