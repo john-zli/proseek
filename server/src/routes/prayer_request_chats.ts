@@ -36,7 +36,7 @@ router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
     const chatroomId = await createPrayerRequestChat(req.body);
     res.status(201).json({ chatroomId });
   } catch (error) {
-    console.error('Error creating prayer request:', error);
+    logger.error('Error creating prayer request:', error);
     res.status(500).json({ error: 'Failed to create prayer request' });
   }
 });
@@ -48,7 +48,7 @@ router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (r
     const prayerRequests = await listPrayerRequestChats({ churchId });
     res.json(prayerRequests);
   } catch (error) {
-    console.error('Error listing prayer requests:', error);
+    logger.error('Error listing prayer requests:', error);
     res.status(500).json({ error: 'Failed to list prayer requests' });
   }
 });
@@ -65,7 +65,7 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async
     }
     res.json(chat);
   } catch (error) {
-    console.error('Error assigning prayer request:', error);
+    logger.error('Error assigning prayer request:', error);
     res.status(500).json({ error: 'Failed to assign prayer request' });
   }
 });
@@ -74,19 +74,19 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async
 router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { message, assignedUserId, messageId } = req.body;
+    const { message, messageId, messageTimestamp } = req.body;
 
     // TODO(johnli): If assignedUserId is authenticated, then use that and remove from body.
     await createPrayerRequestChatMessage({
       requestId,
       message,
-      assignedUserId,
       messageId,
+      messageTimestamp,
     });
 
     res.status(201).send();
   } catch (error) {
-    console.error('Error creating prayer request chat message:', error);
+    logger.error('Error creating prayer request chat message:', error);
     res.status(500).json({ error: 'Failed to create prayer request chat message' });
   }
 });
@@ -98,7 +98,7 @@ router.get('/:requestId/messages', validate(ListPrayerRequestChatMessagesSchema)
     const chatMessages = await listPrayerRequestChatMessages({ requestId });
     res.json({ messages: chatMessages });
   } catch (error) {
-    console.error('Error listing prayer request chat messages:', error);
+    logger.error('Error listing prayer request chat messages:', error);
     res.status(500).json({ error: 'Failed to list prayer request chat messages' });
   }
 });
@@ -124,7 +124,7 @@ router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), async
     logger.info(`Verified prayer request chat: ${verifiedChatId}`);
     res.status(200).json({ isVerified: true });
   } catch (error) {
-    console.error('Error verifying prayer request chat:', error);
+    logger.error('Error verifying prayer request chat:', error);
     res.status(500).json({ error: 'Failed to verify prayer request chat' });
   }
 });

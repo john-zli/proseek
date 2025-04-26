@@ -44,6 +44,7 @@ export interface CreatePrayerRequestChatMessageParams {
   requestId: string;
   message: string;
   assignedUserId?: string;
+  messageTimestamp: number;
 }
 
 export interface ListPrayerRequestChatMessagesParams {
@@ -60,10 +61,6 @@ export interface ListPrayerRequestChatsResponse {
 
 export interface AssignPrayerRequestChatResponse {
   chatroomId: string;
-}
-
-export interface CreatePrayerRequestChatMessageResponse {
-  messageId: string;
 }
 
 export interface ListPrayerRequestChatMessagesResponse {

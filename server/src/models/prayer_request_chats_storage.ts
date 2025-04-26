@@ -86,15 +86,16 @@ const SqlCommands = {
                 EXTRACT(EPOCH FROM prayer_request_chat_messages.deletion_timestamp) AS deletion_timestamp
     FROM        core.prayer_request_chat_messages
     WHERE       prayer_request_chat_messages.request_id = $1::uuid
-    ORDER BY    prayer_request_chat_messages.message_timestamp DESC;`,
+    ORDER BY    prayer_request_chat_messages.message_timestamp ASC;`,
 
   CreatePrayerRequestChatMessage: `
     INSERT INTO core.prayer_request_chat_messages (
       message_id,
       request_id,
       message,
-      assigned_user_id
-    ) VALUES ($1::uuid, $2::uuid, $3::text, $4::uuid);`,
+      assigned_user_id,
+      message_timestamp
+    ) VALUES ($1::uuid, $2::uuid, $3::text, $4::uuid, to_timestamp($5::bigint / 1000));`,
 };
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
@@ -151,11 +152,11 @@ export async function listPrayerRequestChatMessages(
 }
 
 export async function createPrayerRequestChatMessage(params: CreatePrayerRequestChatMessageParams): Promise<void> {
-  const { requestId, message, assignedUserId } = params;
+  const { requestId, message, assignedUserId, messageTimestamp, messageId } = params;
   return nonQuery({
     commandIdentifier: 'CreatePrayerRequestChatMessage',
     query: SqlCommands.CreatePrayerRequestChatMessage,
-    params: [requestId, message, assignedUserId],
+    params: [messageId, requestId, message, assignedUserId, messageTimestamp],
   });
 }
 
