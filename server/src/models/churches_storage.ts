@@ -1,4 +1,3 @@
-import { getPool } from '../db';
 import { queryRows, queryScalar } from './db_query_helper';
 import { Church, ListChurchesNearUserParams } from './storage_types';
 
