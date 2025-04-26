@@ -69,3 +69,13 @@ export interface CreatePrayerRequestChatMessageResponse {
 export interface ListPrayerRequestChatMessagesResponse {
   messages: PrayerRequestChatMessage[];
 }
+
+export interface VerifyPrayerRequestChatParams {
+  requestId: string;
+  requestContactEmail?: string;
+  requestContactPhone?: string;
+}
+
+export interface VerifyPrayerRequestChatResponse {
+  isVerified: boolean;
+}

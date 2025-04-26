@@ -8,6 +8,7 @@ import {
   createPrayerRequestChatMessage,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
+  verifyPrayerRequestChat,
 } from '../models/prayer_request_chats_storage';
 import {
   AssignPrayerRequestChatSchema,
@@ -15,7 +16,9 @@ import {
   CreatePrayerRequestChatSchema,
   ListPrayerRequestChatMessagesSchema,
   ListPrayerRequestChatsSchema,
+  VerifyPrayerRequestChatSchema,
 } from '../schemas/prayer_request_chats';
+import { logger } from '@server/logger';
 
 const router = Router();
 
@@ -96,6 +99,32 @@ router.get('/:requestId/messages', validate(ListPrayerRequestChatMessagesSchema)
   } catch (error) {
     console.error('Error listing prayer request chat messages:', error);
     res.status(500).json({ error: 'Failed to list prayer request chat messages' });
+  }
+});
+
+router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), async (req, res) => {
+  try {
+    const { requestId } = req.params;
+    const { requestContactEmail, requestContactPhone, token } = req.body;
+    const cap = getCap();
+    const { success } = await cap.validateToken(token);
+
+    if (!success) {
+      res.status(400).json({ error: 'Invalid CAPTCHA token' });
+      return;
+    }
+
+    const verifiedChatId = await verifyPrayerRequestChat({ requestId, requestContactEmail, requestContactPhone });
+    if (!verifiedChatId) {
+      res.status(404).json({ error: 'Prayer request not found' });
+      return;
+    }
+
+    logger.info(`Verified prayer request chat: ${verifiedChatId}`);
+    res.status(200).json({ isVerified: true });
+  } catch (error) {
+    console.error('Error verifying prayer request chat:', error);
+    res.status(500).json({ error: 'Failed to verify prayer request chat' });
   }
 });
 
