@@ -1,5 +1,5 @@
-import { getPool } from '../db';
 import { extractArraysByKeys } from './db_helpers';
+import { nonQuery, queryRows, queryScalar } from './db_query_helper';
 import {
   CreatePrayerRequestChatMessageParams,
   CreatePrayerRequestChatParams,
@@ -9,6 +9,29 @@ import {
   PrayerRequestChatMessage,
 } from '@common/server-api/types/prayer_request_chats';
 
+const ColumnKeyMappings = {
+  PrayerRequestChat: {
+    requestId: 'request_id',
+    assignedUserId: 'assigned_user_id',
+    assignedChurchId: 'assigned_church_id',
+    responded: 'responded',
+    requestContactEmail: 'request_contact_email',
+    requestContactPhone: 'request_contact_phone',
+    zip: 'zip',
+    city: 'city',
+    creationTimestamp: 'creation_timestamp',
+    modifiedTimestamp: 'modified_timestamp',
+  },
+  PrayerRequestChatMessage: {
+    messageId: 'message_id',
+    requestId: 'request_id',
+    message: 'message',
+    messageTimestamp: 'message_timestamp',
+    assignedUserId: 'assigned_user_id',
+    deletionTimestamp: 'deletion_timestamp',
+  },
+};
+
 const SqlCommands = {
   ListPrayerRequestChats: `
     SELECT      prayer_request_chats.request_id,
@@ -17,11 +40,7 @@ const SqlCommands = {
                 prayer_request_chats.responded,
                 prayer_request_chats.request_contact_email,
                 prayer_request_chats.request_contact_phone,
-                prayer_request_chats.request_contact_name,
-                prayer_request_chats.request_contact_method,
-                prayer_request_chats.request_summary,
                 prayer_request_chats.zip,
-                prayer_request_chats.county,
                 prayer_request_chats.city,
                 EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp) AS creation_timestamp,
                 EXTRACT(EPOCH FROM prayer_request_chats.modified_timestamp) AS modified_timestamp
@@ -46,8 +65,7 @@ const SqlCommands = {
     SET assigned_user_id = $1::uuid,
         modified_timestamp = CURRENT_TIMESTAMP
     WHERE request_id = $2::uuid
-    AND assigned_church_id = $3::uuid
-    RETURNING *;`,
+    AND assigned_church_id = $3::uuid;`,
 
   ListPrayerRequestChatMessages: `
     SELECT      prayer_request_chat_messages.message_id,
@@ -62,48 +80,51 @@ const SqlCommands = {
 
   CreatePrayerRequestChatMessage: `
     INSERT INTO core.prayer_request_chat_messages (
+      message_id,
       request_id,
       message,
       assigned_user_id
-    ) VALUES ($1::uuid, $2::text, $3::uuid)
-    RETURNING *;`,
+    ) VALUES ($1::uuid, $2::uuid, $3::text, $4::uuid);`,
 };
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
 // Also different kind of db query wrappers.
 export async function listPrayerRequestChats(params: ListPrayerRequestChatsParams): Promise<PrayerRequestChat[]> {
   const { userId, churchId } = params;
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.ListPrayerRequestChats, [userId, churchId]);
-  return result.rows;
+  return queryRows<PrayerRequestChat>({
+    commandIdentifier: 'ListPrayerRequestChats',
+    query: SqlCommands.ListPrayerRequestChats,
+    params: [userId, churchId],
+    mapping: ColumnKeyMappings.PrayerRequestChat,
+  });
 }
 
-export async function assignPrayerRequestChat(
-  requestId: string,
-  userId: string,
-  churchId: string
-): Promise<PrayerRequestChat | null> {
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.AssignPrayerRequestChat, [userId, requestId, churchId]);
-  return result.rows[0] || null;
+export async function assignPrayerRequestChat(requestId: string, userId: string, churchId: string): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'AssignPrayerRequestChat',
+    query: SqlCommands.AssignPrayerRequestChat,
+    params: [userId, requestId, churchId],
+  });
 }
 
 export async function createPrayerRequestChat(params: CreatePrayerRequestChatParams): Promise<string> {
   const messageArrays = extractArraysByKeys(params.messages, ['text', 'timestamp', 'messageId']);
   const [messageTexts, messageTimestamps, messageIds] = messageArrays;
-  const pool = getPool();
 
-  const result = await pool.query(SqlCommands.CreatePrayerRequestChatroom, [
-    params.requestContactEmail,
-    params.requestContactPhone,
-    params.zip,
-    params.city,
-    messageTexts,
-    messageTimestamps,
-    messageIds,
-  ]);
-
-  return result.rows[0];
+  return queryScalar<string>({
+    commandIdentifier: 'CreatePrayerRequestChatroom',
+    query: SqlCommands.CreatePrayerRequestChatroom,
+    allowNull: false,
+    params: [
+      params.requestContactEmail,
+      params.requestContactPhone,
+      params.zip,
+      params.city,
+      messageTexts,
+      messageTimestamps,
+      messageIds,
+    ],
+  });
 }
 
 // Prayer Request Chat Message Functions
@@ -111,16 +132,19 @@ export async function listPrayerRequestChatMessages(
   params: ListPrayerRequestChatMessagesParams
 ): Promise<PrayerRequestChatMessage[]> {
   const { requestId } = params;
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.ListPrayerRequestChatMessages, [requestId]);
-  return result.rows;
+  return queryRows<PrayerRequestChatMessage>({
+    commandIdentifier: 'ListPrayerRequestChatMessages',
+    query: SqlCommands.ListPrayerRequestChatMessages,
+    params: [requestId],
+    mapping: ColumnKeyMappings.PrayerRequestChatMessage,
+  });
 }
 
-export async function createPrayerRequestChatMessage(
-  params: CreatePrayerRequestChatMessageParams
-): Promise<PrayerRequestChatMessage> {
+export async function createPrayerRequestChatMessage(params: CreatePrayerRequestChatMessageParams): Promise<void> {
   const { requestId, message, assignedUserId } = params;
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.CreatePrayerRequestChatMessage, [requestId, message, assignedUserId]);
-  return result.rows[0];
+  return nonQuery({
+    commandIdentifier: 'CreatePrayerRequestChatMessage',
+    query: SqlCommands.CreatePrayerRequestChatMessage,
+    params: [requestId, message, assignedUserId],
+  });
 }

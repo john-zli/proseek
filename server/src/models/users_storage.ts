@@ -1,5 +1,16 @@
-import { getPool } from '../db';
+import { queryRows, queryScalar } from './db_query_helper';
 import { User } from './storage_types';
+
+const ColumnKeyMappings = {
+  User: {
+    userId: 'user_id',
+    churchId: 'church_id',
+    name: 'name',
+    email: 'email',
+    creationTimestamp: 'creation_timestamp',
+    modifiedTimestamp: 'modification_timestamp',
+  },
+};
 
 const SqlCommands = {
   ListUsersFromChurch: `
@@ -42,29 +53,27 @@ const SqlCommands = {
       $5::varchar(20),
       $6::varchar(10)
     )
-    RETURNING
-      user_id,
-      church_id,
-      first_name,
-      last_name,
-      email,
-      phone,
-      gender,
-      creation_timestamp;`,
+    RETURNING user_id;`,
 };
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
 // Also different kind of db query wrappers.
 export async function listUsersFromChurch(churchId: string): Promise<User[]> {
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.ListUsersFromChurch, [churchId]);
-  return result.rows;
+  return queryRows<User>({
+    commandIdentifier: 'ListUsersFromChurch',
+    query: SqlCommands.ListUsersFromChurch,
+    params: [churchId],
+    mapping: ColumnKeyMappings.User,
+  });
 }
 
 export async function getUser(userId: string): Promise<User> {
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.GetUser, [userId]);
-  return result.rows[0];
+  return queryRows<User>({
+    commandIdentifier: 'GetUser',
+    query: SqlCommands.GetUser,
+    params: [userId],
+    mapping: ColumnKeyMappings.User,
+  }).then(rows => rows[0]);
 }
 
 export async function createUser(params: {
@@ -74,15 +83,11 @@ export async function createUser(params: {
   email: string;
   phone?: string;
   gender?: string;
-}): Promise<User> {
-  const pool = getPool();
-  const result = await pool.query(SqlCommands.CreateUser, [
-    params.churchId,
-    params.firstName,
-    params.lastName,
-    params.email,
-    params.phone,
-    params.gender,
-  ]);
-  return result.rows[0];
+}): Promise<string> {
+  return queryScalar<string>({
+    commandIdentifier: 'CreateUser',
+    query: SqlCommands.CreateUser,
+    allowNull: false,
+    params: [params.churchId, params.firstName, params.lastName, params.email, params.phone, params.gender],
+  });
 }

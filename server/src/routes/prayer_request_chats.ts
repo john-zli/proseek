@@ -31,7 +31,7 @@ router.post('/', validate(CreatePrayerRequestChatSchema), async (req, res) => {
     }
 
     const chatroomId = await createPrayerRequestChat(req.body);
-    res.status(201).json({ chatroomId: Object.values(chatroomId)[0] });
+    res.status(201).json({ chatroomId });
   } catch (error) {
     console.error('Error creating prayer request:', error);
     res.status(500).json({ error: 'Failed to create prayer request' });
@@ -71,16 +71,17 @@ router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async
 router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res) => {
   try {
     const { requestId } = req.params;
-    const { message, assignedUserId } = req.body;
+    const { message, assignedUserId, messageId } = req.body;
 
     // TODO(johnli): If assignedUserId is authenticated, then use that and remove from body.
-    const chatMessage = await createPrayerRequestChatMessage({
+    await createPrayerRequestChatMessage({
       requestId,
       message,
       assignedUserId,
+      messageId,
     });
 
-    res.status(201).json(chatMessage);
+    res.status(201).send();
   } catch (error) {
     console.error('Error creating prayer request chat message:', error);
     res.status(500).json({ error: 'Failed to create prayer request chat message' });

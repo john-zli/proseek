@@ -5,11 +5,7 @@ export interface PrayerRequestChat {
   responded: boolean;
   requestContactEmail?: string;
   requestContactPhone?: string;
-  requestContactName?: string;
-  requestContactMethod?: string;
-  requestSummary: string;
   zip?: string;
-  county?: string;
   city?: string;
   creationTimestamp: Date;
   modifiedTimestamp: Date;
@@ -44,6 +40,7 @@ export interface PrayerRequestChatMessage {
 }
 
 export interface CreatePrayerRequestChatMessageParams {
+  messageId: string;
   requestId: string;
   message: string;
   assignedUserId?: string;
