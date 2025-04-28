@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { useContactForm } from '../../hooks/use_contact_form';
 import { Button, ButtonStyle } from '../../shared-components/button';
@@ -32,6 +32,21 @@ export function ChatroomVerificationModal({ onSubmit }: Props) {
     }
   }, [handleSubmit, onSubmit]);
 
+  const disabled = useMemo(
+    () => (contactMethods.email && !email) || (contactMethods.text && !isValidPhoneNumber(phone)),
+    [contactMethods, email, isValidPhoneNumber, phone]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey && !disabled) {
+        e.preventDefault();
+        onVerify();
+      }
+    },
+    [onVerify]
+  );
+
   return (
     <ModalContainer isUncloseable>
       <div className={classes.container}>
@@ -55,6 +70,7 @@ export function ChatroomVerificationModal({ onSubmit }: Props) {
                     id="email"
                     value={email}
                     onChange={onEmailChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="your@email.com"
                     className={classes.input}
                   />
@@ -75,6 +91,7 @@ export function ChatroomVerificationModal({ onSubmit }: Props) {
                     id="phone"
                     value={phone}
                     onChange={onPhoneChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="(123) 456-7890"
                     className={clsx(classes.input, { [classes.error]: phoneError })}
                   />
@@ -86,11 +103,7 @@ export function ChatroomVerificationModal({ onSubmit }: Props) {
         </div>
 
         <div className={classes.actions}>
-          <Button
-            buttonStyle={ButtonStyle.Primary}
-            onClick={onVerify}
-            disabled={(contactMethods.email && !email) || (contactMethods.text && !isValidPhoneNumber(phone))}
-          >
+          <Button buttonStyle={ButtonStyle.Primary} onClick={onVerify} disabled={disabled}>
             Verify
           </Button>
         </div>

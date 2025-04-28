@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { ModalContext, ModalPayload, ModalType } from '../contexts/modal_context_provider';
 import { ChatroomVerificationModal } from './modals/chatroom_verification_modal';
@@ -17,15 +17,15 @@ export function ModalManager(props: Props) {
   const [modal, setModal] = useState<ModalState | undefined>();
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  const openModal = <T extends ModalType>(type: T, payload: ModalPayload[T]) => {
+  const openModal = useCallback(<T extends ModalType>(type: T, payload: ModalPayload[T]) => {
     setModal({ type, payload } as ModalState);
     setIsOpen(true);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModal(undefined);
     setIsOpen(false);
-  };
+  }, []);
 
   const renderModal = () => {
     if (!modal?.type) {
