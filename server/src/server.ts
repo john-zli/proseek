@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 
+import { ipGeolocationMiddleware } from './middleware/ip_geolocation';
 import { apiRouter } from './routes/api_router';
 import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
@@ -22,6 +23,7 @@ export function startServer(services: LocalServices): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(sessionMiddleware);
+  app.use(ipGeolocationMiddleware);
 
   // Serving React CSS and JS
   app.use(express.static(path.join(__dirname, '../../client/dist')));

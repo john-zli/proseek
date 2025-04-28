@@ -25,9 +25,17 @@ const router = Router();
 // Create a new prayer request
 router.post('/', validate(CreatePrayerRequestChatSchema), verifyCaptcha, async (req, res) => {
   try {
-    const chatroomId = await createPrayerRequestChat(req.body);
+    // Use IP geolocation data if available, otherwise use provided data
+    console.log('req.ipLocation', req.ipLocation);
+    const chatroomId = await createPrayerRequestChat({
+      ...req.body,
+      city: req.ipLocation?.city,
+      region: req.ipLocation?.region,
+      // TODO(johnli): Add latitude and longitude to prayer request chat later for better matching.
+    });
     res.status(201).json({ chatroomId });
   } catch (error) {
+    console.log('error', error);
     logger.error('Error creating prayer request:', error);
     res.status(500).json({ error: 'Failed to create prayer request' });
   }
