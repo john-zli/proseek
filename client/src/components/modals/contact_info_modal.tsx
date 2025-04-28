@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { useCallback, useContext } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 
 import { ModalContext } from '../../contexts/modal_context_provider';
 import { useContactForm } from '../../hooks/use_contact_form';
@@ -35,6 +35,21 @@ export function ContactInfoModal({ onSubmit }: Props) {
     }
   }, [handleSubmit, onSubmit, closeModal]);
 
+  const disabled = useMemo(
+    () => (contactMethods.email && !email) || (contactMethods.text && !isValidPhoneNumber(phone)),
+    [contactMethods, email, isValidPhoneNumber, phone]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' && !e.shiftKey && !disabled) {
+        e.preventDefault();
+        onSend();
+      }
+    },
+    [onSend]
+  );
+
   return (
     <ModalContainer>
       <div className={classes.container}>
@@ -56,6 +71,7 @@ export function ContactInfoModal({ onSubmit }: Props) {
                     id="email"
                     value={email}
                     onChange={onEmailChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="your@email.com"
                     className={classes.input}
                   />
@@ -76,6 +92,7 @@ export function ContactInfoModal({ onSubmit }: Props) {
                     id="phone"
                     value={phone}
                     onChange={onPhoneChange}
+                    onKeyDown={handleKeyDown}
                     placeholder="(123) 456-7890"
                     className={clsx(classes.input, { [classes.error]: phoneError })}
                   />
@@ -90,11 +107,7 @@ export function ContactInfoModal({ onSubmit }: Props) {
           <Button buttonStyle={ButtonStyle.Secondary} onClick={closeModal}>
             Cancel
           </Button>
-          <Button
-            buttonStyle={ButtonStyle.Primary}
-            onClick={onSend}
-            disabled={(contactMethods.email && !email) || (contactMethods.text && !isValidPhoneNumber(phone))}
-          >
+          <Button buttonStyle={ButtonStyle.Primary} onClick={onSend} disabled={disabled}>
             Submit
           </Button>
         </div>
