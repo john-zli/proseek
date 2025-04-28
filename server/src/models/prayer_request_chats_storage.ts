@@ -20,6 +20,7 @@ const ColumnKeyMappings = {
     requestContactPhone: 'request_contact_phone',
     zip: 'zip',
     city: 'city',
+    region: 'region',
     creationTimestamp: 'creation_timestamp',
     modifiedTimestamp: 'modified_timestamp',
   },
@@ -65,9 +66,10 @@ const SqlCommands = {
       $2::varchar(20),
       $3::varchar(20),
       $4::varchar(100),
-      $5::text[],
-      $6::bigint[],
-      $7::uuid[]
+      $5::varchar(100),
+      $6::text[],
+      $7::bigint[],
+      $8::uuid[]
     );`,
 
   AssignPrayerRequestChat: `
@@ -131,6 +133,7 @@ export async function createPrayerRequestChat(params: CreatePrayerRequestChatPar
       params.requestContactPhone,
       params.zip,
       params.city,
+      params.region,
       messageTexts,
       messageTimestamps,
       messageIds,

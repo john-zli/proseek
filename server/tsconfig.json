@@ -3,7 +3,8 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "./dist",
-    "rootDir": ".."
+    "rootDir": "..",
+    "typeRoots": ["./src/types", "./node_modules/@types"]
   },
   "include": ["src/**/*", "../common/**/*"],
   "exclude": ["node_modules", "dist"]

@@ -88,6 +88,7 @@ CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
   -- Location information
   zip                       varchar(20),
   city                      varchar(100),
+  region                    varchar(100),
 
   request_contact_email     varchar(100),
   request_contact_phone     varchar(20),
@@ -143,7 +144,7 @@ BEGIN
         AND tablename = 'prayer_request_chats' 
         AND indexname = 'idx_prayer_requests_location'
     ) THEN
-        CREATE INDEX idx_prayer_requests_location ON core.prayer_request_chats(zip, city);
+        CREATE INDEX idx_prayer_requests_location ON core.prayer_request_chats(zip, city, region);
     END IF;
 END $$;
 
@@ -193,12 +194,42 @@ BEGIN
   END IF;
 END $$;
 
+-- Add index for prayer_request_chats creation_timestamp
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'core'
+      AND tablename = 'prayer_request_chats'
+      AND indexname = 'prayer_request_chats_creation_timestamp_idx'
+  ) THEN
+    CREATE INDEX prayer_request_chats_creation_timestamp_idx ON core.prayer_request_chats(creation_timestamp);
+  END IF;
+END $$;
+
+-- Add index for prayer_request_chat_messages message_timestamp
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_indexes
+    WHERE schemaname = 'core'
+      AND tablename = 'prayer_request_chat_messages'
+      AND indexname = 'prayer_request_chat_messages_message_timestamp_idx'
+  ) THEN
+    CREATE INDEX prayer_request_chat_messages_message_timestamp_idx ON core.prayer_request_chat_messages(message_timestamp);
+  END IF;
+END $$;
+
+DROP FUNCTION IF EXISTS core.create_prayer_request_chat_with_church_assignment;
 -- Function to create a prayer request and assign it to a nearby church
 CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignment(
   PARAM_contact_email       varchar(100),
   PARAM_contact_phone       varchar(20),
   PARAM_zip                 varchar(20),
   PARAM_city                varchar(100),
+  PARAM_region              varchar(100),
   PARAM_messages            text[],
   PARAM_message_timestamps  bigint[],
   PARAM_message_ids         uuid[]
@@ -221,6 +252,7 @@ BEGIN
     request_contact_phone,
     zip,
     city,
+    region,
     creation_timestamp,
     modified_timestamp
   ) VALUES (
@@ -228,6 +260,7 @@ BEGIN
     PARAM_contact_phone,
     PARAM_zip,
     PARAM_city,
+    PARAM_region,
     CURRENT_TIMESTAMP,
     CURRENT_TIMESTAMP
   )
