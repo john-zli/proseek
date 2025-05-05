@@ -11,31 +11,42 @@ const router = Router();
 // Create a new user (Registration)
 router.post('/', validate(CreateUserSchema), async (req, res) => {
   try {
-    const { email, firstName, lastName, churchId, password } = req.body;
-
-    // Check if user already exists
-    const existingUser = await getUserByEmail(email);
-    if (existingUser) {
-      res.status(409).json({ error: 'User with this email already exists' });
-      return;
-    }
+    const { email, firstName, lastName, gender, password, invitationCode } = req.body;
 
     const passwordHash = await bcrypt.hash(password, 10);
+
     const userId = await createUser({
       email,
       firstName,
       lastName,
-      churchId,
+      gender,
       passwordHash,
+      invitationCode,
     });
 
-    // Log the user in immediately after registration
-    req.session.user = { id: userId, email: email };
-
-    res.status(201).json({ userId });
-  } catch (error) {
+    req.session.regenerate(err => {
+      if (err) {
+        logger.error({ err }, 'Error regenerating session after registration');
+        res.status(500).json({ error: 'Registration succeeded but session creation failed' });
+      }
+      req.session.user = { id: userId, email: email };
+      res.status(201).json({ userId });
+    });
+  } catch (error: any) {
     logger.error({ err: error }, 'Error creating user:');
-    res.status(500).json({ error: 'Failed to create user' });
+
+    let statusCode = 500;
+    let message = 'Failed to create user';
+
+    if (error.code === '23505') {
+      statusCode = 409;
+      message = 'User with this email already exists';
+    } else if (error.code === 'P0001') {
+      statusCode = 400;
+      message = 'Invalid or already used invitation code';
+    }
+
+    res.status(statusCode).json({ error: message });
   }
 });
 

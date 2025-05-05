@@ -1,17 +1,28 @@
-import bcrypt from 'bcrypt';
-
-import { queryRows, queryScalar } from './db_query_helper';
-import { User } from './storage_types';
+import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
+import { InvitationCode, User } from './storage_types';
 
 const ColumnKeyMappings = {
   User: {
     userId: 'user_id',
     churchId: 'church_id',
-    name: 'name',
+    firstName: 'first_name',
+    lastName: 'last_name',
     email: 'email',
+    phone: 'phone',
+    gender: 'gender',
     creationTimestamp: 'creation_timestamp',
-    modifiedTimestamp: 'modification_timestamp',
+    modificationTimestamp: 'modification_timestamp',
     passwordHash: 'password_hash',
+  },
+  InvitationCode: {
+    codeId: 'code_id',
+    churchId: 'church_id',
+    code: 'code',
+    createdByUserId: 'created_by_user_id',
+    redeemedByUserId: 'redeemed_by_user_id',
+    expiresAt: 'expires_at',
+    createdAt: 'created_at',
+    redeemedAt: 'redeemed_at',
   },
 };
 
@@ -58,30 +69,20 @@ const SqlCommands = {
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.email = $1::varchar(100);`,
-  CreateUser: `
-    INSERT INTO core.users (
-      church_id,
-      first_name,
-      last_name,
-      email,
-      phone,
-      gender,
-      password_hash
-    )
-    VALUES (
-      $1::uuid,
-      $2::varchar(50),
-      $3::varchar(50),
-      $4::varchar(100),
-      $5::varchar(20),
-      $6::varchar(10),
-      $7::text
-    )
-    RETURNING user_id;`,
+  CreateUser: `SELECT core.create_user_and_redeem_code($1, $2, $3, $4, $5, $6);`,
+  GetInvitationCode: `
+    SELECT      ic.code_id,
+                ic.church_id,
+                ic.code,
+                ic.created_by_user_id,
+                ic.redeemed_by_user_id,
+                EXTRACT(EPOCH FROM ic.expires_at) * 1000 AS expires_at,
+                EXTRACT(EPOCH FROM ic.created_at) * 1000 AS created_at,
+                EXTRACT(EPOCH FROM ic.redeemed_at) * 1000 AS redeemed_at
+    FROM        core.invitation_codes ic
+    WHERE       ic.code = $1::varchar(20);`,
 };
 
-// TODO(johnli): Add abstractions for db to transform fields to camelCase.
-// Also different kind of db query wrappers.
 export async function listUsersFromChurch(churchId: string): Promise<User[]> {
   return queryRows<User>({
     commandIdentifier: 'ListUsersFromChurch',
@@ -91,38 +92,44 @@ export async function listUsersFromChurch(churchId: string): Promise<User[]> {
   });
 }
 
-export async function getUser(userId: string): Promise<User> {
-  return queryRows<User>({
+export async function getUser(userId: string): Promise<User | undefined> {
+  return querySingleRow<User>({
     commandIdentifier: 'GetUser',
     query: SqlCommands.GetUser,
     params: [userId],
     mapping: ColumnKeyMappings.User,
-  }).then(rows => rows[0]);
+  });
+}
+
+export async function getInvitationCode(code: string): Promise<InvitationCode | null> {
+  return querySingleRow<InvitationCode>({
+    commandIdentifier: 'GetInvitationCode',
+    query: SqlCommands.GetInvitationCode,
+    params: [code],
+    mapping: ColumnKeyMappings.InvitationCode,
+  });
 }
 
 export async function createUser(params: {
-  churchId?: string;
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
-  gender?: string;
-  passwordHash?: string;
+  gender: string;
+  passwordHash: string;
+  invitationCode: string;
 }): Promise<string> {
-  let passwordHash: string | undefined;
-
   return queryScalar<string>({
     commandIdentifier: 'CreateUser',
     query: SqlCommands.CreateUser,
     allowNull: false,
     params: [
-      params.churchId,
+      params.email,
       params.firstName,
       params.lastName,
-      params.email,
-      params.phone,
       params.gender,
-      passwordHash,
+      params.passwordHash,
+      params.invitationCode,
     ],
   });
 }
