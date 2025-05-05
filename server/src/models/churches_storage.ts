@@ -9,7 +9,7 @@ const ColumnKeyMappings = {
     county: 'county',
     city: 'city',
     creationTimestamp: 'creation_timestamp',
-    modifiedTimestamp: 'modification_timestamp',
+    modificationTimestamp: 'modification_timestamp',
   },
 };
 

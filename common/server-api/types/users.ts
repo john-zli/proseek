@@ -6,8 +6,8 @@ export interface User {
   email: string;
   gender: string;
   creationTimestamp: number;
-  modifiedTimestamp: number;
+  modificationTimestamp: number;
   passwordHash?: string;
 }
 
-export type SanitizedUser = Omit<User, 'passwordHash' | 'creationTimestamp' | 'modifiedTimestamp'>;
+export type SanitizedUser = Omit<User, 'passwordHash' | 'creationTimestamp' | 'modificationTimestamp'>;

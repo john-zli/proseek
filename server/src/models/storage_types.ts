@@ -18,7 +18,7 @@ export interface Church {
   county: string;
   city: string;
   creationTimestamp: number;
-  modifiedTimestamp: number;
+  modificationTimestamp: number;
 }
 
 export interface CreatedUser {
