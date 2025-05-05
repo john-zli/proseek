@@ -8,6 +8,7 @@ set +a
 
 # Directory containing SQL files
 SQL_DIR="$ROOT_DIR/src/sql"
+SETUP_FILE="$SQL_DIR/setup.sql"
 
 # Check if DATABASE_CONNECTION_STRING is set
 if [ -z "$DATABASE_CONNECTION_STRING" ]; then
@@ -18,16 +19,17 @@ fi
 # For some reason, .env files sometimes preserve the \r character. Strip that.
 DATABASE_CONNECTION_STRING="$(echo "$DATABASE_CONNECTION_STRING" | tr -d '\r')"
 
-# Loop through all .sql files in the SQL directory
-for sql_file in "$SQL_DIR"/*.sql; do
-  # Skip dev_initialization.sql.
-  if [ -f "$sql_file" ] && [[ "$(basename "$sql_file")" != "dev_initialization.sql" ]]; then
-    echo "Applying migration: $(basename "$sql_file")"
+# Check if setup file exists
+if [ ! -f "$SETUP_FILE" ]; then
+  echo "Error: Setup file not found at $SETUP_FILE"
+  exit 1
+fi
 
-    psql "$DATABASE_CONNECTION_STRING" -f "$sql_file" 2>&1
-    if [ $? -ne 0 ]; then
-      echo "Migration failed for: $sql_file"
-      exit 1
-    fi
-  fi
-done
+echo "Applying database setup from: $(basename "$SETUP_FILE")"
+
+# Execute the setup.sql file which includes other necessary files
+psql "$DATABASE_CONNECTION_STRING" -f "$SETUP_FILE" 2>&1
+if [ $? -ne 0 ]; then
+  echo "Database setup failed."
+  exit 1
+fi
