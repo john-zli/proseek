@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS core.users (
   church_id                 uuid                NOT NULL,
   first_name                varchar(50)         NOT NULL,
   last_name                 varchar(50)         NOT NULL,
-  password_hash             varchar(255)        NOT NULL,
+  password_hash             text,
 
   -- Demographic information
   email                     varchar(100)        UNIQUE,

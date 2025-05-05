@@ -1,5 +1,5 @@
 export interface SessionData {
   isAuthenticated: boolean;
-  userId?: string;
   verifiedChatIds?: string[];
+  user?: { id: string; email: string };
 }

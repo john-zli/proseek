@@ -3,7 +3,7 @@ import { Router } from 'express';
 import captchaRouter from './captcha_routes';
 import churchesRouter from './church_routes';
 import prayerRequestChatsRouter from './prayer_request_chats_routes';
-import usersRouter from './users';
+import usersRouter from './user_routes';
 
 interface LocalServices {}
 
@@ -14,7 +14,7 @@ export function apiRouter(_services: LocalServices): Router {
   apiRouter.get('/session', (req, res) => {
     const sessionData = {
       isAuthenticated: req.session.isAuthenticated || false,
-      userId: req.session.userId,
+      userId: req.session.user?.id,
       verifiedChatIds: req.session.verifiedChatIds || [],
     };
     res.json(sessionData);
