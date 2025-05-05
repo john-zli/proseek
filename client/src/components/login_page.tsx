@@ -28,7 +28,7 @@ export function LoginPage() {
       // TODO: Redirect to the churches' admin page.
       navigate('/');
     } catch (err) {
-      setError('An error occurred. Please try again.');
+      setError((err as Error).message);
     }
   };
 
