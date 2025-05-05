@@ -5,6 +5,7 @@ import { useContactForm } from '../../hooks/use_contact_form';
 import { Button, ButtonStyle } from '../../shared-components/button';
 import { CheckboxView } from '../../shared-components/checkbox_view';
 import { ModalContainer } from '../../shared-components/modal_container';
+import { TextInput } from '../../shared-components/text_input';
 import classes from './contact_info_modal.module.less';
 
 interface Props {
@@ -65,14 +66,13 @@ export function ChatroomVerificationModal({ onSubmit }: Props) {
               {contactMethods.email && (
                 // We don't want to uncheck the checkbox when the input is focused
                 <div className={classes.inputGroup} onClick={stopPropagation}>
-                  <input
+                  <TextInput
                     type="email"
                     id="email"
-                    value={email}
+                    value={email || ''}
                     onChange={onEmailChange}
                     onKeyDown={handleKeyDown}
                     placeholder="your@email.com"
-                    className={classes.input}
                   />
                 </div>
               )}
@@ -86,14 +86,14 @@ export function ChatroomVerificationModal({ onSubmit }: Props) {
               {contactMethods.text && (
                 // We don't want to uncheck the checkbox when the input is focused
                 <div className={classes.inputGroup} onClick={stopPropagation}>
-                  <input
+                  <TextInput
                     type="tel"
                     id="phone"
-                    value={phone}
+                    value={phone || ''}
                     onChange={onPhoneChange}
                     onKeyDown={handleKeyDown}
                     placeholder="(123) 456-7890"
-                    className={clsx(classes.input, { [classes.error]: phoneError })}
+                    error={!!phoneError}
                   />
                   {phoneError && <span className={classes.errorText}>{phoneError}</span>}
                 </div>
