@@ -54,15 +54,15 @@ BEGIN
   END IF;
 END $$;
 
-CREATE TABLE IF NOT EXISTS core.invitation_codes (
+CREATE TABLE IF NOT EXISTS core.user_invitations (
     code_id                 uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
     church_id               uuid                NOT NULL,
     code                    varchar(20)         UNIQUE NOT NULL, -- The actual invitation code string
     created_by_user_id      uuid                NOT NULL, -- User who generated the code
     redeemed_by_user_id     uuid,                         -- User who used the code
-    expires_at              timestamp,                    -- Optional expiration timestamp
-    created_at              timestamp           DEFAULT now(),
-    redeemed_at             timestamp,                    -- Timestamp when the code was used
+    expiration_timestamp    timestamp,                    -- Optional expiration timestamp
+    creation_timestamp      timestamp           DEFAULT now(),
+    redemption_timestamp    timestamp,                    -- Timestamp when the code was used
 
     CONSTRAINT church_fk FOREIGN KEY (church_id)
         REFERENCES core.churches(church_id) ON DELETE CASCADE,
@@ -94,8 +94,8 @@ BEGIN
     INTO VAR_invitation_code_id, VAR_church_id
     FROM core.invitation_codes
     WHERE code = PARAM_invitation_code
-      AND redeemed_by_user_id IS NULL
-      AND (expires_at IS NULL OR expires_at > now());
+        AND redeemed_by_user_id IS NULL
+        AND (expiration_timestamp IS NULL OR expiration_timestamp > now());
 
     IF VAR_invitation_code_id IS NULL THEN
         -- Consider raising specific errors for redeemed/expired if needed
@@ -116,7 +116,7 @@ BEGIN
         gender,
         password_hash
     ) VALUES (
-        VAR_church_id, -- Use church_id from the code
+        VAR_church_id,
         PARAM_first_name,
         PARAM_last_name,
         PARAM_email,
@@ -126,13 +126,11 @@ BEGIN
     RETURNING user_id INTO VAR_user_id;
 
     -- 4. Redeem the invitation code
-    UPDATE core.invitation_codes
+    UPDATE core.user_invitations
     SET redeemed_by_user_id = VAR_user_id,
         redeemed_at = now()
     WHERE code_id = VAR_invitation_code_id;
 
     RETURN VAR_user_id;
-
--- Exception handling can be added here if needed, but PL/pgSQL automatically rolls back on error
 END;
-$$ LANGUAGE plpgsql VOLATILE;
+$$ LANGUAGE plpgsql;
