@@ -9,6 +9,7 @@ set +a
 # Directory containing SQL files
 SQL_DIR="$ROOT_DIR/src/sql"
 SETUP_FILE="$SQL_DIR/setup.sql"
+DEV_ADDITIONS_FILE="$SQL_DIR/dev_additions.sql"
 
 # Check if DATABASE_CONNECTION_STRING is set
 if [ -z "$DATABASE_CONNECTION_STRING" ]; then
@@ -18,6 +19,7 @@ fi
 
 # For some reason, .env files sometimes preserve the \r character. Strip that.
 DATABASE_CONNECTION_STRING="$(echo "$DATABASE_CONNECTION_STRING" | tr -d '\r')"
+NODE_ENV="$(echo "$NODE_ENV" | tr -d '\r')"
 
 # Check if setup file exists
 if [ ! -f "$SETUP_FILE" ]; then
@@ -32,4 +34,17 @@ psql "$DATABASE_CONNECTION_STRING" -f "$SETUP_FILE" 2>&1
 if [ $? -ne 0 ]; then
   echo "Database setup failed."
   exit 1
+fi
+
+# In development environment, also apply dev additions
+if [ "$NODE_ENV" = "development" ]; then
+  if [ ! -f "$DEV_ADDITIONS_FILE" ]; then
+    echo "Warning: Dev additions file not found at $DEV_ADDITIONS_FILE"
+  else
+    echo "Applying development additions from: $(basename "$DEV_ADDITIONS_FILE")"
+    psql "$DATABASE_CONNECTION_STRING" -f "$DEV_ADDITIONS_FILE" 2>&1
+    if [ $? -ne 0 ]; then
+      echo "Warning: Development additions failed, but continuing."
+    fi
+  fi
 fi
