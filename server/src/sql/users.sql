@@ -88,7 +88,11 @@ BEGIN
   ) THEN
     CREATE TYPE core.user_creation_result AS (
       user_id   uuid,
-      church_id uuid
+      church_id uuid,
+      first_name varchar(50),
+      last_name varchar(50),
+      email varchar(100),
+      gender varchar(10)
     );
   END IF;
 END $$;
@@ -105,7 +109,6 @@ DECLARE
   VAR_invitation_code_id  uuid;
   VAR_church_id           uuid;
   VAR_user_id             uuid;
-  
 BEGIN
     -- 1. Find and validate the invitation code and target email
     SELECT code_id, church_id
@@ -142,7 +145,7 @@ BEGIN
         PARAM_gender,
         PARAM_password_hash
     )
-    RETURNING user_id INTO VAR_user_id;
+    RETURNING user_id, church_id INTO VAR_user_id, VAR_church_id;
 
     -- 4. Redeem the invitation code
     UPDATE core.user_invitations
@@ -150,7 +153,7 @@ BEGIN
         redemption_timestamp = now()
     WHERE code_id = VAR_invitation_code_id;
 
-    RETURN (VAR_user_id, VAR_church_id);
+    RETURN (VAR_user_id, VAR_church_id, PARAM_first_name, PARAM_last_name, PARAM_email, PARAM_gender);
 END;
 $$ LANGUAGE plpgsql;
 

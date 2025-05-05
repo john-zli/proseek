@@ -20,7 +20,7 @@ router.post('/', validate(CreateUserSchema), async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const { userId, churchId } = await createUser({
+    const sanitizedUser = await createUser({
       email,
       firstName,
       lastName,
@@ -38,8 +38,8 @@ router.post('/', validate(CreateUserSchema), async (req, res, next) => {
         );
         return next(err);
       }
-      req.session.user = { id: userId, email: email, churchId: churchId };
-      res.status(HttpStatusCodes.CREATED).json({ userId });
+      req.session.user = sanitizedUser;
+      res.status(HttpStatusCodes.CREATED).json({ userId: sanitizedUser.userId });
     });
   } catch (error: any) {
     logger.error({ err: error }, 'Error creating user:');
@@ -87,11 +87,12 @@ router.post('/login', validate(LoginUserSchema), async (req, res, next) => {
         return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Login failed'));
       }
 
-      // Store user information in session, including churchId
-      req.session.user = { id: user.userId, email: user.email, churchId: user.churchId };
       // Omit passwordHash before sending user data
-      const { passwordHash, ...userWithoutPassword } = user;
-      res.status(HttpStatusCodes.OK).json({ message: 'Login successful', user: userWithoutPassword });
+      const { passwordHash, creationTimestamp, modifiedTimestamp, ...userWithoutPassword } = user;
+      // Store user information in session, including churchId
+      req.session.user = userWithoutPassword;
+
+      res.status(HttpStatusCodes.OK).json({ user: userWithoutPassword });
     });
   } catch (error) {
     return next(error);
@@ -115,7 +116,7 @@ router.post('/logout', (req, res, next) => {
 router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (req, res, next) => {
   // ensureAuthenticated guarantees req.session.user, user.id, and user.churchId exist
   const user = req.session.user!;
-  const { id: userId, churchId } = user;
+  const { userId, churchId } = user;
   const { email } = req.body;
 
   try {

@@ -57,7 +57,7 @@ router.post(
   validate(AssignPrayerRequestChatSchema),
   async (req, res, next) => {
     const { requestId } = req.params;
-    const { id: userId, churchId } = req.session.user!;
+    const { userId, churchId } = req.session.user!;
 
     try {
       await assignPrayerRequestChat(requestId, userId, churchId);

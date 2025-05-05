@@ -1,4 +1,5 @@
 import { api } from './helpers';
+import { SanitizedUser } from '@common/server-api/types/users';
 
 export interface LoginParams {
   email: string;
@@ -6,9 +7,7 @@ export interface LoginParams {
 }
 
 export interface LoginResponse {
-  token: string;
-  userId: string;
-  // Add other fields as needed
+  user: SanitizedUser;
 }
 
 export const UsersApi = {

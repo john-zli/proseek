@@ -16,5 +16,15 @@
   },
   "exclude": ["**/node_modules", "**/dist", "**/.eslintrc.js"],
   "files": [],
-  "references": [{ "path": "./client" }, { "path": "./server" }]
+  "references": [
+    {
+      "path": "./client"
+    },
+    {
+      "path": "./server"
+    },
+    {
+      "path": "./common"
+    }
+  ]
 }

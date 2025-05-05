@@ -124,7 +124,6 @@ BEGIN
   END IF;
 END $$;
 
-DROP FUNCTION IF EXISTS core.create_prayer_request_chat_with_church_assignment;
 -- Function to create a prayer request and assign it to a nearby church
 CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignment(
   PARAM_contact_email       varchar(100),
