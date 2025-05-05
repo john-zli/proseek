@@ -20,7 +20,7 @@ import {
 } from '../schemas/prayer_request_chats';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
-import { logger } from '@server/logger';
+import { ensureAuthenticated } from '@server/middleware/auth';
 
 const router = Router();
 
@@ -34,7 +34,7 @@ router.post('/', validate(CreatePrayerRequestChatSchema), verifyCaptcha, async (
     });
     res.status(HttpStatusCodes.CREATED).json({ chatroomId });
   } catch (error) {
-    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to create prayer request chat'));
+    return next(error);
   }
 });
 
@@ -46,26 +46,27 @@ router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (r
     const prayerRequests = await listPrayerRequestChats({ churchId });
     res.status(HttpStatusCodes.OK).json(prayerRequests);
   } catch (error) {
-    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to list prayer requests'));
+    return next(error);
   }
 });
 
 // Assign a prayer request to a user
-router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async (req, res, next) => {
-  const { requestId } = req.params;
-  const { userId, churchId } = req.body;
+router.post(
+  '/:requestId/assign',
+  ensureAuthenticated,
+  validate(AssignPrayerRequestChatSchema),
+  async (req, res, next) => {
+    const { requestId } = req.params;
+    const { id: userId, churchId } = req.session.user!;
 
-  if (!userId || !churchId) {
-    return next(new RouteError(HttpStatusCodes.BAD_REQUEST, 'Missing required fields: userId and churchId'));
+    try {
+      await assignPrayerRequestChat(requestId, userId, churchId);
+      res.status(HttpStatusCodes.OK).json({ success: true });
+    } catch (error) {
+      return next(error);
+    }
   }
-
-  try {
-    await assignPrayerRequestChat(requestId, userId, churchId);
-    res.status(HttpStatusCodes.OK).json({ success: true });
-  } catch (error) {
-    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to assign prayer request'));
-  }
-});
+);
 
 // Prayer Request Chat Message Routes
 router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res, next) => {
@@ -81,7 +82,7 @@ router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema
     });
     res.status(HttpStatusCodes.CREATED).send();
   } catch (error) {
-    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to create prayer request chat message'));
+    return next(error);
   }
 });
 
@@ -92,7 +93,7 @@ router.get('/:requestId/messages', validate(ListPrayerRequestChatMessagesSchema)
     const chatMessages = await listPrayerRequestChatMessages({ requestId });
     res.status(HttpStatusCodes.OK).json({ messages: chatMessages });
   } catch (error) {
-    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to list prayer request chat messages'));
+    return next(error);
   }
 });
 
@@ -108,7 +109,7 @@ router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), verif
     req.session.verifiedChatIds = [...(req.session.verifiedChatIds || []), verifiedChatId];
     res.status(HttpStatusCodes.OK).json({ isVerified: true });
   } catch (error) {
-    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to verify prayer request chat'));
+    return next(error);
   }
 });
 
