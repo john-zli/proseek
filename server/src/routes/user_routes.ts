@@ -88,7 +88,6 @@ router.post('/login', validate(LoginUserSchema), async (req, res, next) => {
       res.status(HttpStatusCodes.OK).json({ message: 'Login successful', user: userWithoutPassword });
     });
   } catch (error) {
-    logger.error({ err: error }, 'Error during user login:');
     return next(error);
   }
 });
@@ -121,11 +120,7 @@ router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (r
     // 3. Return the generated code
     res.status(HttpStatusCodes.CREATED).json({ invitationCode });
   } catch (error: any) {
-    logger.error({ err: error, userId, churchId }, 'Error generating invitation code:');
-    const message = error.message || 'Failed to generate invitation code';
-
-    const err = new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, message);
-    return next(err);
+    return next(error);
   }
 });
 

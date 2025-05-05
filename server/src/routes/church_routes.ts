@@ -28,7 +28,7 @@ router.post('/', ensureAuthenticated, validate(CreateChurchSchema), async (req, 
     });
     res.status(HttpStatusCodes.CREATED).json(church);
   } catch (error: any) {
-    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to create church'));
+    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, error));
   }
 });
 

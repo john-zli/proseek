@@ -1,6 +1,9 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
 import { AnyZodObject, ZodError } from 'zod';
 
+import { RouteError } from '@server/common/route_errors';
+import HttpStatusCodes from '@server/common/status_codes';
+
 export const validate = (schema: AnyZodObject): RequestHandler => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -18,16 +21,9 @@ export const validate = (schema: AnyZodObject): RequestHandler => {
       return;
     } catch (error) {
       if (error instanceof ZodError) {
-        res.status(400).json({
-          error: 'Validation failed',
-          details: error.errors.map(err => ({
-            path: err.path.join('.'),
-            message: err.message,
-          })),
-        });
-        return;
+        return next(new RouteError(HttpStatusCodes.BAD_REQUEST, error));
       }
-      res.status(500).json({ error: 'Internal server error' });
+      return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, error as Error));
     }
   };
 };
