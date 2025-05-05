@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 
+import { errorHandler } from './middleware/error_handler';
 import { ipGeolocationMiddleware } from './middleware/ip_geolocation';
 import { apiRouter } from './routes/api_router';
 import { NodeEnvs } from '@server/common/constants';
@@ -47,17 +48,19 @@ export function startServer(services: LocalServices): Express {
   // API routes
   app.use('/api', apiRouter(services));
 
-  // Add error handler
-  app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
+  // Modify existing error handler
+  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     if (config.env !== NodeEnvs.Test) {
       logger.error(err);
     }
-    let status = HttpStatusCodes.BAD_REQUEST;
+
     if (err instanceof RouteError) {
-      status = err.status;
-      res.status(status).json({ error: err.message });
+      errorHandler(err, req, res, next);
+    } else {
+      const routeError = new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, err.message);
+
+      errorHandler(routeError, req, res, next);
     }
-    return next(err);
   });
 
   return app;

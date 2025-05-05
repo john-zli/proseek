@@ -18,109 +18,97 @@ import {
   ListPrayerRequestChatsSchema,
   VerifyPrayerRequestChatSchema,
 } from '../schemas/prayer_request_chats';
+import { RouteError } from '@server/common/route_errors';
+import HttpStatusCodes from '@server/common/status_codes';
 import { logger } from '@server/logger';
 
 const router = Router();
 
 // Create a new prayer request
-router.post('/', validate(CreatePrayerRequestChatSchema), verifyCaptcha, async (req, res) => {
+router.post('/', validate(CreatePrayerRequestChatSchema), verifyCaptcha, async (req, res, next) => {
   try {
-    // Use IP geolocation data if available, otherwise use provided data
-    console.log('req.ipLocation', req.ipLocation);
     const chatroomId = await createPrayerRequestChat({
       ...req.body,
       city: req.ipLocation?.city,
       region: req.ipLocation?.region,
-      // TODO(johnli): Add latitude and longitude to prayer request chat later for better matching.
     });
-    res.status(201).json({ chatroomId });
+    res.status(HttpStatusCodes.CREATED).json({ chatroomId });
   } catch (error) {
-    console.log('error', error);
-    logger.error('Error creating prayer request:', error);
-    res.status(500).json({ error: 'Failed to create prayer request' });
+    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to create prayer request chat'));
   }
 });
 
 // List prayer requests for a church
-router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (req, res) => {
+router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (req, res, next) => {
+  const { churchId } = req.params;
+
   try {
-    const { churchId } = req.params;
     const prayerRequests = await listPrayerRequestChats({ churchId });
-    res.json(prayerRequests);
+    res.status(HttpStatusCodes.OK).json(prayerRequests);
   } catch (error) {
-    logger.error('Error listing prayer requests:', error);
-    res.status(500).json({ error: 'Failed to list prayer requests' });
+    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to list prayer requests'));
   }
 });
 
 // Assign a prayer request to a user
-router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async (req, res) => {
+router.post('/:requestId/assign', validate(AssignPrayerRequestChatSchema), async (req, res, next) => {
+  const { requestId } = req.params;
+  const { userId, churchId } = req.body;
+
+  if (!userId || !churchId) {
+    return next(new RouteError(HttpStatusCodes.BAD_REQUEST, 'Missing required fields: userId and churchId'));
+  }
+
   try {
-    const { requestId } = req.params;
-    const { userId } = req.body;
-    // TODO(johnli): User should ideally be set on req object. Haven't gotten there yet.
-    const chat = await assignPrayerRequestChat(requestId, userId, req.user?.churchId);
-    if (!chat) {
-      res.status(404).json({ error: 'Prayer request not found' });
-    }
-    res.json(chat);
+    await assignPrayerRequestChat(requestId, userId, churchId);
+    res.status(HttpStatusCodes.OK).json({ success: true });
   } catch (error) {
-    logger.error('Error assigning prayer request:', error);
-    res.status(500).json({ error: 'Failed to assign prayer request' });
+    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to assign prayer request'));
   }
 });
 
 // Prayer Request Chat Message Routes
-router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res) => {
-  try {
-    const { requestId } = req.params;
-    const { message, messageId, messageTimestamp } = req.body;
+router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res, next) => {
+  const { requestId } = req.params;
+  const { message, messageId, messageTimestamp } = req.body;
 
-    // TODO(johnli): If assignedUserId is authenticated, then use that and remove from body.
+  try {
     await createPrayerRequestChatMessage({
       requestId,
       message,
       messageId,
       messageTimestamp,
     });
-
-    res.status(201).send();
+    res.status(HttpStatusCodes.CREATED).send();
   } catch (error) {
-    logger.error('Error creating prayer request chat message:', error);
-    res.status(500).json({ error: 'Failed to create prayer request chat message' });
+    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to create prayer request chat message'));
   }
 });
 
-router.get('/:requestId/messages', validate(ListPrayerRequestChatMessagesSchema), async (req, res) => {
+router.get('/:requestId/messages', validate(ListPrayerRequestChatMessagesSchema), async (req, res, next) => {
+  const { requestId } = req.params;
+
   try {
-    // TODO(johnli): Add auth, set via verify endpoint or captcha.
-    const { requestId } = req.params;
     const chatMessages = await listPrayerRequestChatMessages({ requestId });
-    res.json({ messages: chatMessages });
+    res.status(HttpStatusCodes.OK).json({ messages: chatMessages });
   } catch (error) {
-    logger.error('Error listing prayer request chat messages:', error);
-    res.status(500).json({ error: 'Failed to list prayer request chat messages' });
+    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to list prayer request chat messages'));
   }
 });
 
-router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), verifyCaptcha, async (req, res) => {
-  try {
-    const { requestId } = req.params;
-    const { requestContactEmail, requestContactPhone } = req.body;
+router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), verifyCaptcha, async (req, res, next) => {
+  const { requestId } = req.params;
+  const { requestContactEmail, requestContactPhone } = req.body;
 
+  try {
     const verifiedChatId = await verifyPrayerRequestChat({ requestId, requestContactEmail, requestContactPhone });
     if (!verifiedChatId) {
-      res.status(404).json({ error: 'Prayer request not found' });
-      return;
+      throw new RouteError(HttpStatusCodes.NOT_FOUND, 'Prayer request not found or verification failed');
     }
-
-    logger.info(`Verified prayer request chat: ${verifiedChatId}`);
     req.session.verifiedChatIds = [...(req.session.verifiedChatIds || []), verifiedChatId];
-
-    res.status(200).json({ isVerified: true });
+    res.status(HttpStatusCodes.OK).json({ isVerified: true });
   } catch (error) {
-    logger.error('Error verifying prayer request chat:', error);
-    res.status(500).json({ error: 'Failed to verify prayer request chat' });
+    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to verify prayer request chat'));
   }
 });
 

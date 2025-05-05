@@ -1,32 +1,34 @@
 import { Router } from 'express';
 
+import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { createChurch } from '../models/churches_storage';
 import { CreateChurchSchema } from '../schemas/churches';
+import { RouteError } from '@server/common/route_errors';
+import HttpStatusCodes from '@server/common/status_codes';
+import { logger } from '@server/logger';
 
 const router = Router();
 
-// Create a new church
-router.post('/', validate(CreateChurchSchema), async (req, res) => {
-  try {
-    const { name, address, city, state, zip, phone, email, website } = req.body;
+// Create a new church - Requires authentication
+router.post('/', ensureAuthenticated, validate(CreateChurchSchema), async (req, res, next) => {
+  const { name, address, city, state, zip, phone, email, website } = req.body;
 
+  try {
     const church = await createChurch({
       name,
       address,
       city,
       state,
       zip,
-      county: city, // Using city as county for now
+      county: city,
       phone,
       email,
       website,
     });
-
-    res.status(201).json(church);
-  } catch (error) {
-    console.error('Error creating church:', error);
-    res.status(500).json({ error: 'Failed to create church' });
+    res.status(HttpStatusCodes.CREATED).json(church);
+  } catch (error: any) {
+    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Failed to create church'));
   }
 });
 

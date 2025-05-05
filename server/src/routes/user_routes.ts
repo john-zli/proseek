@@ -5,12 +5,14 @@ import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { createUser, generateInvitationCode, getUserByEmail } from '../models/users_storage';
 import { CreateUserSchema, InviteUserSchema, LoginUserSchema } from '../schemas/users';
+import { RouteError } from '@server/common/route_errors';
+import HttpStatusCodes from '@server/common/status_codes';
 import { logger } from '@server/logger';
 
 const router = Router();
 
 // Create a new user (Registration)
-router.post('/', validate(CreateUserSchema), async (req, res) => {
+router.post('/', validate(CreateUserSchema), async (req, res, next) => {
   try {
     const { email, firstName, lastName, gender, password, invitationCode } = req.body;
 
@@ -25,86 +27,87 @@ router.post('/', validate(CreateUserSchema), async (req, res) => {
       invitationCode,
     });
 
-    req.session.regenerate(err => {
-      if (err) {
-        logger.error({ err }, 'Error regenerating session after registration');
-        res.status(500).json({ error: 'Registration succeeded but session creation failed' });
-        return;
+    req.session.regenerate(sessionErr => {
+      if (sessionErr) {
+        logger.error({ err: sessionErr }, 'Error regenerating session after registration');
+        const err = new RouteError(
+          HttpStatusCodes.INTERNAL_SERVER_ERROR,
+          'Registration succeeded but session creation failed'
+        );
+        return next(err);
       }
       req.session.user = { id: userId, email: email, churchId: churchId };
-      res.status(201).json({ userId });
+      res.status(HttpStatusCodes.CREATED).json({ userId });
     });
   } catch (error: any) {
     logger.error({ err: error }, 'Error creating user:');
 
-    let statusCode = 500;
+    let statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
     let message = 'Failed to create user';
 
     if (error.code === '23505') {
-      statusCode = 409;
+      statusCode = HttpStatusCodes.CONFLICT;
       message = 'User with this email already exists';
     } else if (error.code === 'P0001') {
-      statusCode = 400;
+      statusCode = HttpStatusCodes.BAD_REQUEST;
       message = 'Invalid or already used invitation code';
     }
 
-    res.status(statusCode).json({ error: message });
+    const err = new RouteError(statusCode, message);
+    return next(err);
   }
 });
 
 // User Login
-router.post('/login', validate(LoginUserSchema), async (req, res) => {
+router.post('/login', validate(LoginUserSchema), async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const user = await getUserByEmail(email);
 
     if (!user || !user.passwordHash) {
-      res.status(401).json({ error: 'Invalid email or password' });
-      return;
+      throw new RouteError(HttpStatusCodes.UNAUTHORIZED, 'Invalid email or password');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
-      res.status(401).json({ error: 'Invalid email or password' });
-      return;
+      throw new RouteError(HttpStatusCodes.UNAUTHORIZED, 'Invalid email or password');
     }
 
     // Regenerate session to prevent session fixation attacks
     req.session.regenerate(err => {
       if (err) {
         logger.error({ err }, 'Error regenerating session after login');
-        res.status(500).json({ error: 'Login failed' });
-        return;
+        return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Login failed'));
       }
 
       // Store user information in session, including churchId
       req.session.user = { id: user.userId, email: user.email, churchId: user.churchId };
       // Omit passwordHash before sending user data
       const { passwordHash, ...userWithoutPassword } = user;
-      res.status(200).json({ message: 'Login successful', user: userWithoutPassword });
+      res.status(HttpStatusCodes.OK).json({ message: 'Login successful', user: userWithoutPassword });
     });
   } catch (error) {
     logger.error({ err: error }, 'Error during user login:');
-    res.status(500).json({ error: 'Login failed' });
+    return next(error);
   }
 });
 
 // User Logout
-router.post('/logout', (req, res) => {
+router.post('/logout', (req, res, next) => {
   req.session.destroy(err => {
     if (err) {
       logger.error({ err }, 'Error destroying session during logout');
-      res.status(500).json({ error: 'Logout failed' });
-      return;
+      const nextErr = new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Logout failed');
+      return next(nextErr);
     }
     res.clearCookie('connect.sid'); // Ensure the session cookie is cleared
-    res.status(200).json({ message: 'Logout successful' });
+    res.status(HttpStatusCodes.OK).json({ message: 'Logout successful' });
   });
 });
 
 // Generate Invitation Code
-router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (req, res) => {
+router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (req, res, next) => {
   // ensureAuthenticated guarantees req.session.user, user.id, and user.churchId exist
   const user = req.session.user!;
   const { id: userId, churchId } = user;
@@ -116,25 +119,23 @@ router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (r
     // TODO: Send email to `email` with the `invitationCode` (Email: ${email})
 
     // 3. Return the generated code
-    res.status(201).json({ invitationCode });
+    res.status(HttpStatusCodes.CREATED).json({ invitationCode });
   } catch (error: any) {
     logger.error({ err: error, userId, churchId }, 'Error generating invitation code:');
-    // Check for specific error from the SQL function (e.g., max attempts reached)
-    if (error.message?.includes('Could not generate a unique invitation code')) {
-      res.status(500).json({ error: 'Failed to generate a unique invitation code. Please try again.' });
-      return;
-    }
-    res.status(500).json({ error: 'Failed to generate invitation code' });
+    const message = error.message || 'Failed to generate invitation code';
+
+    const err = new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, message);
+    return next(err);
   }
 });
 
 // Get Current User (/me endpoint)
-router.get('/me', (req, res) => {
+router.get('/me', (req, res, next) => {
   if (req.session.user) {
     // Optionally fetch fresh user data from DB if needed
-    res.status(200).json({ user: req.session.user });
+    res.status(HttpStatusCodes.OK).json({ user: req.session.user });
   } else {
-    res.status(401).json({ error: 'Not authenticated' });
+    res.status(HttpStatusCodes.UNAUTHORIZED).json({ error: 'Not authenticated' });
   }
 });
 
