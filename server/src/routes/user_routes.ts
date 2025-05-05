@@ -88,7 +88,7 @@ router.post('/login', validate(LoginUserSchema), async (req, res, next) => {
       }
 
       // Omit passwordHash before sending user data
-      const { passwordHash, creationTimestamp, modifiedTimestamp, ...userWithoutPassword } = user;
+      const { passwordHash, creationTimestamp, modificationTimestamp, ...userWithoutPassword } = user;
       // Store user information in session, including churchId
       req.session.user = userWithoutPassword;
 

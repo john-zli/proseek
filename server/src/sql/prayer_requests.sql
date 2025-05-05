@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
 
   -- Metadata
   creation_timestamp        timestamp           NOT NULL DEFAULT now(),
-  modified_timestamp        timestamp           NOT NULL DEFAULT now(),
+  modification_timestamp    timestamp           NOT NULL DEFAULT now(),
 
   CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id)
     REFERENCES core.users(user_id) ON DELETE SET NULL,
@@ -155,7 +155,7 @@ BEGIN
     city,
     region,
     creation_timestamp,
-    modified_timestamp
+    modification_timestamp
   ) VALUES (
     PARAM_contact_email,
     PARAM_contact_phone,

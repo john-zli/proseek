@@ -7,8 +7,8 @@ export interface PrayerRequestChat {
   requestContactPhone?: string;
   zip?: string;
   city?: string;
-  creationTimestamp: Date;
-  modifiedTimestamp: Date;
+  creationTimestamp: number;
+  modificationTimestamp: number;
 }
 
 export interface CreatePrayerRequestChatParams {

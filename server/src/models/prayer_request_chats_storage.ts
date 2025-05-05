@@ -22,7 +22,7 @@ const ColumnKeyMappings = {
     city: 'city',
     region: 'region',
     creationTimestamp: 'creation_timestamp',
-    modifiedTimestamp: 'modified_timestamp',
+    modificationTimestamp: 'modification_timestamp',
   },
   PrayerRequestChatMessage: {
     messageId: 'message_id',
@@ -45,7 +45,7 @@ const SqlCommands = {
                 prayer_request_chats.zip,
                 prayer_request_chats.city,
                 EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp) AS creation_timestamp,
-                EXTRACT(EPOCH FROM prayer_request_chats.modified_timestamp) AS modified_timestamp
+                EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp) AS modification_timestamp
     FROM        core.prayer_request_chats
     WHERE       ($1::uuid IS NULL OR prayer_request_chats.assigned_user_id = $1::uuid) AND
                 ($2::uuid IS NULL OR prayer_request_chats.assigned_church_id = $2::uuid)
@@ -75,7 +75,7 @@ const SqlCommands = {
   AssignPrayerRequestChat: `
     UPDATE core.prayer_request_chats
     SET assigned_user_id = $1::uuid,
-        modified_timestamp = CURRENT_TIMESTAMP
+        modification_timestamp = CURRENT_TIMESTAMP
     WHERE request_id = $2::uuid
     AND assigned_church_id = $3::uuid;`,
 

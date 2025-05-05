@@ -10,7 +10,7 @@ const ColumnKeyMappings = {
     email: 'email',
     gender: 'gender',
     creationTimestamp: 'creation_timestamp',
-    modifiedTimestamp: 'modification_timestamp',
+    modificationTimestamp: 'modification_timestamp',
     passwordHash: 'password_hash',
   },
   SanitizedUser: {
@@ -33,7 +33,7 @@ const SqlCommands = {
                 users.phone,
                 users.gender,
                 EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
-                EXTRACT(EPOCH FROM users.modified_timestamp) AS modified_timestamp
+                EXTRACT(EPOCH FROM users.modification_timestamp) AS modification_timestamp
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.church_id = $1::uuid
@@ -48,7 +48,7 @@ const SqlCommands = {
                 users.gender,
                 users.password_hash,
                 EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
-                EXTRACT(EPOCH FROM users.modified_timestamp) AS modified_timestamp
+                EXTRACT(EPOCH FROM users.modification_timestamp) AS modification_timestamp
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.user_id = $1::uuid;`,
@@ -62,7 +62,7 @@ const SqlCommands = {
                 users.gender,
                 users.password_hash,
                 EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
-                EXTRACT(EPOCH FROM users.modified_timestamp) AS modified_timestamp
+                EXTRACT(EPOCH FROM users.modification_timestamp) AS modification_timestamp
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.email = $1::varchar(100);`,
