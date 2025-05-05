@@ -57,12 +57,12 @@ END $$;
 CREATE TABLE IF NOT EXISTS core.user_invitations (
     code_id                 uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
     church_id               uuid                NOT NULL,
-    code                    varchar(20)         UNIQUE NOT NULL, -- The actual invitation code string
-    created_by_user_id      uuid                NOT NULL, -- User who generated the code
-    redeemed_by_user_id     uuid,                         -- User who used the code
-    expiration_timestamp    timestamp,                    -- Optional expiration timestamp
+    code                    varchar(20)         UNIQUE NOT NULL,
+    created_by_user_id      uuid                NOT NULL,
+    redeemed_by_user_id     uuid, 
+    expiration_timestamp    timestamp,
     creation_timestamp      timestamp           DEFAULT now(),
-    redemption_timestamp    timestamp,                    -- Timestamp when the code was used
+    redemption_timestamp    timestamp,
 
     CONSTRAINT church_fk FOREIGN KEY (church_id)
         REFERENCES core.churches(church_id) ON DELETE CASCADE,
@@ -72,9 +72,9 @@ CREATE TABLE IF NOT EXISTS core.user_invitations (
         REFERENCES core.users(user_id) ON DELETE SET NULL -- Keep record even if redeemed user deleted
 );
 
-CREATE INDEX IF NOT EXISTS invitation_codes_church_id_idx ON core.invitation_codes (church_id);
-CREATE INDEX IF NOT EXISTS invitation_codes_code_idx ON core.invitation_codes (code);
-CREATE INDEX IF NOT EXISTS invitation_codes_redeemed_by_user_id_idx ON core.invitation_codes (redeemed_by_user_id);
+CREATE INDEX IF NOT EXISTS user_invitations_church_id_idx ON core.user_invitations (church_id);
+CREATE INDEX IF NOT EXISTS user_invitations_code_idx ON core.user_invitations (code);
+CREATE INDEX IF NOT EXISTS user_invitations_redeemed_by_user_id_idx ON core.user_invitations (redeemed_by_user_id);
 
 CREATE OR REPLACE FUNCTION core.create_user_and_redeem_code(
     PARAM_email             varchar(100),
