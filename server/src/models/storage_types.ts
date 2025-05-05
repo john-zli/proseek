@@ -19,16 +19,18 @@ export interface Church {
   zip: string;
   county: string;
   city: string;
-  creationTimestamp: Date;
-  modifiedTimestamp: Date;
+  creationTimestamp: number;
+  modifiedTimestamp: number;
 }
 
 export interface User {
   userId: string;
   churchId: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  creationTimestamp: Date;
-  modifiedTimestamp: Date;
+  gender: string;
+  creationTimestamp: number;
+  modifiedTimestamp: number;
   passwordHash?: string;
 }
