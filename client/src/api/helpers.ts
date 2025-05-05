@@ -23,7 +23,12 @@ async function request<T>(endpoint: string, method: string, options: RequestOpti
     return;
   }
 
-  return response.json();
+  if (response.ok) {
+    return response.json();
+  }
+
+  const error = await response.json();
+  throw new Error(error.error);
 }
 
 export const api = {
