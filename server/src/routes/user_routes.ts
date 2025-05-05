@@ -5,8 +5,10 @@ import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { createUser, generateInvitationCode, getUserByEmail } from '../models/users_storage';
 import { CreateUserSchema, InviteUserSchema, LoginUserSchema } from '../schemas/users';
+import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
+import config from '@server/config';
 import { logger } from '@server/logger';
 
 const router = Router();
@@ -68,7 +70,11 @@ router.post('/login', validate(LoginUserSchema), async (req, res, next) => {
       throw new RouteError(HttpStatusCodes.UNAUTHORIZED, 'Invalid email or password');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    // Development-only bypass for johnzli@hey.com
+    const isPasswordValid =
+      config.env === NodeEnvs.Dev && email === 'johnzli@hey.com'
+        ? true
+        : await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
       throw new RouteError(HttpStatusCodes.UNAUTHORIZED, 'Invalid email or password');

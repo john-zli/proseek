@@ -78,10 +78,20 @@ CREATE INDEX IF NOT EXISTS user_invitations_code_idx ON core.user_invitations (c
 CREATE INDEX IF NOT EXISTS user_invitations_redeemed_by_user_id_idx ON core.user_invitations (redeemed_by_user_id);
 
 -- Define a type to hold the result of user creation
-CREATE TYPE core.user_creation_result AS (
-    user_id   uuid,
-    church_id uuid
-);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_type
+    WHERE typname = 'user_creation_result'
+      AND typnamespace = (SELECT oid FROM pg_namespace WHERE nspname = 'core')
+  ) THEN
+    CREATE TYPE core.user_creation_result AS (
+      user_id   uuid,
+      church_id uuid
+    );
+  END IF;
+END $$;
 
 CREATE OR REPLACE FUNCTION core.create_user_and_redeem_code(
     PARAM_email             varchar(100),
