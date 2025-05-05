@@ -19,3 +19,10 @@ export const LoginUserSchema = z.object({
     password: z.string().min(1, 'Password is required'),
   }),
 });
+
+// Schema for inviting a user
+export const InviteUserSchema = z.object({
+  body: z.object({
+    email: z.string().email('Valid email is required for invitation'),
+  }),
+});

@@ -1,9 +1,10 @@
 import bcrypt from 'bcrypt';
 import { Router } from 'express';
 
+import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { createUser, getUserByEmail } from '../models/users_storage';
-import { CreateUserSchema, LoginUserSchema } from '../schemas/users';
+import { createUser, generateInvitationCode, getUserByEmail } from '../models/users_storage';
+import { CreateUserSchema, InviteUserSchema, LoginUserSchema } from '../schemas/users';
 import { logger } from '@server/logger';
 
 const router = Router();
@@ -15,7 +16,7 @@ router.post('/', validate(CreateUserSchema), async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const userId = await createUser({
+    const { userId, churchId } = await createUser({
       email,
       firstName,
       lastName,
@@ -28,9 +29,11 @@ router.post('/', validate(CreateUserSchema), async (req, res) => {
       if (err) {
         logger.error({ err }, 'Error regenerating session after registration');
         res.status(500).json({ error: 'Registration succeeded but session creation failed' });
+        return;
       }
-      req.session.user = { id: userId, email: email };
+      req.session.user = { id: userId, email: email, churchId: churchId };
       res.status(201).json({ userId });
+      return;
     });
   } catch (error: any) {
     logger.error({ err: error }, 'Error creating user:');
@@ -47,6 +50,7 @@ router.post('/', validate(CreateUserSchema), async (req, res) => {
     }
 
     res.status(statusCode).json({ error: message });
+    return;
   }
 });
 
@@ -76,8 +80,8 @@ router.post('/login', validate(LoginUserSchema), async (req, res) => {
         return;
       }
 
-      // Store user information in session
-      req.session.user = { id: user.userId, email: user.email };
+      // Store user information in session, including churchId
+      req.session.user = { id: user.userId, email: user.email, churchId: user.churchId };
       // Omit passwordHash before sending user data
       const { passwordHash, ...userWithoutPassword } = user;
       res.status(200).json({ message: 'Login successful', user: userWithoutPassword });
@@ -89,7 +93,7 @@ router.post('/login', validate(LoginUserSchema), async (req, res) => {
 });
 
 // User Logout
-router.post('/logout', (req, res, next) => {
+router.post('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
       logger.error({ err }, 'Error destroying session during logout');
@@ -99,6 +103,33 @@ router.post('/logout', (req, res, next) => {
     res.clearCookie('connect.sid'); // Ensure the session cookie is cleared
     res.status(200).json({ message: 'Logout successful' });
   });
+});
+
+// Generate Invitation Code
+router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (req, res) => {
+  // ensureAuthenticated guarantees req.session.user, user.id, and user.churchId exist
+  const user = req.session.user!;
+  const { id: userId, churchId } = user;
+  const { email } = req.body;
+
+  try {
+    const invitationCode = await generateInvitationCode(churchId, userId, email);
+
+    // TODO: Send email to `email` with the `invitationCode` (Email: ${email})
+
+    // 3. Return the generated code
+    res.status(201).json({ invitationCode });
+    return;
+  } catch (error: any) {
+    logger.error({ err: error, userId, churchId }, 'Error generating invitation code:');
+    // Check for specific error from the SQL function (e.g., max attempts reached)
+    if (error.message?.includes('Could not generate a unique invitation code')) {
+      res.status(500).json({ error: 'Failed to generate a unique invitation code. Please try again.' });
+      return;
+    }
+    res.status(500).json({ error: 'Failed to generate invitation code' });
+    return;
+  }
 });
 
 // Get Current User (/me endpoint)

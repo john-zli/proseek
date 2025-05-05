@@ -1,5 +1,5 @@
 import { queryRows, queryScalar, querySingleRow } from './db_query_helper';
-import { User } from './storage_types';
+import { CreatedUser, User } from './storage_types';
 
 const ColumnKeyMappings = {
   User: {
@@ -12,6 +12,10 @@ const ColumnKeyMappings = {
     creationTimestamp: 'creation_timestamp',
     modifiedTimestamp: 'modification_timestamp',
     passwordHash: 'password_hash',
+  },
+  CreatedUser: {
+    userId: 'user_id',
+    churchId: 'church_id',
   },
 };
 
@@ -58,7 +62,18 @@ const SqlCommands = {
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.email = $1::varchar(100);`,
-  CreateUser: `SELECT core.create_user_and_redeem_code($1, $2, $3, $4, $5, $6);`,
+  CreateUser: `
+    SELECT      user_id,
+                church_id
+    FROM        core.create_user_and_redeem_code(
+                  $1::varchar(100),
+                  $2::varchar(50),
+                  $3::varchar(50),
+                  $4::varchar(10),
+                  $5::text,
+                  $6::varchar(20)
+                );`,
+  GenerateInvitationCode: `SELECT core.generate_invitation_code($1::uuid, $2::uuid, $3::varchar(100)) as code;`,
 };
 
 export async function listUsersFromChurch(churchId: string): Promise<User[]> {
@@ -87,10 +102,11 @@ export async function createUser(params: {
   gender: string;
   passwordHash: string;
   invitationCode: string;
-}): Promise<string> {
-  return queryScalar<string>({
+}): Promise<CreatedUser> {
+  return querySingleRow<CreatedUser>({
     commandIdentifier: 'CreateUser',
     query: SqlCommands.CreateUser,
+    mapping: ColumnKeyMappings.CreatedUser,
     allowNull: false,
     params: [
       params.email,
@@ -111,4 +127,18 @@ export async function getUserByEmail(email: string): Promise<User | null> {
     mapping: ColumnKeyMappings.User,
   });
   return users.length > 0 ? users[0] : null;
+}
+
+// Function to generate an invitation code
+export async function generateInvitationCode(
+  churchId: string,
+  createdByUserId: string,
+  targetEmail: string
+): Promise<string> {
+  return queryScalar<string>({
+    commandIdentifier: 'GenerateInvitationCode',
+    query: SqlCommands.GenerateInvitationCode,
+    allowNull: false,
+    params: [churchId, createdByUserId, targetEmail],
+  });
 }

@@ -48,17 +48,19 @@ export async function queryRows<T>({
  * Executes a database query and returns a single row, transformed from snake_case to camelCase.
  * Throws an error if no rows or multiple rows are found.
  */
-export async function querySingleRow<T>({
+export async function querySingleRow<T, A extends boolean = false>({
   query,
   params,
   mapping,
   commandIdentifier,
+  allowNull = false as A,
 }: {
   query: string;
   params: any[];
   mapping: ColumnMapping<T>;
   commandIdentifier: string;
-}): Promise<T | undefined> {
+  allowNull?: A;
+}): Promise<A extends true ? T | null : T> {
   const rows = await queryRows<T>({
     query,
     params,
@@ -70,7 +72,11 @@ export async function querySingleRow<T>({
     throw new Error(`Multiple results found for command ${commandIdentifier}`);
   }
 
-  return rows[0] ?? undefined;
+  if (rows.length === 0 && !allowNull) {
+    throw new Error(`No results found for command ${commandIdentifier}`);
+  }
+
+  return rows[0] as A extends true ? T | null : T;
 }
 
 /**

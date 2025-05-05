@@ -34,3 +34,8 @@ export interface User {
   modifiedTimestamp: number;
   passwordHash?: string;
 }
+
+export interface CreatedUser {
+  userId: string;
+  churchId: string;
+}
