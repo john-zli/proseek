@@ -1,13 +1,17 @@
 // import {useLocation} from 'react-router-dom';
 import clsx from 'clsx';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button, ButtonStyle } from '../shared-components/button';
 import { Link } from '../shared-components/link';
 import classes from './header.module.less';
 
 export function Header() {
-  // const location = useLocation();
-  const location = window.location;
+  const navigate = useNavigate();
+  const navigateToLogin = useCallback(() => {
+    navigate('/login');
+  }, [navigate]);
 
   return (
     <div className={classes.headerContainer}>
@@ -28,7 +32,7 @@ export function Header() {
 
         {/* Users should only be created via a referral. */}
         <div className={classes.rightContainer}>
-          <Button buttonStyle={ButtonStyle.Secondary} onClick={() => {}}>
+          <Button buttonStyle={ButtonStyle.Secondary} onClick={navigateToLogin}>
             Log in
           </Button>
           <Button buttonStyle={ButtonStyle.Primary} onClick={() => {}}>
