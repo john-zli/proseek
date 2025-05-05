@@ -1,23 +1,35 @@
 import { useState } from 'react';
+import { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { Button, ButtonStyle } from '../shared-components/button';
 import { TextInput } from '../shared-components/text_input';
 import classes from './login_page.module.less';
+import { UsersApi } from '@client/api/users';
+import { SessionContext } from '@client/contexts/session_context_provider';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { refetchSession } = useContext(SessionContext);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Placeholder for login logic
     if (!email || !password) {
       setError('Please enter both email and password.');
       return;
     }
-    setError('');
-    // TODO: Call login API
+    try {
+      await UsersApi.login({ email, password });
+      await refetchSession();
+
+      // TODO: Redirect to the churches' admin page.
+      navigate('/');
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+    }
   };
 
   return (

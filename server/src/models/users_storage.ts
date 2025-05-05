@@ -1,5 +1,5 @@
 import { queryRows, queryScalar, querySingleRow } from './db_query_helper';
-import { CreatedUser, User } from './storage_types';
+import { SanitizedUser, User } from '@common/server-api/types/users';
 
 const ColumnKeyMappings = {
   User: {
@@ -13,9 +13,13 @@ const ColumnKeyMappings = {
     modifiedTimestamp: 'modification_timestamp',
     passwordHash: 'password_hash',
   },
-  CreatedUser: {
+  SanitizedUser: {
     userId: 'user_id',
     churchId: 'church_id',
+    firstName: 'first_name',
+    lastName: 'last_name',
+    email: 'email',
+    gender: 'gender',
   },
 };
 
@@ -64,7 +68,11 @@ const SqlCommands = {
                 users.email = $1::varchar(100);`,
   CreateUser: `
     SELECT      user_id,
-                church_id
+                church_id,
+                first_name,
+                last_name,
+                email,
+                gender
     FROM        core.create_user_and_redeem_code(
                   $1::varchar(100),
                   $2::varchar(50),
@@ -102,11 +110,11 @@ export async function createUser(params: {
   gender: string;
   passwordHash: string;
   invitationCode: string;
-}): Promise<CreatedUser> {
-  return querySingleRow<CreatedUser>({
+}): Promise<SanitizedUser> {
+  return querySingleRow<SanitizedUser>({
     commandIdentifier: 'CreateUser',
     query: SqlCommands.CreateUser,
-    mapping: ColumnKeyMappings.CreatedUser,
+    mapping: ColumnKeyMappings.SanitizedUser,
     allowNull: false,
     params: [
       params.email,

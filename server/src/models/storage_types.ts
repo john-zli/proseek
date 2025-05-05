@@ -1,5 +1,3 @@
-// Additional server-specific types can go here
-
 // At least one of them must be populated.
 export type ListChurchesNearUserParams =
   | {
@@ -21,18 +19,6 @@ export interface Church {
   city: string;
   creationTimestamp: number;
   modifiedTimestamp: number;
-}
-
-export interface User {
-  userId: string;
-  churchId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  gender: string;
-  creationTimestamp: number;
-  modifiedTimestamp: number;
-  passwordHash?: string;
 }
 
 export interface CreatedUser {

@@ -14,8 +14,8 @@ export function apiRouter(_services: LocalServices): Router {
   apiRouter.get('/session', (req, res) => {
     const sessionData = {
       isAuthenticated: req.session.isAuthenticated || false,
-      userId: req.session.user?.id,
       verifiedChatIds: req.session.verifiedChatIds || [],
+      user: req.session.user,
     };
     res.json(sessionData);
   });
