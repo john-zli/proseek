@@ -33,7 +33,6 @@ router.post('/', validate(CreateUserSchema), async (req, res) => {
       }
       req.session.user = { id: userId, email: email, churchId: churchId };
       res.status(201).json({ userId });
-      return;
     });
   } catch (error: any) {
     logger.error({ err: error }, 'Error creating user:');
@@ -50,7 +49,6 @@ router.post('/', validate(CreateUserSchema), async (req, res) => {
     }
 
     res.status(statusCode).json({ error: message });
-    return;
   }
 });
 
@@ -119,7 +117,6 @@ router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (r
 
     // 3. Return the generated code
     res.status(201).json({ invitationCode });
-    return;
   } catch (error: any) {
     logger.error({ err: error, userId, churchId }, 'Error generating invitation code:');
     // Check for specific error from the SQL function (e.g., max attempts reached)
@@ -128,7 +125,6 @@ router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (r
       return;
     }
     res.status(500).json({ error: 'Failed to generate invitation code' });
-    return;
   }
 });
 
