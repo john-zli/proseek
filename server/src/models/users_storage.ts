@@ -1,3 +1,5 @@
+import bcrypt from 'bcrypt';
+
 import { queryRows, queryScalar } from './db_query_helper';
 import { User } from './storage_types';
 
@@ -9,6 +11,7 @@ const ColumnKeyMappings = {
     email: 'email',
     creationTimestamp: 'creation_timestamp',
     modifiedTimestamp: 'modification_timestamp',
+    passwordHash: 'password_hash',
   },
 };
 
@@ -20,7 +23,9 @@ const SqlCommands = {
                 users.last_name,
                 users.email,
                 users.phone,
-                users.gender
+                users.gender,
+                EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
+                EXTRACT(EPOCH FROM users.modified_timestamp) AS modified_timestamp
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.church_id = $1::uuid
@@ -32,10 +37,27 @@ const SqlCommands = {
                 users.last_name,
                 users.email,
                 users.phone,
-                users.gender
+                users.gender,
+                users.password_hash,
+                EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
+                EXTRACT(EPOCH FROM users.modified_timestamp) AS modified_timestamp
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.user_id = $1::uuid;`,
+  GetUserByEmail: `
+    SELECT      users.user_id,
+                users.church_id,
+                users.first_name,
+                users.last_name,
+                users.email,
+                users.phone,
+                users.gender,
+                users.password_hash,
+                EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
+                EXTRACT(EPOCH FROM users.modified_timestamp) AS modified_timestamp
+    FROM        core.users
+    WHERE       users.deletion_timestamp IS NULL AND
+                users.email = $1::varchar(100);`,
   CreateUser: `
     INSERT INTO core.users (
       church_id,
@@ -43,7 +65,8 @@ const SqlCommands = {
       last_name,
       email,
       phone,
-      gender
+      gender,
+      password_hash
     )
     VALUES (
       $1::uuid,
@@ -51,7 +74,8 @@ const SqlCommands = {
       $3::varchar(50),
       $4::varchar(100),
       $5::varchar(20),
-      $6::varchar(10)
+      $6::varchar(10),
+      $7::text
     )
     RETURNING user_id;`,
 };
@@ -83,11 +107,32 @@ export async function createUser(params: {
   email: string;
   phone?: string;
   gender?: string;
+  passwordHash?: string;
 }): Promise<string> {
+  let passwordHash: string | undefined;
+
   return queryScalar<string>({
     commandIdentifier: 'CreateUser',
     query: SqlCommands.CreateUser,
     allowNull: false,
-    params: [params.churchId, params.firstName, params.lastName, params.email, params.phone, params.gender],
+    params: [
+      params.churchId,
+      params.firstName,
+      params.lastName,
+      params.email,
+      params.phone,
+      params.gender,
+      passwordHash,
+    ],
   });
+}
+
+export async function getUserByEmail(email: string): Promise<User | null> {
+  const users = await queryRows<User>({
+    commandIdentifier: 'GetUserByEmail',
+    query: SqlCommands.GetUserByEmail,
+    params: [email],
+    mapping: ColumnKeyMappings.User,
+  });
+  return users.length > 0 ? users[0] : null;
 }

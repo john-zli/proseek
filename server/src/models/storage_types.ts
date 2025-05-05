@@ -30,4 +30,5 @@ export interface User {
   email: string;
   creationTimestamp: Date;
   modifiedTimestamp: Date;
+  passwordHash?: string;
 }
