@@ -1,14 +1,14 @@
-import bcrypt from 'bcrypt';
-
-import { queryRows, queryScalar } from './db_query_helper';
+import { queryRows, queryScalar, querySingleRow } from './db_query_helper';
 import { User } from './storage_types';
 
 const ColumnKeyMappings = {
   User: {
     userId: 'user_id',
     churchId: 'church_id',
-    name: 'name',
+    firstName: 'first_name',
+    lastName: 'last_name',
     email: 'email',
+    gender: 'gender',
     creationTimestamp: 'creation_timestamp',
     modifiedTimestamp: 'modification_timestamp',
     passwordHash: 'password_hash',
@@ -58,30 +58,9 @@ const SqlCommands = {
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.email = $1::varchar(100);`,
-  CreateUser: `
-    INSERT INTO core.users (
-      church_id,
-      first_name,
-      last_name,
-      email,
-      phone,
-      gender,
-      password_hash
-    )
-    VALUES (
-      $1::uuid,
-      $2::varchar(50),
-      $3::varchar(50),
-      $4::varchar(100),
-      $5::varchar(20),
-      $6::varchar(10),
-      $7::text
-    )
-    RETURNING user_id;`,
+  CreateUser: `SELECT core.create_user_and_redeem_code($1, $2, $3, $4, $5, $6);`,
 };
 
-// TODO(johnli): Add abstractions for db to transform fields to camelCase.
-// Also different kind of db query wrappers.
 export async function listUsersFromChurch(churchId: string): Promise<User[]> {
   return queryRows<User>({
     commandIdentifier: 'ListUsersFromChurch',
@@ -91,38 +70,35 @@ export async function listUsersFromChurch(churchId: string): Promise<User[]> {
   });
 }
 
-export async function getUser(userId: string): Promise<User> {
-  return queryRows<User>({
+export async function getUser(userId: string): Promise<User | undefined> {
+  return querySingleRow<User>({
     commandIdentifier: 'GetUser',
     query: SqlCommands.GetUser,
     params: [userId],
     mapping: ColumnKeyMappings.User,
-  }).then(rows => rows[0]);
+  });
 }
 
 export async function createUser(params: {
-  churchId?: string;
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
-  gender?: string;
-  passwordHash?: string;
+  gender: string;
+  passwordHash: string;
+  invitationCode: string;
 }): Promise<string> {
-  let passwordHash: string | undefined;
-
   return queryScalar<string>({
     commandIdentifier: 'CreateUser',
     query: SqlCommands.CreateUser,
     allowNull: false,
     params: [
-      params.churchId,
+      params.email,
       params.firstName,
       params.lastName,
-      params.email,
-      params.phone,
       params.gender,
-      passwordHash,
+      params.passwordHash,
+      params.invitationCode,
     ],
   });
 }

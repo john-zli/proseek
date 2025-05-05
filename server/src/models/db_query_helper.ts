@@ -1,5 +1,3 @@
-import { Pool, QueryResult } from 'pg';
-
 import { getPool } from '../db';
 
 type ColumnMapping<T> = {
@@ -44,6 +42,35 @@ export async function queryRows<T>({
       `Error executing query ${commandIdentifier}: ${error instanceof Error ? error.message : String(error)}`
     );
   }
+}
+
+/**
+ * Executes a database query and returns a single row, transformed from snake_case to camelCase.
+ * Throws an error if no rows or multiple rows are found.
+ */
+export async function querySingleRow<T>({
+  query,
+  params,
+  mapping,
+  commandIdentifier,
+}: {
+  query: string;
+  params: any[];
+  mapping: ColumnMapping<T>;
+  commandIdentifier: string;
+}): Promise<T | undefined> {
+  const rows = await queryRows<T>({
+    query,
+    params,
+    mapping,
+    commandIdentifier,
+  });
+
+  if (rows.length > 1) {
+    throw new Error(`Multiple results found for command ${commandIdentifier}`);
+  }
+
+  return rows[0] ?? undefined;
 }
 
 /**
