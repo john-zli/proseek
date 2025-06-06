@@ -11,9 +11,9 @@ import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
-import { logger } from '@server/logger';
+import { sessionMiddleware } from '@server/middleware/session';
 import { pageRouter } from '@server/routes/page_router';
-import { sessionMiddleware } from '@server/session';
+import { logger } from '@server/services/logger';
 
 interface LocalServices {}
 

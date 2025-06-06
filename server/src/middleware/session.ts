@@ -2,9 +2,9 @@ import { RedisStore } from 'connect-redis';
 import session from 'express-session';
 import { createClient } from 'redis';
 
-import { NodeEnvs } from './common/constants';
-import config from './config';
 import { SessionData as SharedSessionData } from '@common/server-api/types/session';
+import { NodeEnvs } from '@server/common/constants';
+import config from '@server/config';
 
 // Create Redis client
 const redisClient = createClient({

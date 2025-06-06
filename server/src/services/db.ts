@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 
-import config from './config';
+import config from '@server/config';
 
 let pool: Pool;
 

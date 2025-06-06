@@ -1,4 +1,4 @@
-import { getPool } from '../db';
+import { getPool } from '@server/services/db';
 
 type ColumnMapping<T> = {
   [K in keyof T]: string;
