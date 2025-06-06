@@ -1,6 +1,6 @@
 import config from './config';
-import { logger } from './logger';
 import { startServer } from './server';
+import { logger } from './services/logger';
 
 const port = config.port;
 const SERVER_START_MSG = 'Express server started on port: ' + port;

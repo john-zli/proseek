@@ -3,7 +3,7 @@ import geoip from 'geoip-lite';
 
 import { NodeEnvs } from '@server/common/constants';
 import config from '@server/config';
-import { logger } from '@server/logger';
+import { logger } from '@server/services/logger';
 
 // Mock IP address for development environment
 const MOCK_IP = '104.244.24.102'; // Monkeybrains IP Address

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { getCap } from '@server/captcha';
+import { getCap } from '@server/services/captcha';
 
 export async function verifyCaptcha(req: Request, res: Response, next: NextFunction) {
   const { token } = req.body;

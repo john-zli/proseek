@@ -1,8 +1,8 @@
 import { Router } from 'express';
 
-import { getCap } from '@server/captcha';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
+import { getCap } from '@server/services/captcha';
 
 const router = Router();
 

@@ -6,7 +6,7 @@ import { createChurch } from '../models/churches_storage';
 import { CreateChurchSchema } from '../schemas/churches';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
-import { logger } from '@server/logger';
+import { logger } from '@server/services/logger';
 
 const router = Router();
 

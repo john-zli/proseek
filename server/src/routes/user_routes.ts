@@ -9,7 +9,7 @@ import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
-import { logger } from '@server/logger';
+import { logger } from '@server/services/logger';
 
 const router = Router();
 
