@@ -6,6 +6,8 @@ declare global {
       ipLocation?: {
         city?: string;
         region?: string;
+        latitude?: number;
+        longitude?: number;
       };
     }
   }
