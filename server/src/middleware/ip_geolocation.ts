@@ -24,6 +24,8 @@ export function ipGeolocationMiddleware(req: Request, res: Response, next: NextF
       req.ipLocation = {
         city: geo.city,
         region: geo.region,
+        latitude: geo.ll[0],
+        longitude: geo.ll[1],
       };
     }
   } catch (error) {
