@@ -16,6 +16,24 @@ else
   fi
 fi
 
+# Install PM2
+if command -v pm2 &> /dev/null; then
+  echo "PM2 is already installed."
+  echo "PM2 version: $(pm2 --version)"
+else 
+  echo "PM2 is not installed. Installing PM2..."
+  bun install -g pm2
+  
+  # Verify installation
+  if command -v pm2 &> /dev/null; then
+    echo "✅ PM2 installed successfully."
+    echo "PM2 version: $(pm2 --version)"
+  else
+    echo "❌ PM2 installation failed. Please check the installation script."
+    exit 1
+  fi
+fi
+
 # Install packages using Bun
 if [ -f "package.json" ]; then
   echo "Installing packages from package.json using Bun..."
