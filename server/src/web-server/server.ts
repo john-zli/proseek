@@ -4,14 +4,14 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 
-import { errorHandler } from './middleware/error_handler';
-import { ipGeolocationMiddleware } from './middleware/ip_geolocation';
-import { apiRouter } from './routes/api_router';
 import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
+import { errorHandler } from '@server/middleware/error_handler';
+import { ipGeolocationMiddleware } from '@server/middleware/ip_geolocation';
 import { sessionMiddleware } from '@server/middleware/session';
+import { apiRouter } from '@server/routes/api_router';
 import { pageRouter } from '@server/routes/page_router';
 import { logger } from '@server/services/logger';
 
@@ -27,7 +27,7 @@ export function startServer(services: LocalServices): Express {
   app.use(ipGeolocationMiddleware);
 
   // Serving React CSS and JS
-  app.use(express.static(path.join(__dirname, '../../client/dist')));
+  app.use(express.static(path.join(__dirname, '../../../client/dist')));
 
   // Show routes called in console during development
   if (config.env === NodeEnvs.Dev) {

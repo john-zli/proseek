@@ -4,14 +4,14 @@
   "private": true,
   "scripts": {
     "clean-install": "rm -rf ./node_modules && bun install",
-    "dev": "doppler run -- bun run --bun ./src",
+    "dev": "doppler run -- bun run --bun ./src/web-server",
     "dev:hot": "bun run --bun nodemon --exec \"bun run dev\" --watch ./src --ext .ts",
     "lint": "bun run --bun eslint .",
     "start": "NODE_ENV=production bun run --bun ./dist",
     "test": "NODE_ENV=test bun run --bun ./spec",
     "test:hot": "bun run --bun nodemon --exec \"bun run test\" --watch ./src --watch ./spec --ext .ts",
     "type-check": "bun run --bun tsc --noEmit",
-    "build": "bun build ./src/index.ts --outdir ./dist --target node"
+    "build": "bun build ./src/web-server/index.ts --outdir ./dist --target node"
   },
   "engines": {
     "bun": ">=1.0.0"
