@@ -8,8 +8,8 @@ const ColumnKeyMappings = {
     zip: 'zip',
     county: 'county',
     city: 'city',
-    creationTimestamp: 'creation_timestamp',
-    modificationTimestamp: 'modification_timestamp',
+    state: 'state',
+    address: 'address',
   },
 };
 
@@ -21,8 +21,7 @@ const SqlCommands = {
                 churches.city,
                 churches.state,
                 churches.zip,
-                churches.county,
-                churches.country
+                churches.county
     FROM        core.churches
     WHERE       churches.deletion_timestamp IS NULL AND
                 (

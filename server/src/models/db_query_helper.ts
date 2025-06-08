@@ -7,7 +7,7 @@ type ColumnMapping<T> = {
 /**
  * Transforms a database row from snake_case to camelCase based on the provided mapping
  */
-function transformRow<T>(row: Record<string, any>, mapping: ColumnMapping<T>): T {
+export function transformRow<T>(row: Record<string, any>, mapping: ColumnMapping<T>): T {
   const result: Partial<T> = {};
 
   for (const [camelKey, snakeKey] of Object.entries(mapping) as [keyof T, string][]) {
