@@ -11,3 +11,4 @@ END $$;
 
 -- Grant privileges
 GRANT ALL PRIVILEGES ON DATABASE proseek TO proseek_admin;
+GRANT ALL PRIVILEGES ON DATABASE proseek_test TO proseek_admin;

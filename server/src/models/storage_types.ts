@@ -17,8 +17,8 @@ export interface Church {
   zip: string;
   county: string;
   city: string;
-  creationTimestamp: number;
-  modificationTimestamp: number;
+  state: string;
+  address: string;
 }
 
 export interface CreatedUser {

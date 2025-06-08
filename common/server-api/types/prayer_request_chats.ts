@@ -20,9 +20,15 @@ export interface CreatePrayerRequestChatParams {
   messages: Omit<PrayerRequestChatMessage, 'requestId'>[];
 }
 
-export interface AssignPrayerRequestChatParams {
+export interface AssignPrayerRequestChatToUserParams {
   requestId: string;
   userId: string;
+  churchId: string;
+}
+
+export interface MatchPrayerRequestChatToChurchParams {
+  requestId: string;
+  churchId: string;
 }
 
 export interface ListPrayerRequestChatsParams {

@@ -8,8 +8,8 @@ const ColumnKeyMappings = {
     zip: 'zip',
     county: 'county',
     city: 'city',
-    creationTimestamp: 'creation_timestamp',
-    modificationTimestamp: 'modification_timestamp',
+    state: 'state',
+    address: 'address',
   },
 };
 
@@ -21,8 +21,7 @@ const SqlCommands = {
                 churches.city,
                 churches.state,
                 churches.zip,
-                churches.county,
-                churches.country
+                churches.county
     FROM        core.churches
     WHERE       churches.deletion_timestamp IS NULL AND
                 (
@@ -39,10 +38,7 @@ const SqlCommands = {
       state,
       zip,
       county,
-      country,
-      phone,
-      email,
-      website
+      country
     )
     VALUES (
       $1::varchar(100),
@@ -51,10 +47,7 @@ const SqlCommands = {
       $4::varchar(50),
       $5::varchar(20),
       $6::varchar(100),
-      'US',
-      $7::varchar(20),
-      $8::varchar(100),
-      $9::varchar(200)
+      'US'
     )
     RETURNING church_id;`,
 };
@@ -78,24 +71,11 @@ export async function createChurch(params: {
   state: string;
   zip: string;
   county: string;
-  phone?: string;
-  email?: string;
-  website?: string;
 }): Promise<string> {
   return queryScalar<string>({
     commandIdentifier: 'CreateChurch',
     query: SqlCommands.CreateChurch,
     allowNull: false,
-    params: [
-      params.name,
-      params.address,
-      params.city,
-      params.state,
-      params.zip,
-      params.county,
-      params.phone,
-      params.email,
-      params.website,
-    ],
+    params: [params.name, params.address, params.city, params.state, params.zip, params.county],
   });
 }

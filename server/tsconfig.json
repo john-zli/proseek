@@ -4,8 +4,21 @@
     "composite": true,
     "outDir": "./dist",
     "rootDir": "..",
-    "typeRoots": ["./src/types", "./node_modules/@types"]
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types"
+    ],
+    "types": [
+      "bun-types"
+    ]
   },
-  "include": ["src/**/*", "../common/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*",
+    "../common/**/*",
+    "src/**/*.test.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

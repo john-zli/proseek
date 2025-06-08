@@ -109,6 +109,7 @@ DECLARE
   VAR_invitation_code_id  uuid;
   VAR_church_id           uuid;
   VAR_user_id             uuid;
+  VAR_result              core.user_creation_result;
 BEGIN
     -- 1. Find and validate the invitation code and target email
     SELECT code_id, church_id
@@ -153,7 +154,15 @@ BEGIN
         redemption_timestamp = now()
     WHERE code_id = VAR_invitation_code_id;
 
-    RETURN (VAR_user_id, VAR_church_id, PARAM_first_name, PARAM_last_name, PARAM_email, PARAM_gender);
+    -- 5. Set result and return
+    VAR_result.user_id := VAR_user_id;
+    VAR_result.church_id := VAR_church_id;
+    VAR_result.first_name := PARAM_first_name;
+    VAR_result.last_name := PARAM_last_name;
+    VAR_result.email := PARAM_email;
+    VAR_result.gender := PARAM_gender;
+
+    RETURN VAR_result;
 END;
 $$ LANGUAGE plpgsql;
 

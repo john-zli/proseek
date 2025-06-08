@@ -1,10 +1,12 @@
 import { extractArraysByKeys } from './db_helpers';
 import { nonQuery, queryRows, queryScalar } from './db_query_helper';
 import {
+  AssignPrayerRequestChatToUserParams,
   CreatePrayerRequestChatMessageParams,
   CreatePrayerRequestChatParams,
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatsParams,
+  MatchPrayerRequestChatToChurchParams,
   PrayerRequestChat,
   PrayerRequestChatMessage,
   VerifyPrayerRequestChatParams,
@@ -44,8 +46,8 @@ const SqlCommands = {
                 prayer_request_chats.request_contact_phone,
                 prayer_request_chats.zip,
                 prayer_request_chats.city,
-                EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp) AS creation_timestamp,
-                EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp) AS modification_timestamp
+                EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp)::bigint AS modification_timestamp
     FROM        core.prayer_request_chats
     WHERE       ($1::uuid IS NULL OR prayer_request_chats.assigned_user_id = $1::uuid) AND
                 ($2::uuid IS NULL OR prayer_request_chats.assigned_church_id = $2::uuid)
@@ -72,7 +74,13 @@ const SqlCommands = {
       $8::uuid[]
     );`,
 
-  AssignPrayerRequestChat: `
+  MatchPrayerRequestChatToChurch: `
+    UPDATE core.prayer_request_chats
+    SET assigned_church_id = $1::uuid,
+        modification_timestamp = CURRENT_TIMESTAMP
+    WHERE request_id = $2::uuid;`,
+
+  AssignPrayerRequestChatToUser: `
     UPDATE core.prayer_request_chats
     SET assigned_user_id = $1::uuid,
         modification_timestamp = CURRENT_TIMESTAMP
@@ -83,9 +91,9 @@ const SqlCommands = {
     SELECT      prayer_request_chat_messages.message_id,
                 prayer_request_chat_messages.request_id,
                 prayer_request_chat_messages.message,
-                EXTRACT(EPOCH FROM prayer_request_chat_messages.message_timestamp) AS message_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chat_messages.message_timestamp)::bigint AS message_timestamp,
                 prayer_request_chat_messages.assigned_user_id,
-                EXTRACT(EPOCH FROM prayer_request_chat_messages.deletion_timestamp) AS deletion_timestamp
+                EXTRACT(EPOCH FROM prayer_request_chat_messages.deletion_timestamp)::bigint AS deletion_timestamp
     FROM        core.prayer_request_chat_messages
     WHERE       prayer_request_chat_messages.request_id = $1::uuid
     ORDER BY    prayer_request_chat_messages.message_timestamp ASC;`,
@@ -97,7 +105,7 @@ const SqlCommands = {
       message,
       assigned_user_id,
       message_timestamp
-    ) VALUES ($1::uuid, $2::uuid, $3::text, $4::uuid, to_timestamp($5::bigint / 1000));`,
+    ) VALUES ($1::uuid, $2::uuid, $3::text, $4::uuid, to_timestamp($5::bigint / 1000) AT TIME ZONE 'UTC');`,
 };
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
@@ -112,11 +120,21 @@ export async function listPrayerRequestChats(params: ListPrayerRequestChatsParam
   });
 }
 
-export async function assignPrayerRequestChat(requestId: string, userId: string, churchId: string): Promise<void> {
+export async function assignPrayerRequestChat(params: AssignPrayerRequestChatToUserParams): Promise<void> {
+  const { requestId, userId, churchId } = params;
   await nonQuery({
-    commandIdentifier: 'AssignPrayerRequestChat',
-    query: SqlCommands.AssignPrayerRequestChat,
+    commandIdentifier: 'AssignPrayerRequestChatToUser',
+    query: SqlCommands.AssignPrayerRequestChatToUser,
     params: [userId, requestId, churchId],
+  });
+}
+
+export async function matchPrayerRequestChatToChurch(params: MatchPrayerRequestChatToChurchParams): Promise<void> {
+  const { requestId, churchId } = params;
+  await nonQuery({
+    commandIdentifier: 'MatchPrayerRequestChatToChurch',
+    query: SqlCommands.MatchPrayerRequestChatToChurch,
+    params: [churchId, requestId],
   });
 }
 

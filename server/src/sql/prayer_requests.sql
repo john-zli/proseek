@@ -176,7 +176,7 @@ BEGIN
   ) SELECT
     VAR_prayer_request_chat_id,
     mes,
-    to_timestamp(epoch / 1000),
+    to_timestamp(epoch / 1000) AT TIME ZONE 'UTC',
     mes_id
   FROM UNNEST(PARAM_messages, PARAM_message_timestamps, PARAM_message_ids)
     AS t(mes, epoch, mes_id);
