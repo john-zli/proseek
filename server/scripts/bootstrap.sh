@@ -45,9 +45,16 @@ echo "Bootstrapping database..."
 # Create the database if it doesn't exist.
 psql -U $(whoami) -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'proseek'" | grep -q 1 || createdb -U $(whoami) -d postgres proseek
 
+# Create the test database if it doesn't exist.
+psql -U $(whoami) -d postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'proseek_test'" | grep -q 1 || createdb -U $(whoami) -d postgres proseek_test
+
 # Add new proseek_admin user if not created.
 psql -U $(whoami) -d proseek -f "$ROOT_DIR/src/sql/dev_initialization.sql"
 echo "PostgreSQL database initialized."
 
 NODE_ENV=development sh "$ROOT_DIR/scripts/migrations.sh"
 echo "Database bootstrapped successfully."
+
+# Run setup_test_db.sh to set up the test database
+echo "Setting up test database..."
+sh "$ROOT_DIR/scripts/setup_test_db.sh"

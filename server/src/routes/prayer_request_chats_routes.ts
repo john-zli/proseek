@@ -62,7 +62,7 @@ router.post(
     const { userId, churchId } = req.session.user!;
 
     try {
-      await assignPrayerRequestChat(requestId, userId, churchId);
+      await assignPrayerRequestChat({ requestId, userId, churchId });
       res.status(HttpStatusCodes.OK).json({ success: true });
     } catch (error) {
       return next(error);

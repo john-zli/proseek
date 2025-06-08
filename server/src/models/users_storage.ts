@@ -32,8 +32,8 @@ const SqlCommands = {
                 users.email,
                 users.phone,
                 users.gender,
-                EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
-                EXTRACT(EPOCH FROM users.modification_timestamp) AS modification_timestamp
+                EXTRACT(EPOCH FROM users.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM users.modification_timestamp)::bigint AS modification_timestamp
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.church_id = $1::uuid
@@ -47,8 +47,8 @@ const SqlCommands = {
                 users.phone,
                 users.gender,
                 users.password_hash,
-                EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
-                EXTRACT(EPOCH FROM users.modification_timestamp) AS modification_timestamp
+                EXTRACT(EPOCH FROM users.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM users.modification_timestamp)::bigint AS modification_timestamp
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.user_id = $1::uuid;`,
@@ -61,11 +61,30 @@ const SqlCommands = {
                 users.phone,
                 users.gender,
                 users.password_hash,
-                EXTRACT(EPOCH FROM users.creation_timestamp) AS creation_timestamp,
-                EXTRACT(EPOCH FROM users.modification_timestamp) AS modification_timestamp
+                EXTRACT(EPOCH FROM users.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM users.modification_timestamp)::bigint AS modification_timestamp
     FROM        core.users
     WHERE       users.deletion_timestamp IS NULL AND
                 users.email = $1::varchar(100);`,
+  // Used to create church admins. CreateUser used for prayer users.
+  CreateAdminUser: `
+    INSERT INTO core.users (
+      church_id,
+      first_name,
+      last_name,
+      email,
+      gender,
+      password_hash
+    )
+    VALUES (
+      $1::uuid,
+      $2::varchar(50),
+      $3::varchar(50),
+      $4::varchar(100),
+      $5::varchar(10),
+      $6::text
+    )
+    RETURNING user_id, church_id, first_name, last_name, email, gender;`,
   CreateUser: `
     SELECT      user_id,
                 church_id,
@@ -93,12 +112,29 @@ export async function listUsersFromChurch(churchId: string): Promise<User[]> {
   });
 }
 
-export async function getUser(userId: string): Promise<User | undefined> {
+export async function $getUser(userId: string): Promise<User> {
   return querySingleRow<User>({
     commandIdentifier: 'GetUser',
     query: SqlCommands.GetUser,
     params: [userId],
     mapping: ColumnKeyMappings.User,
+  });
+}
+
+export async function createAdminUser(params: {
+  churchId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  gender: string;
+  passwordHash: string;
+}): Promise<SanitizedUser> {
+  return querySingleRow<SanitizedUser>({
+    commandIdentifier: 'CreateAdminUser',
+    query: SqlCommands.CreateAdminUser,
+    mapping: ColumnKeyMappings.SanitizedUser,
+    allowNull: false,
+    params: [params.churchId, params.firstName, params.lastName, params.email, params.gender, params.passwordHash],
   });
 }
 

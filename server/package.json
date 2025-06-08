@@ -8,8 +8,8 @@
     "dev:hot": "bun run --bun nodemon --exec \"bun run dev\" --watch ./src --ext .ts",
     "lint": "bun run --bun eslint .",
     "start": "NODE_ENV=production bun run --bun ./dist",
-    "test": "NODE_ENV=test bun run --bun ./spec",
-    "test:hot": "bun run --bun nodemon --exec \"bun run test\" --watch ./src --watch ./spec --ext .ts",
+    "test": "bun test",
+    "test:hot": "bun run --bun nodemon --exec \"bun test\" --watch ./src --ext .ts",
     "type-check": "bun run --bun tsc --noEmit",
     "build": "bun build ./src/web-server/index.ts --outdir ./dist --target node"
   },
@@ -47,6 +47,7 @@
     "@stylistic/eslint-plugin-js": "^4.2.0",
     "@stylistic/eslint-plugin-ts": "^4.2.0",
     "@swc/core": "^1.11.11",
+    "@types/bun": "latest",
     "@types/cookie-parser": "^1.4.8",
     "@types/eslint": "^9.6.1",
     "@types/express": "^5.0.0",
@@ -59,6 +60,7 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^8.31.0",
     "@typescript-eslint/parser": "^8.31.0",
+    "bun-types": "^1.2.15",
     "eslint": "^9.25.1",
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-n": "^17.16.2",
@@ -68,5 +70,10 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.26.1"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "prettier --write"
+    ]
   }
 }

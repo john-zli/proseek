@@ -1,10 +1,15 @@
 # Allowing script to run anywhere
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR/.."
+NODE_ENV="$(echo "$NODE_ENV" | tr -d '\r')"
 
-set -a
-source "$ROOT_DIR/config/.env.$NODE_ENV" > /dev/null 2>&1
-set +a
+# Only source environment variables if not in test environment
+if [ "$NODE_ENV" != "test" ]; then
+  set -a
+  source "$ROOT_DIR/config/.env.$NODE_ENV" > /dev/null 2>&1
+  set +a
+fi
+
 
 # Directory containing SQL files
 SQL_DIR="$ROOT_DIR/src/sql"
@@ -19,7 +24,6 @@ fi
 
 # For some reason, .env files sometimes preserve the \r character. Strip that.
 DATABASE_CONNECTION_STRING="$(echo "$DATABASE_CONNECTION_STRING" | tr -d '\r')"
-NODE_ENV="$(echo "$NODE_ENV" | tr -d '\r')"
 
 # Check if setup file exists
 if [ ! -f "$SETUP_FILE" ]; then
