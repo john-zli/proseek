@@ -1,7 +1,6 @@
 import { Router } from 'express';
 
 import { validate } from '../middleware/validate';
-import { verifyCaptcha } from '../middleware/verify_captcha';
 import {
   assignPrayerRequestChat,
   createPrayerRequestChat,
@@ -21,6 +20,7 @@ import {
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { ensureAuthenticated } from '@server/middleware/auth';
+import { verifyCaptcha } from '@server/middleware/verify_captcha';
 
 const router = Router();
 

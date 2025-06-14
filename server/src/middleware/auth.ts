@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
+import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 
 /**
@@ -10,6 +11,6 @@ export function ensureAuthenticated(req: Request, res: Response, next: NextFunct
   if (req.session.user) {
     next(); // User is authenticated, proceed to the next handler
   } else {
-    res.status(HttpStatusCodes.UNAUTHORIZED).json({ error: 'Authentication required' });
+    next(new RouteError(HttpStatusCodes.UNAUTHORIZED, 'Authentication required'));
   }
 }
