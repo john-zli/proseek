@@ -1,7 +1,7 @@
 import { api } from './helpers';
 import type {
-  AssignPrayerRequestChatParams,
   AssignPrayerRequestChatResponse,
+  AssignPrayerRequestChatToUserParams,
   CreatePrayerRequestChatMessageParams,
   CreatePrayerRequestChatParams,
   CreatePrayerRequestChatResponse,
@@ -39,7 +39,7 @@ export const PrayerRequestChatsApi = {
 
   // Assign a prayer request to a user
   assignPrayerRequestChatroomToUser: async (
-    params: AssignPrayerRequestChatParams
+    params: AssignPrayerRequestChatToUserParams
   ): Promise<AssignPrayerRequestChatResponse> => {
     try {
       const response = await api.post<AssignPrayerRequestChatResponse>(`/prayer-requests/${params.requestId}/assign`, {

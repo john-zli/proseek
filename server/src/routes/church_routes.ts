@@ -6,13 +6,12 @@ import { createChurch } from '../models/churches_storage';
 import { CreateChurchSchema } from '../schemas/churches';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
-import { logger } from '@server/services/logger';
 
 const router = Router();
 
 // Create a new church - Requires authentication
 router.post('/', ensureAuthenticated, validate(CreateChurchSchema), async (req, res, next) => {
-  const { name, address, city, state, zip, phone, email, website } = req.body;
+  const { name, address, city, state, zip } = req.body;
 
   try {
     const church = await createChurch({
@@ -22,9 +21,6 @@ router.post('/', ensureAuthenticated, validate(CreateChurchSchema), async (req, 
       state,
       zip,
       county: city,
-      phone,
-      email,
-      website,
     });
     res.status(HttpStatusCodes.CREATED).json(church);
   } catch (error: any) {

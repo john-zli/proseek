@@ -187,5 +187,6 @@ export async function verifyPrayerRequestChat(params: VerifyPrayerRequestChatPar
     commandIdentifier: 'VerifyPrayerRequestChat',
     query: SqlCommands.VerifyPrayerRequestChat,
     params: [requestContactEmail, requestContactPhone, requestId],
+    allowNull: false,
   });
 }
