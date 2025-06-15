@@ -3,8 +3,8 @@ import { Router } from 'express';
 
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { createUser, generateInvitationCode, getUserByEmail } from '../models/users_storage';
-import { CreateUserSchema, InviteUserSchema, LoginUserSchema } from '../schemas/users';
+import { createAdminUser, createUser, generateInvitationCode, getUserByEmail } from '../models/users_storage';
+import { CreateAdminUserSchema, CreateUserSchema, InviteUserSchema, LoginUserSchema } from '../schemas/users';
 import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
@@ -47,12 +47,56 @@ router.post('/', validate(CreateUserSchema), async (req, res, next) => {
     let statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
     let message = 'Failed to create user';
 
-    if (error.code === '23505') {
+    if (error.message.includes('USER_EMAIL_EXISTS')) {
       statusCode = HttpStatusCodes.CONFLICT;
       message = 'User with this email already exists';
-    } else if (error.code === 'P0001') {
+    } else if (error.message.includes('INVALID_INVITATION_CODE')) {
       statusCode = HttpStatusCodes.BAD_REQUEST;
       message = 'Invalid or already used invitation code';
+    }
+
+    const err = new RouteError(statusCode, message);
+    return next(err);
+  }
+});
+
+// Create a new admin user (Registration)
+router.post('/admin', validate(CreateAdminUserSchema), async (req, res, next) => {
+  try {
+    const { email, firstName, lastName, gender, password, churchId } = req.body;
+
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    const sanitizedUser = await createAdminUser({
+      email,
+      firstName,
+      lastName,
+      gender,
+      passwordHash,
+      churchId,
+    });
+
+    req.session.regenerate(sessionErr => {
+      if (sessionErr) {
+        logger.error({ err: sessionErr }, 'Error regenerating session after registration');
+        const err = new RouteError(
+          HttpStatusCodes.INTERNAL_SERVER_ERROR,
+          'Registration succeeded but session creation failed'
+        );
+        return next(err);
+      }
+      req.session.user = sanitizedUser;
+      res.status(HttpStatusCodes.CREATED).json({ userId: sanitizedUser.userId });
+    });
+  } catch (error: any) {
+    logger.error({ err: error }, 'Error creating user:');
+
+    let statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
+    let message = 'Failed to create user';
+
+    if (error.message.match(/duplicate key value violates unique constraint "users_email_key"/)) {
+      statusCode = HttpStatusCodes.CONFLICT;
+      message = 'User with this email already exists';
     }
 
     const err = new RouteError(statusCode, message);
@@ -128,16 +172,6 @@ router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (r
     res.status(HttpStatusCodes.CREATED).json({ invitationCode });
   } catch (error: any) {
     return next(error);
-  }
-});
-
-// Get Current User (/me endpoint)
-router.get('/me', (req, res, next) => {
-  if (req.session.user) {
-    // Optionally fetch fresh user data from DB if needed
-    res.status(HttpStatusCodes.OK).json({ user: req.session.user });
-  } else {
-    res.status(HttpStatusCodes.UNAUTHORIZED).json({ error: 'Not authenticated' });
   }
 });
 

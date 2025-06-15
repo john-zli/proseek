@@ -1,234 +1,384 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test';
-import { Request, Response } from 'express';
+import { Mock, afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
 import userRouter from '../user_routes';
-import { NodeEnvs } from '@server/common/constants';
+import { testRoute } from './test_helpers';
+import { Gender } from '@common/server-api/types/gender';
+import { SanitizedUser } from '@common/server-api/types/users';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
-import config from '@server/config';
-import { createUser, generateInvitationCode, getUserByEmail } from '@server/models/users_storage';
-import { createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
-
-// Mock the users storage module
-mock.module('@server/models/users_storage', () => ({
-  createUser: mock(() =>
-    Promise.resolve({
-      userId: 'user123',
-      email: 'test@example.com',
-      firstName: 'Test',
-      lastName: 'User',
-      gender: 'male',
-      creationTimestamp: new Date().toISOString(),
-      modificationTimestamp: new Date().toISOString(),
-    })
-  ),
-  getUserByEmail: mock(() =>
-    Promise.resolve({
-      userId: 'user123',
-      email: 'test@example.com',
-      firstName: 'Test',
-      lastName: 'User',
-      gender: 'male',
-      passwordHash: '$2b$10$testhash',
-      creationTimestamp: new Date().toISOString(),
-      modificationTimestamp: new Date().toISOString(),
-    })
-  ),
-  generateInvitationCode: mock(() => Promise.resolve('INVITE123')),
-}));
+import { createChurch } from '@server/models/churches_storage';
+import { createAdminUser, generateInvitationCode } from '@server/models/users_storage';
+import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
+import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
 
 describe('user routes', () => {
-  beforeEach(() => {
-    mock.resetAll();
+  let res: MockResponse;
+  let next: Mock;
+
+  beforeEach(async () => {
+    await setupTestDb();
+    res = createMockResponse();
+    next = createMockNext();
   });
 
-  test('POST / - should register a new user', async () => {
-    // Create mock request
-    const req = createMockRequest({
-      body: {
-        email: 'test@example.com',
+  afterEach(async () => {
+    await teardownTestDb();
+  });
+
+  describe('POST /', () => {
+    let churchId: string;
+    let adminUser: SanitizedUser;
+
+    beforeEach(async () => {
+      churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St, Anytown, USA',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+      });
+
+      adminUser = await createAdminUser({
+        churchId,
         firstName: 'Test',
         lastName: 'User',
-        gender: 'male',
-        password: 'password123',
-        invitationCode: 'INVITE123',
-      },
-      session: {
-        regenerate: mock(callback => callback(null)),
-      },
-    }) as unknown as Request;
-
-    // Create mock response
-    const res = createMockResponse() as unknown as Response;
-
-    // Create mock next function
-    const next = createMockNext();
-
-    // Call the route handler
-    await userRouter._test.handle(req, res, next);
-
-    // Verify response
-    expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
-    expect(res.json.mock.calls[0][0]).toEqual({ userId: 'user123' });
-    expect(req.session.user).toBeDefined();
-  });
-
-  test('POST /login - should login a user', async () => {
-    // Create mock request
-    const req = createMockRequest({
-      body: {
         email: 'test@example.com',
-        password: 'password123',
-      },
-      session: {
-        regenerate: mock(callback => callback(null)),
-      },
-    }) as unknown as Request;
+        gender: Gender.Male,
+        passwordHash: 'password123',
+      });
+    });
 
-    // Create mock response
-    const res = createMockResponse() as unknown as Response;
+    test('should register a new user', async () => {
+      const code = await generateInvitationCode(churchId, adminUser.userId, 'test2@example.com');
 
-    // Create mock next function
-    const next = createMockNext();
-
-    // Call the route handler
-    await userRouter._test.handle(req, res, next);
-
-    // Verify response
-    expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
-    expect(res.json.mock.calls[0][0].user).toBeDefined();
-    expect(res.json.mock.calls[0][0].user).not.toHaveProperty('passwordHash');
-    expect(req.session.user).toBeDefined();
-  });
-
-  test('POST /login - should handle development bypass for johnzli@hey.com', async () => {
-    // Mock config to return development environment
-    mock.module('@server/config', () => ({
-      env: NodeEnvs.Dev,
-    }));
-
-    // Create mock request
-    const req = createMockRequest({
-      body: {
-        email: 'johnzli@hey.com',
-        password: 'anypassword',
-      },
-      session: {
-        regenerate: mock(callback => callback(null)),
-      },
-    }) as unknown as Request;
-
-    // Create mock response
-    const res = createMockResponse() as unknown as Response;
-
-    // Create mock next function
-    const next = createMockNext();
-
-    // Call the route handler
-    await userRouter._test.handle(req, res, next);
-
-    // Verify response
-    expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
-    expect(res.json.mock.calls[0][0].user).toBeDefined();
-    expect(req.session.user).toBeDefined();
-  });
-
-  test('POST /logout - should logout a user', async () => {
-    // Create mock request
-    const req = createMockRequest({
-      session: {
-        destroy: mock(callback => callback(null)),
-      },
-    }) as unknown as Request;
-
-    // Create mock response
-    const res = createMockResponse() as unknown as Response;
-
-    // Create mock next function
-    const next = createMockNext();
-
-    // Call the route handler
-    await userRouter._test.handle(req, res, next);
-
-    // Verify response
-    expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
-    expect(res.json.mock.calls[0][0]).toEqual({ message: 'Logout successful' });
-    expect(res.clearCookie).toHaveBeenCalledWith('connect.sid');
-  });
-
-  test('POST /invite - should generate an invitation code', async () => {
-    // Create mock request
-    const req = createMockRequest({
-      body: {
-        email: 'newuser@example.com',
-      },
-      session: {
-        user: {
-          userId: 'user123',
-          churchId: 'church123',
+      const req = createMockRequest({
+        body: {
+          email: 'test2@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          gender: Gender.Male,
+          password: 'password123',
+          invitationCode: code,
         },
-      },
-    }) as unknown as Request;
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
 
-    // Create mock response
-    const res = createMockResponse() as unknown as Response;
+      // Call the route handler
+      await testRoute(userRouter, 'POST', '/', req, res, next);
 
-    // Create mock next function
-    const next = createMockNext();
+      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
+      expect(res.json.mock.calls[0][0]).toEqual({ userId: expect.any(String) });
+      expect(req.session.user?.userId).toBeDefined();
+    });
 
-    // Call the route handler
-    await userRouter._test.handle(req, res, next);
+    test('should error if user already exists', async () => {
+      const code = await generateInvitationCode(churchId, adminUser.userId, 'test@example.com');
 
-    // Verify response
-    expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
-    expect(res.json.mock.calls[0][0]).toEqual({ invitationCode: 'INVITE123' });
-  });
-
-  test('GET /me - should return current user when authenticated', async () => {
-    // Create mock request
-    const req = createMockRequest({
-      session: {
-        user: {
-          userId: 'user123',
+      // First registration
+      const req1 = createMockRequest({
+        body: {
           email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          gender: Gender.Male,
+          password: 'password123',
+          invitationCode: code,
         },
-      },
-    }) as unknown as Request;
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
 
-    // Create mock response
-    const res = createMockResponse() as unknown as Response;
+      await testRoute(userRouter, 'POST', '/', req1, res, next);
 
-    // Create mock next function
-    const next = createMockNext();
+      expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
+      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.CONFLICT);
+      expect(next.mock.calls[1][0].message).toBe('User with this email already exists');
+    });
 
-    // Call the route handler
-    await userRouter._test.handle(req, res, next);
+    test('should error if invitation code is invalid', async () => {
+      const req1 = createMockRequest({
+        body: {
+          email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          gender: Gender.Male,
+          password: 'password123',
+          invitationCode: '12345',
+        },
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
 
-    // Verify response
-    expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
-    expect(res.json.mock.calls[0][0]).toEqual({
-      user: {
-        userId: 'user123',
-        email: 'test@example.com',
-      },
+      await testRoute(userRouter, 'POST', '/', req1, res, next);
+
+      expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
+      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.BAD_REQUEST);
+      expect(next.mock.calls[1][0].message).toBe('Invalid or already used invitation code');
     });
   });
 
-  test('GET /me - should return unauthorized when not authenticated', async () => {
-    // Create mock request
-    const req = createMockRequest() as unknown as Request;
+  describe('POST /admin', () => {
+    let churchId: string;
 
-    // Create mock response
-    const res = createMockResponse() as unknown as Response;
+    beforeEach(async () => {
+      churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St, Anytown, USA',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+      });
+    });
 
-    // Create mock next function
-    const next = createMockNext();
+    test('should create an admin user', async () => {
+      const req = createMockRequest({
+        body: {
+          email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          gender: Gender.Male,
+          password: 'password123',
+          churchId,
+        },
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
 
-    // Call the route handler
-    await userRouter._test.handle(req, res, next);
+      await testRoute(userRouter, 'POST', '/admin', req, res, next);
 
-    // Verify response
-    expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.UNAUTHORIZED);
-    expect(res.json.mock.calls[0][0]).toEqual({ error: 'Not authenticated' });
+      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
+      expect(res.json.mock.calls[0][0]).toEqual({ userId: expect.any(String) });
+      expect(req.session.user?.userId).toBeDefined();
+    });
+
+    test('should error if user already exists', async () => {
+      await createAdminUser({
+        churchId,
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        gender: Gender.Male,
+        passwordHash: 'password123',
+      });
+
+      const req = createMockRequest({
+        body: {
+          email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+          gender: Gender.Male,
+          password: 'password123',
+          churchId,
+        },
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
+
+      await testRoute(userRouter, 'POST', '/admin', req, res, next);
+
+      expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
+      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.CONFLICT);
+      expect(next.mock.calls[1][0].message).toBe('User with this email already exists');
+    });
+  });
+
+  describe('POST /login', () => {
+    let churchId: string;
+
+    beforeEach(async () => {
+      churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St, Anytown, USA',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+      });
+
+      const req = createMockRequest({
+        body: {
+          email: 'test@example.com',
+          password: 'password123',
+          churchId,
+          firstName: 'Test',
+          lastName: 'User',
+          gender: Gender.Male,
+        },
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
+
+      const fakeRes = createMockResponse();
+      const fakeNext = createMockNext();
+      await testRoute(userRouter, 'POST', '/admin', req, fakeRes, fakeNext);
+
+      expect(fakeRes.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
+    });
+
+    test('should login a user', async () => {
+      const req = createMockRequest({
+        body: {
+          email: 'test@example.com',
+          password: 'password123',
+        },
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
+
+      await testRoute(userRouter, 'POST', '/login', req, res, next);
+
+      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
+      expect(res.json.mock.calls[0][0]).toEqual({ user: expect.any(Object) });
+      expect(res.json.mock.calls[0][0].user).not.toHaveProperty('passwordHash');
+    });
+
+    test('should error if email is invalid', async () => {
+      const req = createMockRequest({
+        body: {
+          email: 'invalid@example.com',
+          password: 'password123',
+        },
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
+
+      await testRoute(userRouter, 'POST', '/login', req, res, next);
+
+      expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
+      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
+      expect(next.mock.calls[1][0].message).toBe('Invalid email or password');
+    });
+
+    test('should error if password is invalid', async () => {
+      const req = createMockRequest({
+        body: {
+          email: 'test@example.com',
+          password: 'invalidpassword',
+        },
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
+
+      await testRoute(userRouter, 'POST', '/login', req, res, next);
+
+      expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
+      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
+      expect(next.mock.calls[1][0].message).toBe('Invalid email or password');
+    });
+  });
+
+  describe('POST /logout', () => {
+    let churchId: string;
+
+    beforeEach(async () => {
+      churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St, Anytown, USA',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+      });
+
+      const req = createMockRequest({
+        body: {
+          email: 'test@example.com',
+          password: 'password123',
+          churchId,
+          firstName: 'Test',
+          lastName: 'User',
+          gender: Gender.Male,
+        },
+        session: {
+          regenerate: (callback: (err: any) => void) => callback(null),
+        },
+      });
+
+      const fakeRes = createMockResponse();
+      const fakeNext = createMockNext();
+      await testRoute(userRouter, 'POST', '/admin', req, fakeRes, fakeNext);
+
+      expect(fakeRes.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
+    });
+
+    test('should logout a user', async () => {
+      const req = createMockRequest({
+        session: {
+          destroy: (callback: (err: any) => void) => callback(null),
+        },
+      });
+
+      await testRoute(userRouter, 'POST', '/logout', req, res, next);
+
+      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
+      expect(res.json.mock.calls[0][0]).toEqual({ message: 'Logout successful' });
+      expect(req.session.user).toBeUndefined();
+    });
+  });
+
+  describe('POST /invite', () => {
+    let churchId: string;
+    let adminUser: SanitizedUser;
+    beforeEach(async () => {
+      churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St, Anytown, USA',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+      });
+
+      adminUser = await createAdminUser({
+        churchId,
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        gender: Gender.Male,
+        passwordHash: 'password123',
+      });
+    });
+
+    test('should generate an invitation code', async () => {
+      // Create mock request
+      const req = createMockRequest({
+        body: {
+          email: 'newuser@example.com',
+        },
+        session: {
+          user: {
+            userId: adminUser.userId,
+            churchId: churchId,
+          },
+        },
+      });
+
+      // Call the route handler
+      await testRoute(userRouter, 'POST', '/invite', req, res, next);
+
+      // Verify response
+      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
+      expect(res.json.mock.calls[0][0]).toEqual({ invitationCode: expect.any(String) });
+    });
+
+    test('should error if not authenticated', async () => {
+      const req = createMockRequest();
+      await testRoute(userRouter, 'POST', '/invite', req, res, next);
+
+      expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
+      expect(next.mock.calls[0][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
+    });
   });
 });

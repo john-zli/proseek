@@ -35,6 +35,7 @@ export const createMockResponse = (): MockResponse => {
     status: mock(() => res),
     json: mock(),
     sendFile: mock(),
+    clearCookie: mock(),
   };
   return res;
 };

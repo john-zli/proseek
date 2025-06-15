@@ -21,6 +21,7 @@ import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { ensureAuthenticated } from '@server/middleware/auth';
 import { verifyCaptcha } from '@server/middleware/verify_captcha';
+import { logger } from '@server/services/logger';
 
 const router = Router();
 
@@ -105,13 +106,11 @@ router.post('/:requestId/verify', validate(VerifyPrayerRequestChatSchema), verif
 
   try {
     const verifiedChatId = await verifyPrayerRequestChat({ requestId, requestContactEmail, requestContactPhone });
-    if (!verifiedChatId) {
-      throw new RouteError(HttpStatusCodes.NOT_FOUND, 'Prayer request not found or verification failed');
-    }
     req.session.verifiedChatIds = [...(req.session.verifiedChatIds || []), verifiedChatId];
     res.status(HttpStatusCodes.OK).json({ isVerified: true });
-  } catch (error) {
-    return next(error);
+  } catch (error: any) {
+    logger.error(error, 'Error verifying prayer request chat: %s', error.message);
+    return next(new RouteError(HttpStatusCodes.NOT_FOUND, 'Prayer request not found or verification failed'));
   }
 });
 

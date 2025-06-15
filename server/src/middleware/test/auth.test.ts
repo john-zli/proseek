@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { Request, Response } from 'express';
 
 import { ensureAuthenticated } from '../auth';
+import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
 
@@ -43,8 +44,8 @@ describe('auth middleware', () => {
     ensureAuthenticated(req, res as unknown as Response, next);
 
     // Verify response was sent with unauthorized status
-    expect(next.mock.calls.length).toBe(0);
-    expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.UNAUTHORIZED);
-    expect(res.json.mock.calls[0][0]).toEqual({ error: 'Authentication required' });
+    expect(next.mock.calls.length).toBe(1);
+    expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
+    expect(next.mock.calls[0][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
   });
 });

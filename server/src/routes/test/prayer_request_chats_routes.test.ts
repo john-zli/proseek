@@ -1,4 +1,4 @@
-import { Mock, afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test';
+import { Mock, afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { v4 as uuidv4 } from 'uuid';
 
 import prayerRequestChatsRouter from '../prayer_request_chats_routes';
@@ -6,7 +6,6 @@ import { testRoute } from './test_helpers';
 import { Gender } from '@common/server-api/types/gender';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
-import { verifyCaptcha } from '@server/middleware/verify_captcha';
 import { createChurch, listChurchesNearUser } from '@server/models/churches_storage';
 import {
   assignPrayerRequestChat,
@@ -255,6 +254,36 @@ describe('prayer request chats routes', () => {
   });
 
   describe('POST /:requestId/verify', () => {
+    test('should throw error if verification fails', async () => {
+      const prayerRequestChatId = await createPrayerRequestChat({
+        requestContactEmail: 'test@example.com',
+        zip: '12345',
+        city: 'Anytown',
+        region: 'CA',
+        messages: [],
+      });
+
+      const req = createMockRequest({
+        params: {
+          requestId: prayerRequestChatId,
+        },
+        body: {
+          requestContactEmail: 'wrong@example.com', // Different email
+          token: 'test-token',
+        },
+        session: {
+          verifiedChatIds: [],
+        },
+      });
+
+      // Call the route handler
+      await testRoute(prayerRequestChatsRouter, 'POST', '/:requestId/verify', req, res, next);
+
+      // Verify response
+      expect(next.mock.calls[2][0]).toBeInstanceOf(RouteError);
+      expect(next.mock.calls[2][0].status).toBe(HttpStatusCodes.NOT_FOUND);
+      expect(next.mock.calls[2][0].message).toBe('Prayer request not found or verification failed');
+    });
     test('should verify a prayer request', async () => {
       // Create mock request
       const prayerRequestChatId = await createPrayerRequestChat({
