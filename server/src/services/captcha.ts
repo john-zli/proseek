@@ -1,12 +1,23 @@
-import Cap from '@cap.js/server';
+import Cap, { ChallengeTuple } from '@cap.js/server';
 
-let cap: Cap | undefined;
+export class CaptchaService {
+  private cap: Cap;
 
-export function getCap() {
-  if (!cap) {
-    cap = new Cap({
+  constructor() {
+    this.cap = new Cap({
       tokens_store_path: '.data/tokensList.json',
     });
   }
-  return cap;
+
+  async validateToken(token: string): Promise<{ success: boolean }> {
+    return this.cap.validateToken(token);
+  }
+
+  async redeemChallenge(token: string, solutions: [string, string, string][]): Promise<{ success: boolean }> {
+    return this.cap.redeemChallenge({ token, solutions });
+  }
+
+  async createChallenge(): Promise<{ challenge: ChallengeTuple[]; token?: string; expires: number }> {
+    return this.cap.createChallenge();
+  }
 }

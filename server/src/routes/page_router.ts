@@ -1,10 +1,9 @@
 import { Router } from 'express';
 
 import { serveStaticHtmlFile } from '@server/middleware/serve_static_html_file';
+import { ServicesBuilder } from '@server/services/services_builder';
 
-interface LocalServices {}
-
-export function pageRouter(_services: LocalServices): Router {
+export function createPageRouter(services: ServicesBuilder): Router {
   const router = Router();
 
   // Routes that are accessible via UI

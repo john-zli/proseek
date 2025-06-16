@@ -1,7 +1,7 @@
 import { Mock, afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { v4 as uuidv4 } from 'uuid';
 
-import prayerRequestChatsRouter from '../prayer_request_chats_routes';
+import { prayerRequestChatsRouter } from '../prayer_request_chats_routes';
 import { testRoute } from './test_helpers';
 import { Gender } from '@common/server-api/types/gender';
 import { RouteError } from '@server/common/route_errors';
@@ -16,17 +16,21 @@ import {
   matchPrayerRequestChatToChurch,
 } from '@server/models/prayer_request_chats_storage';
 import { createAdminUser } from '@server/models/users_storage';
+import { IServicesBuilder } from '@server/services/services_builder';
+import { FakeServicesBuilder } from '@server/services/test/fake_services_builder';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
 
 describe('prayer request chats routes', () => {
   let res: MockResponse;
   let next: Mock;
+  let services: IServicesBuilder;
 
   beforeEach(async () => {
     await setupTestDb();
     res = createMockResponse();
     next = createMockNext();
+    services = new FakeServicesBuilder();
   });
 
   afterEach(async () => {
@@ -55,7 +59,7 @@ describe('prayer request chats routes', () => {
       });
 
       // Call the route handler
-      await testRoute(prayerRequestChatsRouter, 'POST', '/', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/', req, res, next);
 
       // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
@@ -101,7 +105,7 @@ describe('prayer request chats routes', () => {
       });
 
       // Call the route handler
-      await testRoute(prayerRequestChatsRouter, 'GET', '/church/:churchId', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'GET', '/church/:churchId', req, res, next);
 
       // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
@@ -167,7 +171,7 @@ describe('prayer request chats routes', () => {
       });
 
       // Call the route handler
-      await testRoute(prayerRequestChatsRouter, 'POST', '/:requestId/assign', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/:requestId/assign', req, res, next);
 
       const prayerRequestChat = await listPrayerRequestChats({ churchId });
 
@@ -202,7 +206,7 @@ describe('prayer request chats routes', () => {
       });
 
       // Call the route handler
-      await testRoute(prayerRequestChatsRouter, 'POST', '/:requestId/message', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/:requestId/message', req, res, next);
 
       const prayerRequestChatMessages = await listPrayerRequestChatMessages({ requestId: prayerRequestChatId });
 
@@ -243,7 +247,7 @@ describe('prayer request chats routes', () => {
       });
 
       // Call the route handler
-      await testRoute(prayerRequestChatsRouter, 'GET', '/:requestId/messages', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'GET', '/:requestId/messages', req, res, next);
 
       // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
@@ -277,13 +281,14 @@ describe('prayer request chats routes', () => {
       });
 
       // Call the route handler
-      await testRoute(prayerRequestChatsRouter, 'POST', '/:requestId/verify', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/:requestId/verify', req, res, next);
 
       // Verify response
       expect(next.mock.calls[2][0]).toBeInstanceOf(RouteError);
       expect(next.mock.calls[2][0].status).toBe(HttpStatusCodes.NOT_FOUND);
       expect(next.mock.calls[2][0].message).toBe('Prayer request not found or verification failed');
     });
+
     test('should verify a prayer request', async () => {
       // Create mock request
       const prayerRequestChatId = await createPrayerRequestChat({
@@ -310,7 +315,7 @@ describe('prayer request chats routes', () => {
       });
 
       // Call the route handler
-      await testRoute(prayerRequestChatsRouter, 'POST', '/:requestId/verify', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/:requestId/verify', req, res, next);
 
       // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);

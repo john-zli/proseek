@@ -1,20 +1,23 @@
 import { Mock, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
-import churchRouter from '../church_routes';
+import { churchRouter } from '../church_routes';
 import { testRoute } from './test_helpers';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
+import { IServicesBuilder } from '@server/services/services_builder';
+import { FakeServicesBuilder } from '@server/services/test/fake_services_builder';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
 
 describe('church routes', () => {
   let res: MockResponse;
   let next: Mock;
-
+  let services: IServicesBuilder;
   beforeEach(async () => {
     await setupTestDb();
     res = createMockResponse();
     next = createMockNext();
+    services = new FakeServicesBuilder();
   });
 
   afterEach(async () => {
@@ -40,7 +43,7 @@ describe('church routes', () => {
     });
 
     // Call the route handler
-    await testRoute(churchRouter, 'POST', '/', req, res, next);
+    await testRoute(churchRouter(services), 'POST', '/', req, res, next);
 
     expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
     expect(res.json.mock.calls[0][0]).toEqual(expect.any(String));
@@ -70,7 +73,7 @@ describe('church routes', () => {
     });
 
     // Call the route handler
-    await testRoute(churchRouter, 'POST', '/', req, res, next);
+    await testRoute(churchRouter(services), 'POST', '/', req, res, next);
 
     const lastCall = next.mock.calls.pop();
     expect(lastCall[0]).toBeInstanceOf(RouteError);
@@ -90,7 +93,7 @@ describe('church routes', () => {
     });
 
     // Call the route handler
-    await testRoute(churchRouter, 'POST', '/', req, res, next);
+    await testRoute(churchRouter(services), 'POST', '/', req, res, next);
 
     const firstCall = next.mock.calls[0];
     expect(firstCall[0]).toBeInstanceOf(RouteError);
@@ -114,7 +117,7 @@ describe('church routes', () => {
     });
 
     // Call the route handler
-    await testRoute(churchRouter, 'POST', '/', req, res, next);
+    await testRoute(churchRouter(services), 'POST', '/', req, res, next);
 
     const validationCall = next.mock.calls[1];
     expect(validationCall[0]).toBeInstanceOf(RouteError);

@@ -6,26 +6,29 @@ import { createChurch } from '../models/churches_storage';
 import { CreateChurchSchema } from '../schemas/churches';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
+import { ServicesBuilder } from '@server/services/services_builder';
 
-const router = Router();
+export function churchRouter(_services: ServicesBuilder): Router {
+  const router = Router();
 
-// Create a new church - Requires authentication
-router.post('/', ensureAuthenticated, validate(CreateChurchSchema), async (req, res, next) => {
-  const { name, address, city, state, zip } = req.body;
+  // Create a new church - Requires authentication
+  router.post('/', ensureAuthenticated, validate(CreateChurchSchema), async (req, res, next) => {
+    const { name, address, city, state, zip } = req.body;
 
-  try {
-    const church = await createChurch({
-      name,
-      address,
-      city,
-      state,
-      zip,
-      county: city,
-    });
-    res.status(HttpStatusCodes.CREATED).json(church);
-  } catch (error: any) {
-    return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, error));
-  }
-});
+    try {
+      const church = await createChurch({
+        name,
+        address,
+        city,
+        state,
+        zip,
+        county: city,
+      });
+      res.status(HttpStatusCodes.CREATED).json(church);
+    } catch (error: any) {
+      return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, error));
+    }
+  });
 
-export default router;
+  return router;
+}

@@ -1,13 +1,12 @@
 import { Router } from 'express';
 
-import captchaRouter from './captcha_routes';
-import churchesRouter from './church_routes';
-import prayerRequestChatsRouter from './prayer_request_chats_routes';
-import usersRouter from './user_routes';
+import { captchaRouter } from './captcha_routes';
+import { churchRouter } from './church_routes';
+import { prayerRequestChatsRouter } from './prayer_request_chats_routes';
+import { userRouter } from './user_routes';
+import { ServicesBuilder } from '@server/services/services_builder';
 
-interface LocalServices {}
-
-export function apiRouter(_services: LocalServices): Router {
+export function createApiRouter(services: ServicesBuilder): Router {
   const apiRouter = Router();
 
   // Session endpoint
@@ -21,16 +20,16 @@ export function apiRouter(_services: LocalServices): Router {
   });
 
   // Prayer requests routes
-  apiRouter.use('/prayer-requests', prayerRequestChatsRouter);
+  apiRouter.use('/prayer-requests', prayerRequestChatsRouter(services));
 
   // Church routes
-  apiRouter.use('/churches', churchesRouter);
+  apiRouter.use('/churches', churchRouter(services));
 
   // User routes
-  apiRouter.use('/users', usersRouter);
+  apiRouter.use('/users', userRouter(services));
 
   // Captcha routes
-  apiRouter.use('/captcha', captchaRouter);
+  apiRouter.use('/captcha', captchaRouter(services));
 
   return apiRouter;
 }
