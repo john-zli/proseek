@@ -1,6 +1,6 @@
 import { Mock, afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
-import userRouter from '../user_routes';
+import { userRouter } from '../user_routes';
 import { testRoute } from './test_helpers';
 import { Gender } from '@common/server-api/types/gender';
 import { SanitizedUser } from '@common/server-api/types/users';
@@ -8,17 +8,21 @@ import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createChurch } from '@server/models/churches_storage';
 import { createAdminUser, generateInvitationCode } from '@server/models/users_storage';
+import { IServicesBuilder } from '@server/services/services_builder';
+import { FakeServicesBuilder } from '@server/services/test/fake_services_builder';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
 
 describe('user routes', () => {
   let res: MockResponse;
   let next: Mock;
+  let services: IServicesBuilder;
 
   beforeEach(async () => {
     await setupTestDb();
     res = createMockResponse();
     next = createMockNext();
+    services = new FakeServicesBuilder();
   });
 
   afterEach(async () => {
@@ -67,7 +71,7 @@ describe('user routes', () => {
       });
 
       // Call the route handler
-      await testRoute(userRouter, 'POST', '/', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/', req, res, next);
 
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
       expect(res.json.mock.calls[0][0]).toEqual({ userId: expect.any(String) });
@@ -92,7 +96,7 @@ describe('user routes', () => {
         },
       });
 
-      await testRoute(userRouter, 'POST', '/', req1, res, next);
+      await testRoute(userRouter(services), 'POST', '/', req1, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
       expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.CONFLICT);
@@ -114,7 +118,7 @@ describe('user routes', () => {
         },
       });
 
-      await testRoute(userRouter, 'POST', '/', req1, res, next);
+      await testRoute(userRouter(services), 'POST', '/', req1, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
       expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.BAD_REQUEST);
@@ -151,7 +155,7 @@ describe('user routes', () => {
         },
       });
 
-      await testRoute(userRouter, 'POST', '/admin', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/admin', req, res, next);
 
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
       expect(res.json.mock.calls[0][0]).toEqual({ userId: expect.any(String) });
@@ -182,7 +186,7 @@ describe('user routes', () => {
         },
       });
 
-      await testRoute(userRouter, 'POST', '/admin', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/admin', req, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
       expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.CONFLICT);
@@ -219,7 +223,7 @@ describe('user routes', () => {
 
       const fakeRes = createMockResponse();
       const fakeNext = createMockNext();
-      await testRoute(userRouter, 'POST', '/admin', req, fakeRes, fakeNext);
+      await testRoute(userRouter(services), 'POST', '/admin', req, fakeRes, fakeNext);
 
       expect(fakeRes.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
     });
@@ -235,7 +239,7 @@ describe('user routes', () => {
         },
       });
 
-      await testRoute(userRouter, 'POST', '/login', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/login', req, res, next);
 
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
       expect(res.json.mock.calls[0][0]).toEqual({ user: expect.any(Object) });
@@ -253,7 +257,7 @@ describe('user routes', () => {
         },
       });
 
-      await testRoute(userRouter, 'POST', '/login', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/login', req, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
       expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
@@ -271,7 +275,7 @@ describe('user routes', () => {
         },
       });
 
-      await testRoute(userRouter, 'POST', '/login', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/login', req, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
       expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
@@ -308,7 +312,7 @@ describe('user routes', () => {
 
       const fakeRes = createMockResponse();
       const fakeNext = createMockNext();
-      await testRoute(userRouter, 'POST', '/admin', req, fakeRes, fakeNext);
+      await testRoute(userRouter(services), 'POST', '/admin', req, fakeRes, fakeNext);
 
       expect(fakeRes.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
     });
@@ -320,7 +324,7 @@ describe('user routes', () => {
         },
       });
 
-      await testRoute(userRouter, 'POST', '/logout', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/logout', req, res, next);
 
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
       expect(res.json.mock.calls[0][0]).toEqual({ message: 'Logout successful' });
@@ -366,7 +370,7 @@ describe('user routes', () => {
       });
 
       // Call the route handler
-      await testRoute(userRouter, 'POST', '/invite', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/invite', req, res, next);
 
       // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
@@ -375,7 +379,7 @@ describe('user routes', () => {
 
     test('should error if not authenticated', async () => {
       const req = createMockRequest();
-      await testRoute(userRouter, 'POST', '/invite', req, res, next);
+      await testRoute(userRouter(services), 'POST', '/invite', req, res, next);
 
       expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
       expect(next.mock.calls[0][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);

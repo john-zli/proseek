@@ -1,9 +1,12 @@
 import { CaptchaService } from './captcha';
 import { GeocodeService } from './geocode';
 
-export class ServicesBuilder {
-  private static instance: ServicesBuilder;
+export interface IServicesBuilder {
+  readonly geocode: GeocodeService;
+  readonly captcha: CaptchaService;
+}
 
+export class ServicesBuilder implements IServicesBuilder {
   readonly geocode: GeocodeService;
   readonly captcha: CaptchaService;
 

@@ -10,9 +10,9 @@ import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
 import { logger } from '@server/services/logger';
-import { ServicesBuilder } from '@server/services/services_builder';
+import { IServicesBuilder } from '@server/services/services_builder';
 
-export function userRouter(services: ServicesBuilder): Router {
+export function userRouter(_services: IServicesBuilder): Router {
   const router = Router();
 
   // Create a new user (Registration)
