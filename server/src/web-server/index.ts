@@ -2,9 +2,9 @@ import config from '../config';
 import { setupRecurringJobs, shutdownQueue } from './queue-manager';
 import { startServer } from './server';
 import { logger } from '@server/services/logger';
+import { ServicesBuilder } from '@server/services/services_builder';
 
 const port = config.port;
-const SERVER_START_MSG = 'Express server started on port: ' + port;
 
 async function start() {
   try {
@@ -12,8 +12,9 @@ async function start() {
     await setupRecurringJobs();
     logger.info('Queue manager started successfully');
 
+    const services = new ServicesBuilder();
     // Start the server
-    const app = startServer({});
+    const app = startServer(services);
     app.listen(port, () => {
       logger.info(`Server started on port ${port}`);
     });
