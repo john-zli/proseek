@@ -6,7 +6,7 @@ import { prayerRequestChatsRouter } from './prayer_request_chats_routes';
 import { userRouter } from './user_routes';
 import { ServicesBuilder } from '@server/services/services_builder';
 
-export function createApiRouter(services: ServicesBuilder): Router {
+export function apiRouter(services: ServicesBuilder): Router {
   const apiRouter = Router();
 
   // Session endpoint

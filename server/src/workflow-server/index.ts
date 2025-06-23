@@ -1,62 +1,79 @@
-import { Job, JobData, JobType, Worker } from 'bullmq';
+import { Job, Worker } from 'bullmq';
 
-import { getPool } from '@server/services/db';
+import { setupRecurringJobs, shutdownRecurringJobManager } from './recurring_job_manager';
+import { WorkflowDefinitions } from './workflow_definitions';
 import { logger } from '@server/services/logger';
+import { ServicesBuilder } from '@server/services/services_builder';
 import { REDIS_CONFIG, WorkflowName, WorkflowParams } from '@server/types/workflows';
 
-// Job handlers will be moved to a separate file later. workflows/index most likely.
-const jobHandlers: Record<WorkflowName, (job: Job<WorkflowParams>) => Promise<void>> = {};
+let recurringWorker: Worker<WorkflowParams<WorkflowName>>;
 
-// Define worker for processing jobs
-const worker = new Worker<WorkflowParams>(
-  'job-queue',
-  async job => {
-    logger.info(`Processing job ${job.id} of type ${job.data.type}`);
+async function main() {
+  const services = new ServicesBuilder();
 
-    try {
-      // Process job based on its type
-      const handler = jobHandlers[job.data.type];
-      if (!handler) {
-        throw new Error(`No handler found for job type: ${job.data.type}`);
+  // Setup recurring jobs
+  await setupRecurringJobs();
+  logger.info('Recurring jobs setup completed');
+
+  // Define worker for processing recurring jobs
+  recurringWorker = new Worker<WorkflowParams<WorkflowName>>(
+    'recurring-job-queue',
+    async job => {
+      logger.info(`Processing recurring job ${job.id} of type ${job.data.type}`);
+
+      try {
+        // Process job based on its type
+        const handler = WorkflowDefinitions[job.data.type];
+        if (!handler) {
+          throw new Error(`No handler found for recurring job type: ${job.data.type}`);
+        }
+
+        await handler(services, job.data);
+        logger.info(`Recurring job ${job.id} completed successfully`);
+      } catch (error) {
+        logger.error(`Error processing recurring job ${job.id}:`, error);
+        throw error;
       }
-
-      await handler(job);
-      logger.info(`Job ${job.id} completed successfully`);
-    } catch (error) {
-      logger.error(`Error processing job ${job.id}:`, error);
-      throw error;
+    },
+    {
+      connection: REDIS_CONFIG,
+      concurrency: 3, // Process 3 recurring jobs concurrently
+      stalledInterval: 30000, // Check for stalled jobs every 30 seconds
     }
-  },
-  {
-    connection: REDIS_CONFIG,
-    concurrency: 5, // Process 5 jobs concurrently
-    stalledInterval: 30000, // Check for stalled jobs every 30 seconds
-  }
-);
+  );
 
-// Handle worker events
-worker.on('completed', job => {
-  logger.info(`Job ${job.id} has completed`);
-});
+  // Handle worker events
+  recurringWorker.on('completed', job => {
+    logger.info(`Recurring job ${job.id} has completed`);
+  });
 
-worker.on('failed', (job, error) => {
-  logger.error(`Job ${job?.id} has failed with error:`, error);
-});
+  recurringWorker.on('failed', (job, error) => {
+    logger.error(`Recurring job ${job?.id} has failed with error:`, error);
+  });
 
-worker.on('error', error => {
-  logger.error('Worker error:', error);
-});
+  recurringWorker.on('error', error => {
+    logger.error('Recurring worker error:', error);
+  });
 
-worker.on('stalled', jobId => {
-  logger.warn(`Job ${jobId} has stalled`);
-});
+  recurringWorker.on('stalled', jobId => {
+    logger.warn(`Recurring job ${jobId} has stalled`);
+  });
+
+  logger.info('Workflow server started - handling recurring jobs only');
+}
 
 // Graceful shutdown
 async function shutdown() {
-  logger.info('Shutting down worker...');
+  logger.info('Shutting down workflow server...');
+  if (!recurringWorker) {
+    logger.error('Recurring worker was not initialized');
+    process.exit(0);
+  }
+
   try {
-    await worker.close();
-    logger.info('Worker closed successfully');
+    await recurringWorker.close();
+    await shutdownRecurringJobManager();
+    logger.info('Workflow server closed successfully');
     process.exit(0);
   } catch (error) {
     logger.error('Error during shutdown:', error);
@@ -78,5 +95,7 @@ process.on('unhandledRejection', (reason, promise) => {
   shutdown();
 });
 
-// Log startup
-logger.info('Workflow server started');
+main().catch(error => {
+  logger.error('Failed to start workflow server:', error);
+  process.exit(1);
+});

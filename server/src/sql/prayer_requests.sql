@@ -1,22 +1,23 @@
 -- Each prayer request corresponds to a chat that starts from a request 
 -- user. 
 CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
-  request_id                uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
-  assigned_user_id          uuid,
-  assigned_church_id        uuid,                
-  responded                 boolean             NOT NULL DEFAULT false,
+  request_id                    uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
+  assigned_user_id              uuid,
+  assigned_church_id            uuid,                
+  responded                     boolean             NOT NULL DEFAULT false,
 
   -- Location information
-  zip                       varchar(20),
-  city                      varchar(100),
-  region                    varchar(100),
+  zip                           varchar(20),
+  city                          varchar(100),
+  region                        varchar(100),
 
-  request_contact_email     varchar(100),
-  request_contact_phone     varchar(20),
+  request_contact_email         varchar(100),
+  request_contact_phone         varchar(20),
 
   -- Metadata
-  creation_timestamp        timestamp           NOT NULL DEFAULT now(),
-  modification_timestamp    timestamp           NOT NULL DEFAULT now(),
+  creation_timestamp            timestamp           NOT NULL DEFAULT now(),
+  modification_timestamp        timestamp           NOT NULL DEFAULT now(),
+  match_notification_timestamp  timestamp,
 
   CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id)
     REFERENCES core.users(user_id) ON DELETE SET NULL,

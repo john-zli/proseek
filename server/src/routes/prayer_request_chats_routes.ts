@@ -35,8 +35,6 @@ export function prayerRequestChatsRouter(services: ServicesBuilder): Router {
         city: req.ipLocation?.city,
         region: req.ipLocation?.region,
       });
-
-      // TODO(johnli): Kick off a matching process for prayer requests and churches via BullMQ.
       res.status(HttpStatusCodes.CREATED).json({ chatroomId });
     } catch (error) {
       return next(error);

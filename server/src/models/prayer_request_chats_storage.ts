@@ -25,6 +25,7 @@ const ColumnKeyMappings = {
     region: 'region',
     creationTimestamp: 'creation_timestamp',
     modificationTimestamp: 'modification_timestamp',
+    matchNotificationTimestamp: 'match_notification_timestamp',
   },
   PrayerRequestChatMessage: {
     messageId: 'message_id',
@@ -47,10 +48,13 @@ const SqlCommands = {
                 prayer_request_chats.zip,
                 prayer_request_chats.city,
                 EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp)::bigint AS creation_timestamp,
-                EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp)::bigint AS modification_timestamp
+                EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp)::bigint AS modification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.match_notification_timestamp)::bigint AS match_notification_timestamp
     FROM        core.prayer_request_chats
     WHERE       ($1::uuid IS NULL OR prayer_request_chats.assigned_user_id = $1::uuid) AND
-                ($2::uuid IS NULL OR prayer_request_chats.assigned_church_id = $2::uuid)
+                ($2::uuid IS NULL OR prayer_request_chats.assigned_church_id = $2::uuid) AND
+                ($3::boolean IS NOT TRUE OR
+                 ($3::boolean AND prayer_request_chats.match_notification_timestamp IS NULL))
     ORDER BY    prayer_request_chats.creation_timestamp DESC;`,
   VerifyPrayerRequestChat: `
     SELECT      prayer_request_chats.request_id
@@ -79,6 +83,11 @@ const SqlCommands = {
     SET assigned_church_id = $1::uuid,
         modification_timestamp = CURRENT_TIMESTAMP
     WHERE request_id = $2::uuid;`,
+
+  UpdateMatchNotificationTimestamps: `
+    UPDATE core.prayer_request_chats
+    SET match_notification_timestamp = CURRENT_TIMESTAMP
+    WHERE request_id = ANY($1::uuid[]) AND match_notification_timestamp IS NULL;`,
 
   AssignPrayerRequestChatToUser: `
     UPDATE core.prayer_request_chats
@@ -111,11 +120,11 @@ const SqlCommands = {
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
 // Also different kind of db query wrappers.
 export async function listPrayerRequestChats(params: ListPrayerRequestChatsParams): Promise<PrayerRequestChat[]> {
-  const { userId, churchId } = params;
+  const { userId, churchId, onlyUnnotified } = params;
   return queryRows<PrayerRequestChat>({
     commandIdentifier: 'ListPrayerRequestChats',
     query: SqlCommands.ListPrayerRequestChats,
-    params: [userId, churchId],
+    params: [userId, churchId, onlyUnnotified],
     mapping: ColumnKeyMappings.PrayerRequestChat,
   });
 }
@@ -135,6 +144,14 @@ export async function matchPrayerRequestChatToChurch(params: MatchPrayerRequestC
     commandIdentifier: 'MatchPrayerRequestChatToChurch',
     query: SqlCommands.MatchPrayerRequestChatToChurch,
     params: [churchId, requestId],
+  });
+}
+
+export async function updateMatchNotificationTimestamps(requestIds: string[]): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'UpdateMatchNotificationTimestamps',
+    query: SqlCommands.UpdateMatchNotificationTimestamps,
+    params: [requestIds],
   });
 }
 

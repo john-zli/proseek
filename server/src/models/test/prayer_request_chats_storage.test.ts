@@ -9,6 +9,7 @@ import {
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
   matchPrayerRequestChatToChurch,
+  updateMatchNotificationTimestamps,
   verifyPrayerRequestChat,
 } from '../prayer_request_chats_storage';
 import { createAdminUser } from '../users_storage';
@@ -73,6 +74,7 @@ describe('prayer_request_chats_storage', () => {
           city: 'Test City',
           creationTimestamp: expect.any(Number),
           modificationTimestamp: expect.any(Number),
+          matchNotificationTimestamp: null,
         },
       ]);
 
@@ -96,6 +98,44 @@ describe('prayer_request_chats_storage', () => {
           deletionTimestamp: null,
         },
       ]);
+    });
+
+    test('should list only unnotified prayer requests if specified', async () => {
+      const messageTimestamp = 1700000000 * 1000;
+      const params = {
+        requestContactEmail: 'user@example.com',
+        requestContactPhone: '123-456-7890',
+        zip: '12345',
+        city: 'Test City',
+        messages: [
+          {
+            messageId: uuidv4(),
+            message: 'Hello',
+            messageTimestamp,
+          },
+        ],
+      };
+      const requestId = await createPrayerRequestChat(params);
+      let prayerRequests = await listPrayerRequestChats({ onlyUnnotified: true });
+      expect(prayerRequests).toEqual([
+        {
+          requestId,
+          assignedUserId: null,
+          assignedChurchId: null,
+          requestContactEmail: 'user@example.com',
+          requestContactPhone: '123-456-7890',
+          responded: false,
+          zip: '12345',
+          city: 'Test City',
+          creationTimestamp: expect.any(Number),
+          modificationTimestamp: expect.any(Number),
+          matchNotificationTimestamp: null,
+        },
+      ]);
+
+      await updateMatchNotificationTimestamps([requestId]);
+      prayerRequests = await listPrayerRequestChats({ onlyUnnotified: true });
+      expect(prayerRequests).toEqual([]);
     });
   });
 
@@ -147,6 +187,7 @@ describe('prayer_request_chats_storage', () => {
           city: 'Test City',
           creationTimestamp: expect.any(Number),
           modificationTimestamp: expect.any(Number),
+          matchNotificationTimestamp: null,
         },
       ]);
     });

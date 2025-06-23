@@ -14,10 +14,9 @@ import { sessionMiddleware } from '@server/middleware/session';
 import { apiRouter } from '@server/routes/api_router';
 import { pageRouter } from '@server/routes/page_router';
 import { logger } from '@server/services/logger';
+import { IServicesBuilder } from '@server/services/services_builder';
 
-interface LocalServices {}
-
-export function startServer(services: LocalServices): Express {
+export function startServer(services: IServicesBuilder): Express {
   const app = express();
 
   // Basic middleware
