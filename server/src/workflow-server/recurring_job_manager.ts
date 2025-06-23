@@ -1,0 +1,78 @@
+import { Queue } from 'bullmq';
+
+import { logger } from '@server/services/logger';
+import { REDIS_CONFIG, WORKFLOW_SCHEDULES, WorkflowName, WorkflowParams } from '@server/types/workflows';
+
+// Create queue instance for recurring jobs
+const recurringQueue = new Queue<WorkflowParams<WorkflowName>>('recurring-job-queue', {
+  connection: REDIS_CONFIG,
+});
+
+// Setup recurring jobs
+export async function setupRecurringJobs() {
+  try {
+    logger.info('Setting up recurring jobs...');
+
+    // Remove existing repeatable jobs
+    const repeatableJobs = await recurringQueue.getJobSchedulers();
+    await Promise.all(repeatableJobs.map(job => recurringQueue.removeRepeatableByKey(job.key)));
+    logger.info(`Removed ${repeatableJobs.length} existing repeatable jobs`);
+
+    // Add new repeatable jobs
+    for (const [type, schedule] of Object.entries(WORKFLOW_SCHEDULES)) {
+      await recurringQueue.add(
+        schedule.name,
+        { type: type as unknown as WorkflowName },
+        {
+          repeat: {
+            pattern: schedule.cron,
+          },
+        }
+      );
+      logger.info(`Added recurring job: ${schedule.name} with pattern: ${schedule.cron}`);
+    }
+
+    logger.info('Recurring jobs setup completed');
+  } catch (error) {
+    logger.error('Error setting up recurring jobs:', error);
+    throw error;
+  }
+}
+
+// Get all recurring jobs
+export async function getRecurringJobs() {
+  try {
+    const jobs = await recurringQueue.getJobSchedulers();
+    return jobs.map(job => ({
+      key: job.key,
+      name: job.name,
+      pattern: job.pattern,
+      next: job.next,
+    }));
+  } catch (error) {
+    logger.error('Error getting recurring jobs:', error);
+    throw error;
+  }
+}
+
+// Remove a specific recurring job
+export async function removeRecurringJob(jobKey: string) {
+  try {
+    await recurringQueue.removeRepeatableByKey(jobKey);
+    logger.info(`Removed recurring job: ${jobKey}`);
+  } catch (error) {
+    logger.error(`Error removing recurring job ${jobKey}:`, error);
+    throw error;
+  }
+}
+
+// Graceful shutdown
+export async function shutdownRecurringJobManager() {
+  try {
+    await recurringQueue.close();
+    logger.info('Recurring job manager closed successfully');
+  } catch (error) {
+    logger.error('Error closing recurring job manager:', error);
+    throw error;
+  }
+}

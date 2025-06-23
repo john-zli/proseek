@@ -9,6 +9,7 @@ export interface PrayerRequestChat {
   city?: string;
   creationTimestamp: number;
   modificationTimestamp: number;
+  matchNotificationTimestamp?: number;
 }
 
 export interface CreatePrayerRequestChatParams {
@@ -34,6 +35,7 @@ export interface MatchPrayerRequestChatToChurchParams {
 export interface ListPrayerRequestChatsParams {
   userId?: string;
   churchId?: string;
+  onlyUnnotified?: boolean;
 }
 
 // Chat Message Types

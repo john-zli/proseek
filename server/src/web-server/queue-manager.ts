@@ -1,10 +1,16 @@
-import { JobType, Queue } from 'bullmq';
+import { Queue } from 'bullmq';
 
 import { logger } from '@server/services/logger';
-import { REDIS_CONFIG, WORKFLOW_SCHEDULES, WorkflowName, WorkflowParams } from '@server/types/workflows';
+import {
+  REDIS_CONFIG,
+  SendChurchMatchNotificationsPayload,
+  WORKFLOW_SCHEDULES,
+  WorkflowName,
+  WorkflowParams,
+} from '@server/types/workflows';
 
 // Create queue instance
-const queue = new Queue<WorkflowParams>('job-queue', {
+const queue = new Queue<WorkflowParams<WorkflowName>>('job-queue', {
   connection: REDIS_CONFIG,
 });
 
@@ -17,13 +23,12 @@ export async function setupRecurringJobs() {
 
     // Add new repeatable jobs
     for (const [type, schedule] of Object.entries(WORKFLOW_SCHEDULES)) {
+      const repeatPattern = schedule.cron ? { pattern: schedule.cron } : { every: schedule.every };
       await queue.add(
         schedule.name,
         { type: type as unknown as WorkflowName },
         {
-          repeat: {
-            pattern: schedule.cron,
-          },
+          repeat: repeatPattern,
         }
       );
       logger.info(`Added recurring job: ${schedule.name}`);
@@ -32,6 +37,44 @@ export async function setupRecurringJobs() {
     logger.error('Error setting up recurring jobs:', error);
     throw error;
   }
+}
+
+// Add a one-time job with parameters
+export async function addJob<T extends Record<string, unknown>>(
+  type: WorkflowName,
+  payload?: T,
+  options?: {
+    delay?: number; // Delay in milliseconds
+    priority?: number; // Higher number = higher priority
+    attempts?: number; // Number of retry attempts
+  }
+) {
+  try {
+    const job = await queue.add(
+      type,
+      { type, payload },
+      {
+        delay: options?.delay,
+        priority: options?.priority,
+        attempts: options?.attempts || 3,
+        backoff: {
+          type: 'exponential',
+          delay: 2000, // Start with 2 seconds
+        },
+      }
+    );
+
+    logger.info(`Added job ${job.id} of type ${type}`);
+    return job;
+  } catch (error) {
+    logger.error(`Error adding job of type ${type}:`, error);
+    throw error;
+  }
+}
+
+// Convenience functions for specific job types
+export async function addSendChurchMatchNotificationsJob(payload: SendChurchMatchNotificationsPayload) {
+  return addJob(WorkflowName.SEND_CHURCH_MATCH_NOTIFICATIONS, payload);
 }
 
 // Graceful shutdown
