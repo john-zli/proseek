@@ -8,7 +8,6 @@ import {
   createPrayerRequestChatMessage,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
-  matchPrayerRequestChatToChurch,
   updateMatchNotificationTimestamps,
   verifyPrayerRequestChat,
 } from '../prayer_request_chats_storage';
@@ -155,6 +154,7 @@ describe('prayer_request_chats_storage', () => {
             messageTimestamp,
           },
         ],
+        churchId,
       };
 
       // Create a prayer request
@@ -167,9 +167,6 @@ describe('prayer_request_chats_storage', () => {
         gender: Gender.Male,
         passwordHash: 'password',
       });
-
-      // Assign the prayer request
-      await matchPrayerRequestChatToChurch({ requestId, churchId });
 
       await assignPrayerRequestChat({ requestId, userId: user.userId, churchId });
 

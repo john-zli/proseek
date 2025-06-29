@@ -4,7 +4,6 @@ import { logger } from '@server/services/logger';
 import {
   REDIS_CONFIG,
   SendChurchMatchNotificationsPayload,
-  WORKFLOW_SCHEDULES,
   WorkflowName,
   WorkflowParams,
 } from '@server/types/workflows';
@@ -13,31 +12,6 @@ import {
 const queue = new Queue<WorkflowParams<WorkflowName>>('job-queue', {
   connection: REDIS_CONFIG,
 });
-
-// Setup recurring jobs
-export async function setupRecurringJobs() {
-  try {
-    // Remove existing repeatable jobs
-    const repeatableJobs = await queue.getRepeatableJobs();
-    await Promise.all(repeatableJobs.map(job => queue.removeRepeatableByKey(job.key)));
-
-    // Add new repeatable jobs
-    for (const [type, schedule] of Object.entries(WORKFLOW_SCHEDULES)) {
-      const repeatPattern = schedule.cron ? { pattern: schedule.cron } : { every: schedule.every };
-      await queue.add(
-        schedule.name,
-        { type: type as unknown as WorkflowName },
-        {
-          repeat: repeatPattern,
-        }
-      );
-      logger.info(`Added recurring job: ${schedule.name}`);
-    }
-  } catch (error) {
-    logger.error('Error setting up recurring jobs:', error);
-    throw error;
-  }
-}
 
 // Add a one-time job with parameters
 export async function addJob<T extends Record<string, unknown>>(

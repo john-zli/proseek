@@ -134,20 +134,12 @@ CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignmen
   PARAM_region              varchar(100),
   PARAM_messages            text[],
   PARAM_message_timestamps  bigint[],
-  PARAM_message_ids         uuid[]
+  PARAM_message_ids         uuid[],
+  PARAM_church_id           uuid
 ) RETURNS UUID AS $$
 DECLARE
   VAR_prayer_request_chat_id  UUID;
 BEGIN
-  -- -- Find a nearby church based on location
-  -- SELECT  church_id 
-  -- INTO    VAR_church_id
-  -- FROM    core.churches
-  -- WHERE   (PARAM_zip IS NULL OR zip = PARAM_zip) 
-  -- AND     (PARAM_county IS NULL OR county = PARAM_county) 
-  -- AND     (PARAM_city IS NULL OR city = PARAM_city)
-  -- LIMIT   1;
-
   -- Create the prayer request
   INSERT INTO core.prayer_request_chats (
     request_contact_email,
@@ -156,7 +148,8 @@ BEGIN
     city,
     region,
     creation_timestamp,
-    modification_timestamp
+    modification_timestamp,
+    assigned_church_id
   ) VALUES (
     PARAM_contact_email,
     PARAM_contact_phone,
@@ -164,7 +157,8 @@ BEGIN
     PARAM_city,
     PARAM_region,
     CURRENT_TIMESTAMP,
-    CURRENT_TIMESTAMP
+    CURRENT_TIMESTAMP,
+    PARAM_church_id
   )
   RETURNING request_id INTO VAR_prayer_request_chat_id;
 

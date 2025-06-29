@@ -52,8 +52,6 @@ const SqlCommands = {
     RETURNING church_id;`,
 };
 
-// TODO(johnli): Add abstractions for db to transform fields to camelCase.
-// Also different kind of db query wrappers.
 export async function listChurchesNearUser(params: ListChurchesNearUserParams): Promise<Church[]> {
   const { zip, city, county } = params;
   return queryRows<Church>({
