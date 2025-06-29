@@ -5,6 +5,8 @@ import { Church } from '@server/models/storage_types';
 import { ServicesBuilder } from '@server/services/services_builder';
 
 const MIN_MILES_TO_CHURCH = 20;
+
+// Write test cases for you.
 export async function getNearestChurchToUser(
   services: ServicesBuilder,
   params: { userLatitude?: number; userLongitude?: number }
