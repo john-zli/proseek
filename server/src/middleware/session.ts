@@ -5,13 +5,14 @@ import { createClient } from 'redis';
 import { SessionData as SharedSessionData } from '@common/server-api/types/session';
 import { NodeEnvs } from '@server/common/constants';
 import config from '@server/config';
+import { logger } from '@server/services/logger';
 
 // Create Redis client
 const redisClient = createClient({
   url: process.env.REDIS_URL || 'redis://localhost:6379',
 });
 
-redisClient.connect().catch(console.error);
+redisClient.connect().catch(error => logger.error(error, 'Error connecting to Redis:'));
 
 // Configure session middleware
 export const sessionMiddleware = session({

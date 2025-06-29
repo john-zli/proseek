@@ -31,7 +31,7 @@ async function main() {
         await handler(services, job.data);
         logger.info(`Recurring job ${job.id} completed successfully`);
       } catch (error) {
-        logger.error(`Error processing recurring job ${job.id}:`, error);
+        logger.error(error, `Error processing recurring job ${job.id}:`);
         throw error;
       }
     },

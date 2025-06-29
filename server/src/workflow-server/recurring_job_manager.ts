@@ -43,8 +43,7 @@ export async function setupRecurringJobs() {
 
     logger.info('Recurring jobs setup completed');
   } catch (error) {
-    // TODO: Add error logging. With pino.
-    console.error('Error setting up recurring jobs:', error);
+    logger.error(error, 'Error setting up recurring jobs:');
     throw error;
   }
 }
@@ -60,7 +59,7 @@ export async function getRecurringJobs() {
       next: job.next,
     }));
   } catch (error) {
-    console.error('Error getting recurring jobs:', error);
+    logger.error(error, 'Error getting recurring jobs:');
     throw error;
   }
 }
@@ -71,7 +70,7 @@ export async function shutdownRecurringJobManager() {
     await recurringQueue.close();
     logger.info('Recurring job manager closed successfully');
   } catch (error) {
-    console.error('Error closing recurring job manager:', error);
+    logger.error(error, 'Error closing recurring job manager:');
     throw error;
   }
 }
