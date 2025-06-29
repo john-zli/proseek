@@ -15,7 +15,8 @@ export async function setupRecurringJobs() {
 
     // Remove existing repeatable jobs
     const repeatableJobs = await recurringQueue.getJobSchedulers();
-    await Promise.all(repeatableJobs.map(job => recurringQueue.removeRepeatableByKey(job.key)));
+    await Promise.all(repeatableJobs.filter(job => job.id).map(job => recurringQueue.removeJobScheduler(job.id!)));
+
     logger.info(`Removed ${repeatableJobs.length} existing repeatable jobs`);
 
     // Add new repeatable jobs
@@ -51,17 +52,6 @@ export async function getRecurringJobs() {
     }));
   } catch (error) {
     logger.error('Error getting recurring jobs:', error);
-    throw error;
-  }
-}
-
-// Remove a specific recurring job
-export async function removeRecurringJob(jobKey: string) {
-  try {
-    await recurringQueue.removeRepeatableByKey(jobKey);
-    logger.info(`Removed recurring job: ${jobKey}`);
-  } catch (error) {
-    logger.error(`Error removing recurring job ${jobKey}:`, error);
     throw error;
   }
 }

@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import NodeGeocoder from 'node-geocoder';
 
+import { logger } from './logger';
 import config from '@server/config';
 
 export interface GeocodeResult {
@@ -12,6 +13,7 @@ export interface GeocodeResult {
   city?: string;
   state?: string;
   country?: string;
+  zipcode?: string;
 }
 
 export class GeocodeService {
@@ -44,9 +46,10 @@ export class GeocodeService {
         city: result.city,
         state: result.state,
         country: result.country,
+        zipcode: result.zipcode,
       };
     } catch (error) {
-      console.error('Error geocoding address:', error);
+      logger.error('Error geocoding address:', error);
       return null;
     }
   }
@@ -70,7 +73,7 @@ export class GeocodeService {
         country: result.country,
       };
     } catch (error) {
-      console.error('Error reverse geocoding coordinates:', error);
+      logger.error('Error reverse geocoding coordinates:', error);
       return null;
     }
   }

@@ -18,17 +18,13 @@ export interface CreatePrayerRequestChatParams {
   zip?: string;
   city?: string;
   region?: string;
+  churchId?: string;
   messages: Omit<PrayerRequestChatMessage, 'requestId'>[];
 }
 
 export interface AssignPrayerRequestChatToUserParams {
   requestId: string;
   userId: string;
-  churchId: string;
-}
-
-export interface MatchPrayerRequestChatToChurchParams {
-  requestId: string;
   churchId: string;
 }
 

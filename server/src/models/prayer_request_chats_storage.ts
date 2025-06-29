@@ -6,7 +6,6 @@ import {
   CreatePrayerRequestChatParams,
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatsParams,
-  MatchPrayerRequestChatToChurchParams,
   PrayerRequestChat,
   PrayerRequestChatMessage,
   VerifyPrayerRequestChatParams,
@@ -75,14 +74,9 @@ const SqlCommands = {
       $5::varchar(100),
       $6::text[],
       $7::bigint[],
-      $8::uuid[]
+      $8::uuid[],
+      $9::uuid
     );`,
-
-  MatchPrayerRequestChatToChurch: `
-    UPDATE core.prayer_request_chats
-    SET assigned_church_id = $1::uuid,
-        modification_timestamp = CURRENT_TIMESTAMP
-    WHERE request_id = $2::uuid;`,
 
   UpdateMatchNotificationTimestamps: `
     UPDATE core.prayer_request_chats
@@ -138,15 +132,6 @@ export async function assignPrayerRequestChat(params: AssignPrayerRequestChatToU
   });
 }
 
-export async function matchPrayerRequestChatToChurch(params: MatchPrayerRequestChatToChurchParams): Promise<void> {
-  const { requestId, churchId } = params;
-  await nonQuery({
-    commandIdentifier: 'MatchPrayerRequestChatToChurch',
-    query: SqlCommands.MatchPrayerRequestChatToChurch,
-    params: [churchId, requestId],
-  });
-}
-
 export async function updateMatchNotificationTimestamps(requestIds: string[]): Promise<void> {
   await nonQuery({
     commandIdentifier: 'UpdateMatchNotificationTimestamps',
@@ -172,6 +157,7 @@ export async function createPrayerRequestChat(params: CreatePrayerRequestChatPar
       messageTexts,
       messageTimestamps,
       messageIds,
+      params.churchId,
     ],
   });
 }

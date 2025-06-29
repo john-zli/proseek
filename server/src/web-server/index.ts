@@ -1,5 +1,5 @@
 import config from '../config';
-import { setupRecurringJobs, shutdownQueue } from './queue-manager';
+import { shutdownQueue } from './queue-manager';
 import { startServer } from './server';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
@@ -8,10 +8,6 @@ const port = config.port;
 
 async function start() {
   try {
-    // Setup recurring jobs
-    await setupRecurringJobs();
-    logger.info('Queue manager started successfully');
-
     const services = new ServicesBuilder();
     // Start the server
     const app = startServer(services);

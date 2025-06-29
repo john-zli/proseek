@@ -13,7 +13,6 @@ import {
   createPrayerRequestChatMessage,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
-  matchPrayerRequestChatToChurch,
 } from '@server/models/prayer_request_chats_storage';
 import { createAdminUser } from '@server/models/users_storage';
 import { IServicesBuilder } from '@server/services/services_builder';
@@ -39,6 +38,15 @@ describe('prayer request chats routes', () => {
 
   describe('POST /', () => {
     test('should create a new prayer request', async () => {
+      const churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St, Anytown, USA',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+      });
+
       const req = createMockRequest({
         body: {
           title: 'Test Prayer Request',
@@ -53,8 +61,10 @@ describe('prayer request chats routes', () => {
           ],
         },
         ipLocation: {
-          city: 'Test City',
-          region: 'Test Region',
+          city: 'Anytown',
+          region: 'CA',
+          latitude: 37.774929,
+          longitude: -122.419416,
         },
       });
 
@@ -64,6 +74,54 @@ describe('prayer request chats routes', () => {
       // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
       expect(res.json.mock.calls[0][0]).toEqual({ chatroomId: expect.any(String) });
+
+      // Check that prayer request is assigned to the church.
+      const prayerRequestChats = await listPrayerRequestChats({ churchId });
+      expect(prayerRequestChats).toHaveLength(1);
+      expect(prayerRequestChats[0]).toHaveProperty('assignedChurchId', churchId);
+    });
+
+    test('does not assign a prayer request to a church if the church is too far away', async () => {
+      const churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St, Anytown, USA',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+      });
+
+      const req = createMockRequest({
+        body: {
+          title: 'Test Prayer Request',
+          description: 'Test Description',
+          token: 'test-token',
+          messages: [
+            {
+              message: 'Test Message',
+              messageId: uuidv4(),
+              messageTimestamp: Date.now(),
+            },
+          ],
+        },
+        ipLocation: {
+          city: 'Anytown',
+          region: 'CA',
+          latitude: 37.774929,
+          longitude: 122.419416,
+        },
+      });
+
+      // Call the route handler
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/', req, res, next);
+
+      // Verify response
+      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
+      expect(res.json.mock.calls[0][0]).toEqual({ chatroomId: expect.any(String) });
+
+      // Check that prayer request is not assigned to the church.
+      const prayerRequestChats = await listPrayerRequestChats({ churchId });
+      expect(prayerRequestChats).toHaveLength(0);
     });
   });
 
@@ -90,10 +148,6 @@ describe('prayer request chats routes', () => {
         city: 'Anytown',
         region: 'CA',
         messages: [],
-      });
-
-      await matchPrayerRequestChatToChurch({
-        requestId: prayerRequestChatId,
         churchId,
       });
 
@@ -116,15 +170,6 @@ describe('prayer request chats routes', () => {
 
   describe('POST /:requestId/assign', () => {
     test('should assign a prayer request to a church', async () => {
-      const prayerRequestChatId = await createPrayerRequestChat({
-        requestContactEmail: 'test@example.com',
-        requestContactPhone: '1234567890',
-        zip: '12345',
-        city: 'Anytown',
-        region: 'CA',
-        messages: [],
-      });
-
       const churchId = await createChurch({
         name: 'Test Church',
         address: '123 Main St, Anytown, USA',
@@ -134,8 +179,13 @@ describe('prayer request chats routes', () => {
         county: 'Anytown',
       });
 
-      await matchPrayerRequestChatToChurch({
-        requestId: prayerRequestChatId,
+      const prayerRequestChatId = await createPrayerRequestChat({
+        requestContactEmail: 'test@example.com',
+        requestContactPhone: '1234567890',
+        zip: '12345',
+        city: 'Anytown',
+        region: 'CA',
+        messages: [],
         churchId,
       });
 

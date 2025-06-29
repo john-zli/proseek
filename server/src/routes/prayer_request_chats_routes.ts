@@ -19,6 +19,7 @@ import {
 } from '../schemas/prayer_request_chats';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
+import { createPrayerRequestChatController } from '@server/controllers/create-prayer-request-controller/create_prayer_request_chat_controller';
 import { ensureAuthenticated } from '@server/middleware/auth';
 import { verifyCaptcha } from '@server/middleware/verify_captcha';
 import { logger } from '@server/services/logger';
@@ -28,18 +29,12 @@ export function prayerRequestChatsRouter(services: ServicesBuilder): Router {
   const router = Router();
 
   // Create a new prayer request
-  router.post('/', validate(CreatePrayerRequestChatSchema), verifyCaptcha(services), async (req, res, next) => {
-    try {
-      const chatroomId = await createPrayerRequestChat({
-        ...req.body,
-        city: req.ipLocation?.city,
-        region: req.ipLocation?.region,
-      });
-      res.status(HttpStatusCodes.CREATED).json({ chatroomId });
-    } catch (error) {
-      return next(error);
-    }
-  });
+  router.post(
+    '/',
+    validate(CreatePrayerRequestChatSchema),
+    verifyCaptcha(services),
+    createPrayerRequestChatController(services)
+  );
 
   // List prayer requests for a church
   router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (req, res, next) => {
