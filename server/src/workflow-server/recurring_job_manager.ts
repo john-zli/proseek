@@ -1,4 +1,4 @@
-import { Queue } from 'bullmq';
+import { Queue, RepeatOptions } from 'bullmq';
 
 import { logger } from '@server/services/logger';
 import { REDIS_CONFIG, WORKFLOW_SCHEDULES, WorkflowName, WorkflowParams } from '@server/types/workflows';
@@ -21,13 +21,21 @@ export async function setupRecurringJobs() {
 
     // Add new repeatable jobs
     for (const [type, schedule] of Object.entries(WORKFLOW_SCHEDULES)) {
+      const repeatOptions: RepeatOptions = {};
+
+      if (schedule.every) {
+        repeatOptions.every = schedule.every;
+      }
+
+      if (schedule.cron) {
+        repeatOptions.pattern = schedule.cron;
+      }
+
       await recurringQueue.add(
         schedule.name,
         { type: type as unknown as WorkflowName },
         {
-          repeat: {
-            pattern: schedule.cron,
-          },
+          repeat: repeatOptions,
         }
       );
       logger.info(`Added recurring job: ${schedule.name} with pattern: ${schedule.cron}`);
@@ -35,7 +43,8 @@ export async function setupRecurringJobs() {
 
     logger.info('Recurring jobs setup completed');
   } catch (error) {
-    logger.error('Error setting up recurring jobs:', error);
+    // TODO: Add error logging. With pino.
+    console.error('Error setting up recurring jobs:', error);
     throw error;
   }
 }
@@ -51,7 +60,7 @@ export async function getRecurringJobs() {
       next: job.next,
     }));
   } catch (error) {
-    logger.error('Error getting recurring jobs:', error);
+    console.error('Error getting recurring jobs:', error);
     throw error;
   }
 }
@@ -62,7 +71,7 @@ export async function shutdownRecurringJobManager() {
     await recurringQueue.close();
     logger.info('Recurring job manager closed successfully');
   } catch (error) {
-    logger.error('Error closing recurring job manager:', error);
+    console.error('Error closing recurring job manager:', error);
     throw error;
   }
 }
