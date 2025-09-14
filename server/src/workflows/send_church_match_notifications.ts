@@ -5,9 +5,9 @@ import { WorkflowName, WorkflowParams } from '@server/types/workflows';
 
 export async function sendChurchMatchNotifications(
   _services: ServicesBuilder,
-  _payload: WorkflowParams<WorkflowName.SEND_CHURCH_MATCH_NOTIFICATIONS>
+  _payload: WorkflowParams<WorkflowName.SendChurchMatchNotifications>
 ) {
-  logger.info(`Processing recurring church match notifications`);
+  logger.info('Processing recurring church match notifications');
 
   const prayerRequests = await listPrayerRequestChats({ onlyUnnotified: true });
   // At this point, all churches should have been matched. This is just a batch method to

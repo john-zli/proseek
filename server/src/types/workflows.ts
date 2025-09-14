@@ -1,7 +1,16 @@
 // Workflow types
 export enum WorkflowName {
-  SEND_CHURCH_MATCH_NOTIFICATIONS = 'SEND_CHURCH_MATCH_NOTIFICATIONS',
+  SendChurchMatchNotifications = 'SendChurchMatchNotifications',
   // Add more workflow types here
+}
+
+export enum WorkflowStatus {
+  Unprocessed = 'unprocessed',
+  Queued = 'queued',
+  Running = 'running',
+  Completed = 'completed',
+  Failed = 'failed',
+  Cancelled = 'cancelled',
 }
 
 // Workflow data interface
@@ -14,7 +23,7 @@ export interface WorkflowParams<T extends WorkflowName> {
 export interface SendChurchMatchNotificationsPayload extends Record<string, unknown> {}
 
 export interface WorkflowParamsForWorkflowName {
-  [WorkflowName.SEND_CHURCH_MATCH_NOTIFICATIONS]: SendChurchMatchNotificationsPayload;
+  [WorkflowName.SendChurchMatchNotifications]: SendChurchMatchNotificationsPayload;
 }
 
 interface WorkflowSchedule {
@@ -30,9 +39,9 @@ interface WorkflowSchedule {
 
 // Workflow schedules
 export const WORKFLOW_SCHEDULES: Record<WorkflowName, WorkflowSchedule> = {
-  [WorkflowName.SEND_CHURCH_MATCH_NOTIFICATIONS]: {
+  [WorkflowName.SendChurchMatchNotifications]: {
     every: 5 * 60 * 1000, // Every 5 minutes
-    name: 'send-notification-to-requester',
+    name: WorkflowName.SendChurchMatchNotifications,
   },
 };
 // Redis configuration
