@@ -1,12 +1,7 @@
 import { Queue } from 'bullmq';
 
 import { logger } from '@server/services/logger';
-import {
-  REDIS_CONFIG,
-  SendChurchMatchNotificationsPayload,
-  WorkflowName,
-  WorkflowParams,
-} from '@server/types/workflows';
+import { REDIS_CONFIG, WorkflowName, WorkflowParams } from '@server/types/workflows';
 
 // Create queue instance
 const queue = new Queue<WorkflowParams<WorkflowName>>('job-queue', {
@@ -44,11 +39,6 @@ export async function addJob<T extends Record<string, unknown>>(
     logger.error(`Error adding job of type ${type}:`, error);
     throw error;
   }
-}
-
-// Convenience functions for specific job types
-export async function addSendChurchMatchNotificationsJob(payload: SendChurchMatchNotificationsPayload) {
-  return addJob(WorkflowName.SEND_CHURCH_MATCH_NOTIFICATIONS, payload);
 }
 
 // Graceful shutdown

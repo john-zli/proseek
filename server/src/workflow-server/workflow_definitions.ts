@@ -3,5 +3,5 @@ import { sendChurchMatchNotifications } from '@server/workflows/send_church_matc
 
 // Job handlers for recurring jobs
 export const WorkflowDefinitions = {
-  [WorkflowName.SEND_CHURCH_MATCH_NOTIFICATIONS]: sendChurchMatchNotifications,
+  [WorkflowName.SendChurchMatchNotifications]: sendChurchMatchNotifications,
 };
