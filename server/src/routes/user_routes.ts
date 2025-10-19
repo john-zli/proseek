@@ -1,6 +1,3 @@
-import bcrypt from 'bcrypt';
-import { Router } from 'express';
-
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { createAdminUser, createUser, generateInvitationCode, getUserByEmail } from '../models/users_storage';
@@ -11,6 +8,8 @@ import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
 import { logger } from '@server/services/logger';
 import { IServicesBuilder } from '@server/services/services_builder';
+import { compare, hash } from 'bcrypt';
+import { Router } from 'express';
 
 export function userRouter(_services: IServicesBuilder): Router {
   const router = Router();
@@ -20,7 +19,7 @@ export function userRouter(_services: IServicesBuilder): Router {
     try {
       const { email, firstName, lastName, gender, password, invitationCode } = req.body;
 
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await hash(password, 10);
 
       const sanitizedUser = await createUser({
         email,
@@ -43,16 +42,16 @@ export function userRouter(_services: IServicesBuilder): Router {
         req.session.user = sanitizedUser;
         res.status(HttpStatusCodes.CREATED).json({ userId: sanitizedUser.userId });
       });
-    } catch (error: any) {
+    } catch (error) {
       logger.error({ err: error }, 'Error creating user:');
 
       let statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
       let message = 'Failed to create user';
 
-      if (error.message.includes('USER_EMAIL_EXISTS')) {
+      if ((error as Error).message.includes('USER_EMAIL_EXISTS')) {
         statusCode = HttpStatusCodes.CONFLICT;
         message = 'User with this email already exists';
-      } else if (error.message.includes('INVALID_INVITATION_CODE')) {
+      } else if ((error as Error).message.includes('INVALID_INVITATION_CODE')) {
         statusCode = HttpStatusCodes.BAD_REQUEST;
         message = 'Invalid or already used invitation code';
       }
@@ -67,7 +66,7 @@ export function userRouter(_services: IServicesBuilder): Router {
     try {
       const { email, firstName, lastName, gender, password, churchId } = req.body;
 
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await hash(password, 10);
 
       const sanitizedUser = await createAdminUser({
         email,
@@ -90,13 +89,13 @@ export function userRouter(_services: IServicesBuilder): Router {
         req.session.user = sanitizedUser;
         res.status(HttpStatusCodes.CREATED).json({ userId: sanitizedUser.userId });
       });
-    } catch (error: any) {
+    } catch (error) {
       logger.error({ err: error }, 'Error creating user:');
 
       let statusCode = HttpStatusCodes.INTERNAL_SERVER_ERROR;
       let message = 'Failed to create user';
 
-      if (error.message.match(/duplicate key value violates unique constraint "users_email_key"/)) {
+      if ((error as Error).message.match(/duplicate key value violates unique constraint "users_email_key"/)) {
         statusCode = HttpStatusCodes.CONFLICT;
         message = 'User with this email already exists';
       }
@@ -118,9 +117,7 @@ export function userRouter(_services: IServicesBuilder): Router {
 
       // Development-only bypass for johnzli@hey.com
       const isPasswordValid =
-        config.env === NodeEnvs.Dev && email === 'johnzli@hey.com'
-          ? true
-          : await bcrypt.compare(password, user.passwordHash);
+        config.env === NodeEnvs.Dev && email === 'johnzli@hey.com' ? true : await compare(password, user.passwordHash);
 
       if (!isPasswordValid) {
         throw new RouteError(HttpStatusCodes.UNAUTHORIZED, 'Invalid email or password');
@@ -134,7 +131,12 @@ export function userRouter(_services: IServicesBuilder): Router {
         }
 
         // Omit passwordHash before sending user data
-        const { passwordHash, creationTimestamp, modificationTimestamp, ...userWithoutPassword } = user;
+        const {
+          passwordHash: _passwordHash,
+          creationTimestamp: _creationTimestamp,
+          modificationTimestamp: _modificationTimestamp,
+          ...userWithoutPassword
+        } = user;
         // Store user information in session, including churchId
         req.session.user = userWithoutPassword;
 
@@ -172,7 +174,7 @@ export function userRouter(_services: IServicesBuilder): Router {
 
       // 3. Return the generated code
       res.status(HttpStatusCodes.CREATED).json({ invitationCode });
-    } catch (error: any) {
+    } catch (error) {
       return next(error);
     }
   });

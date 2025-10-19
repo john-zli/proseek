@@ -1,10 +1,9 @@
-import { Job, Worker } from 'bullmq';
-
 import { setupRecurringJobs, shutdownRecurringJobManager } from './recurring_job_manager';
 import { WorkflowDefinitions } from './workflow_definitions';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
 import { REDIS_CONFIG, WorkflowName, WorkflowParams } from '@server/types/workflows';
+import { Worker } from 'bullmq';
 
 let recurringWorker: Worker<WorkflowParams<WorkflowName>>;
 

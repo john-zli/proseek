@@ -1,7 +1,6 @@
-import { Router } from 'express';
-
 import { serveStaticHtmlFile } from '@server/middleware/serve_static_html_file';
 import { IServicesBuilder } from '@server/services/services_builder';
+import { Router } from 'express';
 
 export function pageRouter(_services: IServicesBuilder): Router {
   const router = Router();

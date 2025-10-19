@@ -1,7 +1,6 @@
-import dotenv from 'dotenv';
-import path from 'path';
-
 import { NodeEnvs } from './common/constants';
+import * as dotenv from 'dotenv';
+import path from 'path';
 
 // Configure dotenv to load environment variables
 const NODE_ENV = process.env.NODE_ENV ?? 'development';

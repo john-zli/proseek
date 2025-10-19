@@ -1,8 +1,7 @@
-import fetch from 'node-fetch';
-import NodeGeocoder from 'node-geocoder';
-
 import { logger } from './logger';
 import config from '@server/config';
+import fetch from 'node-fetch';
+import NodeGeocoder from 'node-geocoder';
 
 export interface GeocodeResult {
   latitude: number;

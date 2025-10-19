@@ -1,7 +1,6 @@
+import config from '@server/config';
 import { Pool } from 'pg';
 import { types } from 'pg';
-
-import config from '@server/config';
 
 let pool: Pool;
 

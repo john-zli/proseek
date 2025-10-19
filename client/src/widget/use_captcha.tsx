@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef } from 'react';
 
+interface CapInstance {
+  solve: () => Promise<{ token: string }>;
+}
+
 export function useCaptcha() {
-  const capInstanceRef = useRef<any>(null); // Store the Cap instance
+  const capInstanceRef = useRef<CapInstance | null>(null); // Store the Cap instance
 
   useEffect(() => {
     const loadScript = () => {
@@ -33,7 +37,7 @@ export function useCaptcha() {
       const result = await capInstanceRef.current.solve();
       return result.token;
     }
-  }, [capInstanceRef.current]);
+  }, []);
 
   return {
     solve,

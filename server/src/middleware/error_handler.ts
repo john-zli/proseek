@@ -1,8 +1,7 @@
-import { NextFunction, Request, Response } from 'express';
-
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { logger } from '@server/services/logger';
+import { NextFunction, Request, Response } from 'express';
 
 export const errorHandler = (err: Error, req: Request, res: Response, _next: NextFunction) => {
   logger.error({ err, url: req.originalUrl, method: req.method }, 'Unhandled error occurred:');

@@ -7,6 +7,7 @@ type ColumnMapping<T> = {
 /**
  * Transforms a database row from snake_case to camelCase based on the provided mapping
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function transformRow<T>(row: Record<string, any>, mapping: ColumnMapping<T>): T {
   const result: Partial<T> = {};
 
@@ -29,6 +30,7 @@ export async function queryRows<T>({
   commandIdentifier,
 }: {
   query: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any[];
   mapping: ColumnMapping<T>;
   commandIdentifier: string;
@@ -56,6 +58,7 @@ export async function querySingleRow<T, A extends boolean = false>({
   allowNull = false as A,
 }: {
   query: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any[];
   mapping: ColumnMapping<T>;
   commandIdentifier: string;
@@ -89,6 +92,7 @@ export async function queryScalar<T, A extends boolean = false>({
   commandIdentifier,
 }: {
   query: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any[];
   allowNull?: A;
   commandIdentifier: string;
@@ -124,6 +128,7 @@ export async function nonQuery({
   commandIdentifier,
 }: {
   query: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any[];
   commandIdentifier: string;
 }): Promise<void> {

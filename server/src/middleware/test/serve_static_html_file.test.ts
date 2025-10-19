@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'bun:test';
-import { Request, Response } from 'express';
-import path from 'path';
-
 import { serveStaticHtmlFile } from '../serve_static_html_file';
 import { createMockRequest, createMockResponse } from '@server/test/request_test_helper';
+import { Request, Response } from 'express';
+import path from 'path';
 
 describe('serve static HTML file middleware', () => {
   test('should serve index.html file', () => {

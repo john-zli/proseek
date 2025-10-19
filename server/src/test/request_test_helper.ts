@@ -2,23 +2,33 @@ import { Mock, mock } from 'bun:test';
 
 // Mock express types
 export type MockRequest = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   query?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params?: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   session?: any;
   ip?: string;
   originalUrl?: string;
   method?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ipLocation?: any;
 };
 
 export type MockResponse = {
-  status: Mock;
-  json: Mock;
-  sendFile: Mock;
+  status: Mock<(code: number) => MockResponse>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  json: Mock<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  sendFile: Mock<any>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  clearCookie: Mock<any>;
 };
 
-export type MockNextFunction = Mock;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type MockNextFunction = Mock<any>;
 
 // Helper to create mock request
 export const createMockRequest = (overrides: Partial<MockRequest> = {}): MockRequest => ({
@@ -31,7 +41,7 @@ export const createMockRequest = (overrides: Partial<MockRequest> = {}): MockReq
 
 // Helper to create mock response
 export const createMockResponse = (): MockResponse => {
-  const res = {
+  const res: MockResponse = {
     status: mock(() => res),
     json: mock(),
     sendFile: mock(),
@@ -44,4 +54,4 @@ export const createMockResponse = (): MockResponse => {
 export const createMockNext = (): MockNextFunction => mock();
 
 // Store response reference for chaining
-const res = createMockResponse();
+export const mockResponse = createMockResponse();

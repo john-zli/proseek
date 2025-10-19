@@ -4,10 +4,6 @@
     "composite": true,
     "outDir": "./dist",
     "rootDir": "..",
-    "typeRoots": [
-      "./src/types",
-      "./node_modules/@types"
-    ],
     "types": [
       "bun-types"
     ]

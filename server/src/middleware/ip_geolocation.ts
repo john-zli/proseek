@@ -1,9 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
-import geoip from 'geoip-lite';
-
 import { NodeEnvs } from '@server/common/constants';
 import config from '@server/config';
 import { logger } from '@server/services/logger';
+import { NextFunction, Request, Response } from 'express';
+import { lookup } from 'geoip-lite';
 
 // Mock IP address for development environment
 const MOCK_IP = '104.244.24.102'; // Monkeybrains IP Address
@@ -19,7 +18,7 @@ export function ipGeolocationMiddleware(req: Request, res: Response, next: NextF
     }
 
     // Get geolocation data
-    const geo = geoip.lookup(ip);
+    const geo = lookup(ip);
     if (geo) {
       req.ipLocation = {
         city: geo.city,

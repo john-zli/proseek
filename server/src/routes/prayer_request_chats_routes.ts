@@ -1,9 +1,6 @@
-import { Router } from 'express';
-
 import { validate } from '../middleware/validate';
 import {
   assignPrayerRequestChat,
-  createPrayerRequestChat,
   createPrayerRequestChatMessage,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
@@ -24,6 +21,7 @@ import { ensureAuthenticated } from '@server/middleware/auth';
 import { verifyCaptcha } from '@server/middleware/verify_captcha';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
+import { Router } from 'express';
 
 export function prayerRequestChatsRouter(services: ServicesBuilder): Router {
   const router = Router();
@@ -107,8 +105,8 @@ export function prayerRequestChatsRouter(services: ServicesBuilder): Router {
         const verifiedChatId = await verifyPrayerRequestChat({ requestId, requestContactEmail, requestContactPhone });
         req.session.verifiedChatIds = [...(req.session.verifiedChatIds || []), verifiedChatId];
         res.status(HttpStatusCodes.OK).json({ isVerified: true });
-      } catch (error: any) {
-        logger.error(error, 'Error verifying prayer request chat: %s', error.message);
+      } catch (error) {
+        logger.error(error, 'Error verifying prayer request chat: %s', (error as Error).message);
         return next(new RouteError(HttpStatusCodes.NOT_FOUND, 'Prayer request not found or verification failed'));
       }
     }

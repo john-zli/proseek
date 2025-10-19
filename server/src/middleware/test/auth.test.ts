@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { Request, Response } from 'express';
 
 import { ensureAuthenticated } from '../auth';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
+import { Request, Response } from 'express';
 
 describe('auth middleware', () => {
   test('should allow authenticated requests to proceed', () => {
@@ -46,6 +46,6 @@ describe('auth middleware', () => {
     // Verify response was sent with unauthorized status
     expect(next.mock.calls.length).toBe(1);
     expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
-    expect(next.mock.calls[0][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
+    expect((next.mock.calls[0][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
   });
 });

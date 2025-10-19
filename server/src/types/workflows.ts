@@ -20,6 +20,7 @@ export interface WorkflowParams<T extends WorkflowName> {
 }
 
 // Specific payload types for different workflows
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SendChurchMatchNotificationsPayload extends Record<string, unknown> {}
 
 export interface WorkflowParamsForWorkflowName {

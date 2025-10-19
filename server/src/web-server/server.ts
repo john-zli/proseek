@@ -1,8 +1,4 @@
-import express, { Express, NextFunction, Request, Response } from 'express';
 import 'express-async-errors';
-import helmet from 'helmet';
-import morgan from 'morgan';
-import path from 'path';
 
 import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
@@ -15,18 +11,23 @@ import { apiRouter } from '@server/routes/api_router';
 import { pageRouter } from '@server/routes/page_router';
 import { logger } from '@server/services/logger';
 import { IServicesBuilder } from '@server/services/services_builder';
+import express from 'express';
+import { Express, NextFunction, Request, Response, static as expressStatic, json, urlencoded } from 'express';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import path from 'path';
 
 export function startServer(services: IServicesBuilder): Express {
   const app = express();
 
   // Basic middleware
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(json());
+  app.use(urlencoded({ extended: true }));
   app.use(sessionMiddleware);
   app.use(ipGeolocationMiddleware);
 
   // Serving React CSS and JS
-  app.use(express.static(path.join(__dirname, '../../../client/dist')));
+  app.use(expressStatic(path.join(__dirname, '../../../client/dist')));
 
   // Show routes called in console during development
   if (config.env === NodeEnvs.Dev) {
@@ -35,7 +36,6 @@ export function startServer(services: IServicesBuilder): Express {
 
   // Security
   if (config.env === NodeEnvs.Production) {
-    // eslint-disable-next-line n/no-process-env
     if (!process.env.DISABLE_HELMET) {
       app.use(helmet());
     }

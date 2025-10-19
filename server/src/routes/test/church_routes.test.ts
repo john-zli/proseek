@@ -1,4 +1,4 @@
-import { Mock, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
 import { churchRouter } from '../church_routes';
 import { testRoute } from './test_helpers';
@@ -8,10 +8,11 @@ import { IServicesBuilder } from '@server/services/services_builder';
 import { FakeServicesBuilder } from '@server/services/test/fake_services_builder';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
+import { MockNextFunction } from '@server/test/request_test_helper';
 
 describe('church routes', () => {
   let res: MockResponse;
-  let next: Mock;
+  let next: MockNextFunction;
   let services: IServicesBuilder;
   beforeEach(async () => {
     await setupTestDb();
@@ -22,6 +23,7 @@ describe('church routes', () => {
 
   afterEach(async () => {
     await teardownTestDb();
+    mock.restore();
   });
 
   test('POST / - should create a new church', async () => {
@@ -76,8 +78,8 @@ describe('church routes', () => {
     await testRoute(churchRouter(services), 'POST', '/', req, res, next);
 
     const lastCall = next.mock.calls.pop();
-    expect(lastCall[0]).toBeInstanceOf(RouteError);
-    expect(lastCall[0].status).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
+    expect(lastCall?.[0]).toBeInstanceOf(RouteError);
+    expect((lastCall?.[0] as RouteError).status).toBe(HttpStatusCodes.INTERNAL_SERVER_ERROR);
   });
 
   test('POST / - should return 401 if not authenticated', async () => {
@@ -96,8 +98,8 @@ describe('church routes', () => {
     await testRoute(churchRouter(services), 'POST', '/', req, res, next);
 
     const firstCall = next.mock.calls[0];
-    expect(firstCall[0]).toBeInstanceOf(RouteError);
-    expect(firstCall[0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
+    expect(firstCall?.[0]).toBeInstanceOf(RouteError);
+    expect((firstCall?.[0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
   });
 
   test('POST / - should return 400 if request body is invalid', async () => {
@@ -121,6 +123,6 @@ describe('church routes', () => {
 
     const validationCall = next.mock.calls[1];
     expect(validationCall[0]).toBeInstanceOf(RouteError);
-    expect(validationCall[0].status).toBe(HttpStatusCodes.BAD_REQUEST);
+    expect((validationCall?.[0] as RouteError).status).toBe(HttpStatusCodes.BAD_REQUEST);
   });
 });

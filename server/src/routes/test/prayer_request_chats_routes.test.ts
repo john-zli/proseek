@@ -1,5 +1,4 @@
-import { Mock, afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { v4 as uuidv4 } from 'uuid';
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
 import { prayerRequestChatsRouter } from '../prayer_request_chats_routes';
 import { testRoute } from './test_helpers';
@@ -19,10 +18,12 @@ import { IServicesBuilder } from '@server/services/services_builder';
 import { FakeServicesBuilder } from '@server/services/test/fake_services_builder';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
+import { MockNextFunction } from '@server/test/request_test_helper';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('prayer request chats routes', () => {
   let res: MockResponse;
-  let next: Mock;
+  let next: MockNextFunction;
   let services: IServicesBuilder;
 
   beforeEach(async () => {
@@ -128,7 +129,7 @@ describe('prayer request chats routes', () => {
   describe('GET /church/:churchId', () => {
     test('should list prayer requests for a church', async () => {
       /** Setting up test data */
-      let churches = await listChurchesNearUser({ zip: '12345' });
+      await listChurchesNearUser({ zip: '12345' });
 
       const churchId = await createChurch({
         name: 'Test Church',
@@ -139,7 +140,7 @@ describe('prayer request chats routes', () => {
         county: 'Anytown',
       });
 
-      churches = await listChurchesNearUser({ zip: '12345' });
+      await listChurchesNearUser({ zip: '12345' });
 
       const prayerRequestChatId = await createPrayerRequestChat({
         requestContactEmail: 'test@example.com',
@@ -164,7 +165,10 @@ describe('prayer request chats routes', () => {
       // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
       expect(res.json.mock.calls[0][0]).toHaveLength(1);
-      expect(res.json.mock.calls[0][0][0]).toHaveProperty('requestId', prayerRequestChatId);
+      expect((res.json.mock.calls[0][0] as { requestId: string }[])[0]).toHaveProperty(
+        'requestId',
+        prayerRequestChatId
+      );
     });
   });
 
@@ -302,8 +306,11 @@ describe('prayer request chats routes', () => {
       // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
       expect(res.json.mock.calls[0][0]).toHaveProperty('messages');
-      expect(res.json.mock.calls[0][0].messages).toHaveLength(1);
-      expect(res.json.mock.calls[0][0].messages[0]).toHaveProperty('message', 'Test Message');
+      expect((res.json.mock.calls[0][0] as { messages: { message: string }[] }).messages).toHaveLength(1);
+      expect((res.json.mock.calls[0][0] as { messages: { message: string }[] }).messages[0]).toHaveProperty(
+        'message',
+        'Test Message'
+      );
     });
   });
 
@@ -335,8 +342,8 @@ describe('prayer request chats routes', () => {
 
       // Verify response
       expect(next.mock.calls[2][0]).toBeInstanceOf(RouteError);
-      expect(next.mock.calls[2][0].status).toBe(HttpStatusCodes.NOT_FOUND);
-      expect(next.mock.calls[2][0].message).toBe('Prayer request not found or verification failed');
+      expect((next.mock.calls[2][0] as RouteError).status).toBe(HttpStatusCodes.NOT_FOUND);
+      expect((next.mock.calls[2][0] as RouteError).message).toBe('Prayer request not found or verification failed');
     });
 
     test('should verify a prayer request', async () => {

@@ -20,6 +20,7 @@ describe('db_helpers', () => {
     });
 
     test('should handle empty array of objects', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const objects: Record<string, any>[] = [];
 
       const result = extractArraysByKeys(objects, ['id', 'name']);

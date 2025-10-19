@@ -1,6 +1,5 @@
-import { NextFunction, Request, Response } from 'express';
-
 import { ServicesBuilder } from '@server/services/services_builder';
+import { NextFunction, Request, Response } from 'express';
 
 export function verifyCaptcha(services: ServicesBuilder) {
   return async function (req: Request, res: Response, next: NextFunction) {

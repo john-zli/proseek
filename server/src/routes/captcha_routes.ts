@@ -1,8 +1,7 @@
-import { Router } from 'express';
-
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { ServicesBuilder } from '@server/services/services_builder';
+import { Router } from 'express';
 
 export function captchaRouter(services: ServicesBuilder) {
   const router = Router();
