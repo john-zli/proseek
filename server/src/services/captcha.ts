@@ -1,4 +1,4 @@
-import Cap, { ChallengeTuple } from '@cap.js/server';
+import Cap from '@cap.js/server';
 
 export class CaptchaService {
   private cap: Cap;
@@ -13,11 +13,19 @@ export class CaptchaService {
     return this.cap.validateToken(token);
   }
 
-  async redeemChallenge(token: string, solutions: [string, string, string][]): Promise<{ success: boolean }> {
+  async redeemChallenge(token: string, solutions: number[]): Promise<{ success: boolean }> {
     return this.cap.redeemChallenge({ token, solutions });
   }
 
-  async createChallenge(): Promise<{ challenge: ChallengeTuple[]; token?: string; expires: number }> {
+  async createChallenge(): Promise<{
+    challenge: {
+      c: number;
+      s: number;
+      d: number;
+    };
+    token?: string;
+    expires: number;
+  }> {
     return this.cap.createChallenge();
   }
 }
