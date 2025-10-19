@@ -21,7 +21,7 @@ module.exports = {
       },
       interpreter: 'doppler',
       interpreter_args: 'run -- bun',
-      instances: 3,
+      instances: 1,
     },
   ],
 };

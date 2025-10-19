@@ -28,6 +28,11 @@ export interface UnprocessedWorkflowRun {
   isRecurring: boolean;
 }
 
+export interface RepeatingJob {
+  workflowName: string;
+  isRecurring: boolean;
+}
+
 export interface WorkflowRun {
   runId: string;
   workflowName: string;

@@ -39,7 +39,7 @@ interface WorkflowSchedule {
 }
 
 // Workflow schedules
-export const WORKFLOW_SCHEDULES: Record<WorkflowName, WorkflowSchedule> = {
+export const RECURRING_WORKFLOW_SCHEDULES: Record<WorkflowName, WorkflowSchedule> = {
   [WorkflowName.SendChurchMatchNotifications]: {
     every: 5 * 60 * 1000, // Every 5 minutes
     name: WorkflowName.SendChurchMatchNotifications,
