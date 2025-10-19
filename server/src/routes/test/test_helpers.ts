@@ -1,8 +1,7 @@
-import { NextFunction, Request, Response, Router } from 'express';
-
 import { MockResponse } from '@server/test/request_test_helper';
 import { MockRequest } from '@server/test/request_test_helper';
 import { MockNextFunction } from '@server/test/request_test_helper';
+import { NextFunction, Request, Response, Router } from 'express';
 
 /**
  * Helper function to test a route by executing all middleware in order
@@ -22,8 +21,8 @@ export async function testRoute(
   next: NextFunction | MockNextFunction
 ) {
   // Find the route in the router's stack
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const route = router.stack.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     layer => layer.route?.path === path && (layer.route as any).methods[method.toLowerCase()]
   );
   if (!route) {

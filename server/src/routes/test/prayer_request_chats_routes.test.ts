@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { v4 as uuidv4 } from 'uuid';
 
 import { prayerRequestChatsRouter } from '../prayer_request_chats_routes';
 import { testRoute } from './test_helpers';
@@ -20,6 +19,7 @@ import { FakeServicesBuilder } from '@server/services/test/fake_services_builder
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
 import { MockNextFunction } from '@server/test/request_test_helper';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('prayer request chats routes', () => {
   let res: MockResponse;

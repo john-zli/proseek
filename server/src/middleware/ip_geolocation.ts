@@ -1,9 +1,8 @@
-import { NextFunction, Request, Response } from 'express';
-import { lookup } from 'geoip-lite';
-
 import { NodeEnvs } from '@server/common/constants';
 import config from '@server/config';
 import { logger } from '@server/services/logger';
+import { NextFunction, Request, Response } from 'express';
+import { lookup } from 'geoip-lite';
 
 // Mock IP address for development environment
 const MOCK_IP = '104.244.24.102'; // Monkeybrains IP Address

@@ -1,5 +1,3 @@
-import { Router } from 'express';
-
 import { validate } from '../middleware/validate';
 import {
   assignPrayerRequestChat,
@@ -23,6 +21,7 @@ import { ensureAuthenticated } from '@server/middleware/auth';
 import { verifyCaptcha } from '@server/middleware/verify_captcha';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
+import { Router } from 'express';
 
 export function prayerRequestChatsRouter(services: ServicesBuilder): Router {
   const router = Router();

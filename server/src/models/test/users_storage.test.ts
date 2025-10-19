@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { v4 as uuidv4 } from 'uuid';
 
 import { createChurch } from '../churches_storage';
 import { $getUser, createAdminUser, createUser, generateInvitationCode, listUsersFromChurch } from '../users_storage';
 import { Gender } from '@common/server-api/types/gender';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('users_storage', () => {
   let churchId: string;

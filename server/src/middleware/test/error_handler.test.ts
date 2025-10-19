@@ -1,10 +1,10 @@
 import { describe, expect, test } from 'bun:test';
-import { Request, Response } from 'express';
 
 import { errorHandler } from '../error_handler';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
+import { Request, Response } from 'express';
 
 describe('error handler middleware', () => {
   test('should handle RouteError with status code', () => {

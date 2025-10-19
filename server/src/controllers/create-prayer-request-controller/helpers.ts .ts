@@ -1,8 +1,7 @@
-import haversine from 'haversine';
-
 import { listChurchesNearUser } from '@server/models/churches_storage';
 import { Church } from '@server/models/storage_types';
 import { ServicesBuilder } from '@server/services/services_builder';
+import haversine from 'haversine';
 
 const MIN_MILES_TO_CHURCH = 20;
 

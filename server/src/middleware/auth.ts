@@ -1,7 +1,6 @@
-import { NextFunction, Request, Response } from 'express';
-
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
+import { NextFunction, Request, Response } from 'express';
 
 /**
  * Middleware to ensure the user is authenticated by checking req.session.user.

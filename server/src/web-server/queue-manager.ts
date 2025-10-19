@@ -1,7 +1,6 @@
-import { Queue } from 'bullmq';
-
 import { logger } from '@server/services/logger';
 import { REDIS_CONFIG, WorkflowName, WorkflowParams } from '@server/types/workflows';
+import { Queue } from 'bullmq';
 
 // Create queue instance
 const queue = new Queue<WorkflowParams<WorkflowName>>('job-queue', {

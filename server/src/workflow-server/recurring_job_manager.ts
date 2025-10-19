@@ -1,7 +1,6 @@
-import { Queue, RepeatOptions } from 'bullmq';
-
 import { logger } from '@server/services/logger';
 import { REDIS_CONFIG, WORKFLOW_SCHEDULES, WorkflowName, WorkflowParams } from '@server/types/workflows';
+import { Queue, RepeatOptions } from 'bullmq';
 
 // Create queue instance for recurring jobs
 const recurringQueue = new Queue<WorkflowParams<WorkflowName>>('recurring-job-queue', {

@@ -1,6 +1,3 @@
-import { compare, hash } from 'bcrypt';
-import { Router } from 'express';
-
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import { createAdminUser, createUser, generateInvitationCode, getUserByEmail } from '../models/users_storage';
@@ -11,6 +8,8 @@ import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
 import { logger } from '@server/services/logger';
 import { IServicesBuilder } from '@server/services/services_builder';
+import { compare, hash } from 'bcrypt';
+import { Router } from 'express';
 
 export function userRouter(_services: IServicesBuilder): Router {
   const router = Router();

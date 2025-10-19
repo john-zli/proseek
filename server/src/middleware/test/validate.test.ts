@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test';
-import { Request, Response } from 'express';
-import { z } from 'zod';
 
 import { validate } from '../validate';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
+import { Request, Response } from 'express';
+import { z } from 'zod';
 
 describe('validate middleware', () => {
   const testSchema = z.object({

@@ -1,5 +1,3 @@
-import { Router } from 'express';
-
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import * as churchesStorage from '../models/churches_storage';
@@ -7,6 +5,7 @@ import { CreateChurchSchema } from '../schemas/churches';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { ServicesBuilder } from '@server/services/services_builder';
+import { Router } from 'express';
 
 export function churchRouter(_services: ServicesBuilder): Router {
   const router = Router();
