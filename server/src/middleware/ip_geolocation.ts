@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import geoip from 'geoip-lite';
+import { lookup } from 'geoip-lite';
 
 import { NodeEnvs } from '@server/common/constants';
 import config from '@server/config';
@@ -19,7 +19,7 @@ export function ipGeolocationMiddleware(req: Request, res: Response, next: NextF
     }
 
     // Get geolocation data
-    const geo = geoip.lookup(ip);
+    const geo = lookup(ip);
     if (geo) {
       req.ipLocation = {
         city: geo.city,

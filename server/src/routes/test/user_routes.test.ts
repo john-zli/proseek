@@ -1,4 +1,4 @@
-import { Mock, afterEach, beforeEach, describe, expect, test } from 'bun:test';
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
 import { userRouter } from '../user_routes';
 import { testRoute } from './test_helpers';
@@ -12,10 +12,11 @@ import { IServicesBuilder } from '@server/services/services_builder';
 import { FakeServicesBuilder } from '@server/services/test/fake_services_builder';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
+import { MockNextFunction } from '@server/test/request_test_helper';
 
 describe('user routes', () => {
   let res: MockResponse;
-  let next: Mock;
+  let next: MockNextFunction;
   let services: IServicesBuilder;
 
   beforeEach(async () => {
@@ -66,6 +67,7 @@ describe('user routes', () => {
           invitationCode: code,
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -92,6 +94,7 @@ describe('user routes', () => {
           invitationCode: code,
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -99,8 +102,8 @@ describe('user routes', () => {
       await testRoute(userRouter(services), 'POST', '/', req1, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
-      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.CONFLICT);
-      expect(next.mock.calls[1][0].message).toBe('User with this email already exists');
+      expect((next.mock.calls[1][0] as RouteError).status).toBe(HttpStatusCodes.CONFLICT);
+      expect((next.mock.calls[1][0] as RouteError).message).toBe('User with this email already exists');
     });
 
     test('should error if invitation code is invalid', async () => {
@@ -114,6 +117,7 @@ describe('user routes', () => {
           invitationCode: '12345',
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -121,8 +125,8 @@ describe('user routes', () => {
       await testRoute(userRouter(services), 'POST', '/', req1, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
-      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.BAD_REQUEST);
-      expect(next.mock.calls[1][0].message).toBe('Invalid or already used invitation code');
+      expect((next.mock.calls[1][0] as RouteError).status).toBe(HttpStatusCodes.BAD_REQUEST);
+      expect((next.mock.calls[1][0] as RouteError).message).toBe('Invalid or already used invitation code');
     });
   });
 
@@ -151,6 +155,7 @@ describe('user routes', () => {
           churchId,
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -182,6 +187,7 @@ describe('user routes', () => {
           churchId,
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -189,8 +195,8 @@ describe('user routes', () => {
       await testRoute(userRouter(services), 'POST', '/admin', req, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
-      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.CONFLICT);
-      expect(next.mock.calls[1][0].message).toBe('User with this email already exists');
+      expect((next.mock.calls[1][0] as RouteError).status).toBe(HttpStatusCodes.CONFLICT);
+      expect((next.mock.calls[1][0] as RouteError).message).toBe('User with this email already exists');
     });
   });
 
@@ -217,6 +223,7 @@ describe('user routes', () => {
           gender: Gender.Male,
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -235,6 +242,7 @@ describe('user routes', () => {
           password: 'password123',
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -243,7 +251,7 @@ describe('user routes', () => {
 
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
       expect(res.json.mock.calls[0][0]).toEqual({ user: expect.any(Object) });
-      expect(res.json.mock.calls[0][0].user).not.toHaveProperty('passwordHash');
+      expect((res.json.mock.calls[0][0] as { user: SanitizedUser }).user).not.toHaveProperty('passwordHash');
     });
 
     test('should error if email is invalid', async () => {
@@ -253,6 +261,7 @@ describe('user routes', () => {
           password: 'password123',
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -260,8 +269,8 @@ describe('user routes', () => {
       await testRoute(userRouter(services), 'POST', '/login', req, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
-      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
-      expect(next.mock.calls[1][0].message).toBe('Invalid email or password');
+      expect((next.mock.calls[1][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
+      expect((next.mock.calls[1][0] as RouteError).message).toBe('Invalid email or password');
     });
 
     test('should error if password is invalid', async () => {
@@ -271,6 +280,7 @@ describe('user routes', () => {
           password: 'invalidpassword',
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -278,8 +288,8 @@ describe('user routes', () => {
       await testRoute(userRouter(services), 'POST', '/login', req, res, next);
 
       expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
-      expect(next.mock.calls[1][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
-      expect(next.mock.calls[1][0].message).toBe('Invalid email or password');
+      expect((next.mock.calls[1][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
+      expect((next.mock.calls[1][0] as RouteError).message).toBe('Invalid email or password');
     });
   });
 
@@ -306,6 +316,7 @@ describe('user routes', () => {
           gender: Gender.Male,
         },
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           regenerate: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -320,6 +331,7 @@ describe('user routes', () => {
     test('should logout a user', async () => {
       const req = createMockRequest({
         session: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           destroy: (callback: (err: any) => void) => callback(null),
         },
       });
@@ -382,7 +394,7 @@ describe('user routes', () => {
       await testRoute(userRouter(services), 'POST', '/invite', req, res, next);
 
       expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
-      expect(next.mock.calls[0][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
+      expect((next.mock.calls[0][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
     });
   });
 });

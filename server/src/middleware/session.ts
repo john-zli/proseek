@@ -29,5 +29,5 @@ export const sessionMiddleware = session({
 
 // Type declaration for session
 declare module 'express-session' {
-  interface SessionData extends SharedSessionData {}
+  interface SessionData extends SharedSessionData {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 }

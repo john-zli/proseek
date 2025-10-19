@@ -1,7 +1,6 @@
-/* eslint-disable n/no-process-env */
-import moduleAlias from 'module-alias';
+import { addAlias } from 'module-alias';
 
 // Configure moduleAlias
 if (__filename.endsWith('js')) {
-  moduleAlias.addAlias('@server', __dirname + '/dist');
+  addAlias('@server', __dirname + '/dist');
 }

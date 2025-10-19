@@ -25,8 +25,8 @@ export function churchRouter(_services: ServicesBuilder): Router {
         county: city,
       });
       res.status(HttpStatusCodes.CREATED).json(church);
-    } catch (error: any) {
-      return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, error));
+    } catch (error) {
+      return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, error as Error));
     }
   });
 

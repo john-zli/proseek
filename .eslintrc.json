@@ -1,5 +1,9 @@
 {
+  "env": {
+    "node": true
+  },
   "root": true,
+  "ignorePatterns": ["dist/**/*", "**/dist/**/*"],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "import", "react-hooks"],
   "extends": [
@@ -13,24 +17,47 @@
     "import/order": [
       "error",
       {
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
-        "newlines-between": "always",
+        "groups": [["builtin", "external", "internal", "parent", "sibling", "index", "type"]],
+        "newlines-between": "ignore",
         "alphabetize": {
           "order": "asc",
           "caseInsensitive": true
-        }
+        },
+        // Bun test imports should be grouped before other imports
+        "pathGroups": [
+          {
+            "pattern": "bun:test",
+            "group": "builtin",
+            "position": "before"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": ["builtin"]
       }
     ],
     "import/first": "error",
     "import/newline-after-import": "error",
-    "import/no-duplicates": "error",
+    "import/no-duplicates": "off",
+    "import/no-named-as-default": "off",
+    "import/no-unresolved": "off",
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ]
   },
   "settings": {
     "import/resolver": {
-      "typescript": true,
-      "node": true
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": ["./client/tsconfig.json", "./server/tsconfig.json", "./common/tsconfig.json"]
+      },
+      "node": {
+        "extensions": [".js", ".jsx", ".ts", ".tsx"]
+      }
     }
   }
 }

@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import path from 'path';
 
 import { NodeEnvs } from './common/constants';

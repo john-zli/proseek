@@ -3,16 +3,16 @@ import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { v4 as uuidv4 } from 'uuid';
 
-import attachmentIcon from '../../assets/attachment.svg';
-import clearIcon from '../../assets/clear.svg';
-import sendIcon from '../../assets/send.svg';
-import classes from '../App.module.less';
-import { Button, ButtonStyle } from '../shared-components/button';
-import { withTooltip } from '../shared-components/with_tooltip';
 import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
+import attachmentIcon from '@client/assets/attachment.svg';
+import clearIcon from '@client/assets/clear.svg';
+import sendIcon from '@client/assets/send.svg';
+import classes from '@client/components/App.module.less';
 import { ModalContext, ModalType } from '@client/contexts/modal_context_provider';
 import { SessionContext } from '@client/contexts/session_context_provider';
+import { Button, ButtonStyle } from '@client/shared-components/button';
 import { Callout } from '@client/shared-components/callout';
+import { withTooltip } from '@client/shared-components/with_tooltip';
 import { useCaptcha } from '@client/widget/use_captcha';
 
 interface PrayerRequestChatMessage {
@@ -142,7 +142,7 @@ export const PrayerChat = (props: Props) => {
         messageTimestamp,
       });
     }
-  }, [inputValue, chatroomInitialized, chatroomId]);
+  }, [inputValue, chatroomId]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);

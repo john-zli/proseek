@@ -45,7 +45,7 @@ export function ChatroomVerificationModal({ onSubmit }: Props) {
         onVerify();
       }
     },
-    [onVerify]
+    [onVerify, disabled]
   );
 
   return (

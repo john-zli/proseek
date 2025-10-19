@@ -16,6 +16,7 @@ export const UsersApi = {
       const response = await api.post<LoginResponse>('/users/login', params);
       return response;
     } catch (error) {
+      console.error(error);
       throw new Error('Failed to log in');
     }
   },

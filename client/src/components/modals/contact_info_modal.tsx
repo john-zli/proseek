@@ -48,7 +48,7 @@ export function ContactInfoModal({ onSubmit }: Props) {
         onSend();
       }
     },
-    [onSend]
+    [onSend, disabled]
   );
 
   return (

@@ -23,6 +23,7 @@ export const PrayerRequestChatsApi = {
       const response = await api.post<CreatePrayerRequestChatResponse>('/prayer-requests', params);
       return response;
     } catch (error) {
+      console.error(error);
       throw new Error('Failed to create prayer request');
     }
   },
@@ -33,6 +34,7 @@ export const PrayerRequestChatsApi = {
       const response = await api.get<ListPrayerRequestChatsResponse>(`/prayer-requests/church/${churchId}`);
       return response;
     } catch (error) {
+      console.error(error);
       throw new Error('Failed to list prayer requests');
     }
   },
@@ -47,6 +49,7 @@ export const PrayerRequestChatsApi = {
       });
       return response;
     } catch (error) {
+      console.error(error);
       throw new Error('Failed to assign prayer request');
     }
   },
@@ -63,6 +66,7 @@ export const PrayerRequestChatsApi = {
       });
       return response;
     } catch (error) {
+      console.error(error);
       throw new Error('Failed to verify chatroom access');
     }
   },
@@ -89,6 +93,7 @@ export const PrayerRequestChatsApi = {
       );
       return response;
     } catch (error) {
+      console.error(error);
       throw new Error('Failed to list prayer request chat messages');
     }
   },

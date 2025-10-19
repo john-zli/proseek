@@ -1,15 +1,20 @@
 export interface PrayerRequestChat {
   requestId: string;
-  assignedUserId?: string;
-  assignedChurchId?: string;
+  assignedUserId: string | null;
+  assignedChurchId: string | null;
   responded: boolean;
-  requestContactEmail?: string;
-  requestContactPhone?: string;
-  zip?: string;
-  city?: string;
+  requestContactEmail: string | null;
+  requestContactPhone: string | null;
+  zip: string | null;
+  city: string | null;
   creationTimestamp: number;
   modificationTimestamp: number;
-  matchNotificationTimestamp?: number;
+  matchNotificationTimestamp: number | null;
+}
+
+interface PrayerRequestChatMessageParams
+  extends Omit<PrayerRequestChatMessage, 'requestId' | 'assignedUserId' | 'deletionTimestamp'> {
+  assignedUserId?: string;
 }
 
 export interface CreatePrayerRequestChatParams {
@@ -19,7 +24,7 @@ export interface CreatePrayerRequestChatParams {
   city?: string;
   region?: string;
   churchId?: string;
-  messages: Omit<PrayerRequestChatMessage, 'requestId'>[];
+  messages: PrayerRequestChatMessageParams[];
 }
 
 export interface AssignPrayerRequestChatToUserParams {
@@ -40,8 +45,8 @@ export interface PrayerRequestChatMessage {
   requestId: string;
   message: string;
   messageTimestamp: number;
-  assignedUserId?: string;
-  deletionTimestamp?: number;
+  assignedUserId: string | null;
+  deletionTimestamp: number | null;
 }
 
 export interface CreatePrayerRequestChatMessageParams {

@@ -1,4 +1,4 @@
-import { Job, Worker } from 'bullmq';
+import { Worker } from 'bullmq';
 
 import { setupRecurringJobs, shutdownRecurringJobManager } from './recurring_job_manager';
 import { WorkflowDefinitions } from './workflow_definitions';

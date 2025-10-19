@@ -13,10 +13,6 @@ export function ModalContainer(props: ModalContainerProps) {
   const { onClose, children, isUncloseable } = props;
   const { closeModal, isOpen } = useContext(ModalContext);
 
-  if (!isOpen) {
-    return null;
-  }
-
   const onCloseModal = useCallback(() => {
     if (!isUncloseable && onClose) {
       closeModal();
@@ -28,6 +24,10 @@ export function ModalContainer(props: ModalContainerProps) {
     e.preventDefault();
     e.stopPropagation();
   }, []);
+
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className={classes.modalContainer} onClick={isUncloseable ? undefined : onCloseModal}>
