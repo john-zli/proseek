@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { createChurch } from '../models/churches_storage';
+import * as churchesStorage from '../models/churches_storage';
 import { CreateChurchSchema } from '../schemas/churches';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
@@ -16,7 +16,7 @@ export function churchRouter(_services: ServicesBuilder): Router {
     const { name, address, city, state, zip } = req.body;
 
     try {
-      const church = await createChurch({
+      const church = await churchesStorage.createChurch({
         name,
         address,
         city,

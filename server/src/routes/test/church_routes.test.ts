@@ -23,6 +23,7 @@ describe('church routes', () => {
 
   afterEach(async () => {
     await teardownTestDb();
+    mock.restore();
   });
 
   test('POST / - should create a new church', async () => {

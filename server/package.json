@@ -8,7 +8,7 @@
     "stop": "pm2 stop all",
     "lint": "bun run --bun eslint .",
     "start": "NODE_ENV=production bun run --bun ./dist",
-    "test": "bun test",
+    "test": "./scripts/test_runner.sh",
     "type-check": "bun run --bun tsc --noEmit",
     "build": "bun build ./src/web-server/index.ts --outdir ./dist --target node"
   },
