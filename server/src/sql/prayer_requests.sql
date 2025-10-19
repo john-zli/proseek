@@ -80,7 +80,7 @@ BEGIN
       AND tablename = 'prayer_request_chats'
       AND indexname = 'prayer_requests_user_id_idx'
   ) THEN
-    CREATE UNIQUE INDEX prayer_requests_user_id_idx ON core.prayer_request_chats(assigned_user_id);
+    CREATE INDEX prayer_requests_user_id_idx ON core.prayer_request_chats(assigned_user_id);
   END IF;
 END $$;
 
@@ -93,7 +93,7 @@ BEGIN
       AND tablename = 'prayer_request_chats'
       AND indexname = 'prayer_requests_church_id_idx'
   ) THEN
-    CREATE UNIQUE INDEX prayer_requests_church_id_idx ON core.prayer_request_chats(assigned_church_id);
+    CREATE INDEX prayer_requests_church_id_idx ON core.prayer_request_chats(assigned_church_id);
   END IF;
 END $$;
 
