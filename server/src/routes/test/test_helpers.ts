@@ -1,8 +1,8 @@
-import { Mock } from 'bun:test';
 import { NextFunction, Request, Response, Router } from 'express';
 
 import { MockResponse } from '@server/test/request_test_helper';
 import { MockRequest } from '@server/test/request_test_helper';
+import { MockNextFunction } from '@server/test/request_test_helper';
 
 /**
  * Helper function to test a route by executing all middleware in order
@@ -19,16 +19,19 @@ export async function testRoute(
   path: string,
   req: Request | MockRequest,
   res: Response | MockResponse,
-  next: NextFunction | Mock
+  next: NextFunction | MockNextFunction
 ) {
   // Find the route in the router's stack
-  const route = router.stack.find(layer => layer.route?.path === path && layer.route?.methods[method.toLowerCase()]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const route = router.stack.find(
+    layer => layer.route?.path === path && (layer.route as any).methods[method.toLowerCase()]
+  );
   if (!route) {
     throw new Error(`Route ${method} ${path} not found`);
   }
 
   // Create a wrapper for next that will stop execution on error. Modeled after how express handles errors.
-  const wrappedNext = (err?: any) => {
+  const wrappedNext = (err?: Error) => {
     if (err) {
       next(err);
       return true; // Signal that execution should stop
@@ -45,7 +48,7 @@ export async function testRoute(
     try {
       const result = await new Promise(resolve => {
         let nextCalled = false;
-        const wrappedNextWithFlag = (err?: any) => {
+        const wrappedNextWithFlag = (err?: Error) => {
           nextCalled = true;
           // Always call the original next to maintain call history
           next(err);
@@ -56,7 +59,11 @@ export async function testRoute(
           }
         };
 
-        const middlewareResult = middleware.handle(req as Request, res as Response, wrappedNextWithFlag);
+        const middlewareResult = middleware.handle(
+          req as Request,
+          res as Response,
+          wrappedNextWithFlag as NextFunction
+        );
 
         // If middleware returns a Promise, wait for it
         if (middlewareResult instanceof Promise) {
@@ -80,7 +87,7 @@ export async function testRoute(
         return;
       }
     } catch (err) {
-      wrappedNext(err);
+      wrappedNext(err as Error);
       return;
     }
   }

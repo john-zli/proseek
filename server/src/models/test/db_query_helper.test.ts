@@ -47,6 +47,8 @@ describe('db_query_helper', () => {
       expect(result).toEqual({
         userId: '1',
         firstName: 'John',
+        lastName: undefined,
+        creationTimestamp: undefined,
       });
     });
 
@@ -59,7 +61,10 @@ describe('db_query_helper', () => {
 
       const result = transformRow(row, mapping);
 
-      expect(result).toEqual({});
+      expect(result).toEqual({
+        userId: undefined,
+        firstName: undefined,
+      });
     });
   });
 });

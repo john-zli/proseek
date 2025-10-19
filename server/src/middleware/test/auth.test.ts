@@ -46,6 +46,6 @@ describe('auth middleware', () => {
     // Verify response was sent with unauthorized status
     expect(next.mock.calls.length).toBe(1);
     expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
-    expect(next.mock.calls[0][0].status).toBe(HttpStatusCodes.UNAUTHORIZED);
+    expect((next.mock.calls[0][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
   });
 });

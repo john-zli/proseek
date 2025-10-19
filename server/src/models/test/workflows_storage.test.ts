@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   finishWorkflowRun,

@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { Router } from 'express';
 
 import { ensureAuthenticated } from '../middleware/auth';
@@ -20,7 +20,7 @@ export function userRouter(_services: IServicesBuilder): Router {
     try {
       const { email, firstName, lastName, gender, password, invitationCode } = req.body;
 
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await hash(password, 10);
 
       const sanitizedUser = await createUser({
         email,
@@ -67,7 +67,7 @@ export function userRouter(_services: IServicesBuilder): Router {
     try {
       const { email, firstName, lastName, gender, password, churchId } = req.body;
 
-      const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await hash(password, 10);
 
       const sanitizedUser = await createAdminUser({
         email,
@@ -118,9 +118,7 @@ export function userRouter(_services: IServicesBuilder): Router {
 
       // Development-only bypass for johnzli@hey.com
       const isPasswordValid =
-        config.env === NodeEnvs.Dev && email === 'johnzli@hey.com'
-          ? true
-          : await bcrypt.compare(password, user.passwordHash);
+        config.env === NodeEnvs.Dev && email === 'johnzli@hey.com' ? true : await compare(password, user.passwordHash);
 
       if (!isPasswordValid) {
         throw new RouteError(HttpStatusCodes.UNAUTHORIZED, 'Invalid email or password');

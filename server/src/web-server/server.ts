@@ -1,5 +1,5 @@
 import express from 'express';
-import { Express, NextFunction, Request, Response, json, urlencoded } from 'express';
+import { Express, NextFunction, Request, Response, static as expressStatic, json, urlencoded } from 'express';
 import 'express-async-errors';
 import helmet from 'helmet';
 import morgan from 'morgan';
@@ -27,7 +27,7 @@ export function startServer(services: IServicesBuilder): Express {
   app.use(ipGeolocationMiddleware);
 
   // Serving React CSS and JS
-  app.use(express.static(path.join(__dirname, '../../../client/dist')));
+  app.use(expressStatic(path.join(__dirname, '../../../client/dist')));
 
   // Show routes called in console during development
   if (config.env === NodeEnvs.Dev) {
