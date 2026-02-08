@@ -1,50 +1,48 @@
-# React + TypeScript + Vite
+# ProSeek Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React SPA that serves as the user-facing interface for ProSeek.
 
-Currently, two official plugins are available:
+## Running
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+# Start Vite dev server
+bun run dev
 
-## Expanding the ESLint configuration
+# Production build
+bun run build
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
+# Preview production build
+bun run preview
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Overview
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react';
+```
+src/
+├── components/          → Page-level and feature components
+├── shared-components/   → Reusable UI primitives (Button, TextInput, Modal, etc.)
+├── contexts/            → React Context providers (session, modals)
+├── hooks/               → Custom React hooks
+├── widget/              → Standalone widget utilities (e.g. CAPTCHA)
+├── api/                 → Fetch wrappers for server API calls
+├── types/               → TypeScript type definitions
+├── styles/              → Global styles
+├── App.tsx              → Router and top-level layout
+└── main.tsx             → Entry point
+```
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-});
+### Key areas
+
+- **Components** — The main views: prayer chat, login, map (Google Maps), header, and modals (contact info, confirmation, chatroom verification). Each component uses co-located Less module files for styling.
+- **Shared Components** — Generic UI building blocks: `Button`, `TextInput`, `CheckboxView`, `Callout`, `Link`, `ModalContainer`, `WithTooltip`. These are not tied to any specific feature.
+- **Contexts** — `SessionContextProvider` manages auth state and session data. `ModalContextProvider` handles modal display via `ModalManager`.
+- **API** — Thin fetch wrappers in `api/` that call the server's `/api` endpoints. Organized by resource (`users.ts`, `prayer_request_chats.ts`).
+- **Routing** — Uses react-router-dom. Current routes: `/` (prayer chat), `/chats/:chatroomId` (specific chat), `/login`.
+
+## Environment
+
+Create a `client/.env` file:
+
+```
+GOOGLE_MAPS_API_KEY=your_key_here
 ```

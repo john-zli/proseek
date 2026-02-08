@@ -7,10 +7,30 @@ set -a
 source "$ROOT_DIR/config/.env.development" > /dev/null 2>&1
 set +a
 
+# Install Doppler
+if command -v doppler &> /dev/null; then
+  echo "Doppler is already installed."
+else
+  echo "Doppler is not installed. Installing Doppler..."
+  brew install gnupg
+  brew install dopplerhq/cli/doppler
+
+  if command -v doppler &> /dev/null; then
+    echo "✅ Doppler installed successfully."
+  else
+    echo "❌ Doppler installation failed."
+    exit 1
+  fi
+fi
+
 # Install PostgreSQL using Homebrew
-echo "Installing PostgreSQL..."
-brew update
-brew install postgresql@14
+if command -v psql &> /dev/null; then
+  echo "PostgreSQL is already installed."
+else
+  echo "Installing PostgreSQL..."
+  brew update
+  brew install postgresql@14
+fi
 
 # Start PostgreSQL service
 echo "Starting PostgreSQL service..."
@@ -23,8 +43,12 @@ psql --version
 echo "PostgreSQL installation complete."
 
 # Install Redis using Homebrew
-echo "Installing Redis..."
-brew install redis
+if command -v redis-cli &> /dev/null; then
+  echo "Redis is already installed."
+else
+  echo "Installing Redis..."
+  brew install redis
+fi
 
 # Start Redis service
 echo "Starting Redis service..."
