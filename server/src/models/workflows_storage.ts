@@ -71,13 +71,12 @@ const SqlCommands = {
     FROM unnest($1::uuid[], $2::varchar[]) AS src(run_id, job_id)
     WHERE workflow_runs.run_id = src.run_id
       AND workflow_runs.deletion_timestamp IS NULL;`,
-  CancelWorkflowRuns: `
+  CancelActiveWorkflowRuns: `
     UPDATE      core.workflow_runs
     SET         status = '${WorkflowStatus.Cancelled}',
                 modification_timestamp = now()
-    FROM unnest($1::uuid[], $2::varchar[]) AS src(run_id, job_id)
-    WHERE workflow_runs.run_id = src.run_id
-      AND workflow_runs.deletion_timestamp IS NULL;`,
+    WHERE       workflow_runs.deletion_timestamp IS NULL
+      AND       workflow_runs.status IN ('${WorkflowStatus.Queued}', '${WorkflowStatus.Running}');`,
   StartWorkflowRun: `
     UPDATE      core.workflow_runs
     SET         status = '${WorkflowStatus.Running}',
@@ -126,6 +125,14 @@ export async function updateWorkflowRunsWithJobIds(params: { runIds: string[]; j
     commandIdentifier: 'EnqueueWorkflowRuns',
     query: SqlCommands.EnqueueWorkflowRuns,
     params: [params.runIds, params.jobIds],
+  });
+}
+
+export async function cancelActiveWorkflowRuns(): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'CancelActiveWorkflowRuns',
+    query: SqlCommands.CancelActiveWorkflowRuns,
+    params: [],
   });
 }
 

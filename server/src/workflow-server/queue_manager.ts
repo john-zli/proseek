@@ -1,3 +1,4 @@
+import { cancelActiveWorkflowRuns } from '@server/models/workflows_storage';
 import { logger } from '@server/services/logger';
 import { REDIS_CONFIG, RECURRING_WORKFLOW_SCHEDULES, WorkflowName, WorkflowParams } from '@server/types/workflows';
 import { Queue, RepeatOptions } from 'bullmq';
@@ -40,6 +41,9 @@ export async function setupRecurringJobs() {
 // Graceful shutdown
 export async function shutdownRecurringJobManager() {
   try {
+    await cancelActiveWorkflowRuns();
+    logger.info('Cancelled active workflow runs on shutdown');
+
     await jobQueue.close();
     logger.info('Recurring job manager closed successfully');
   } catch (error) {
