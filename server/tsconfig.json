@@ -4,17 +4,8 @@
     "composite": true,
     "outDir": "./dist",
     "rootDir": "..",
-    "types": [
-      "bun-types"
-    ]
+    "types": ["bun-types"]
   },
-  "include": [
-    "src/**/*",
-    "../common/**/*",
-    "src/**/*.test.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist"
-  ]
+  "include": ["src/**/*", "../common/**/*", "src/**/*.test.ts"],
+  "exclude": ["node_modules", "dist"]
 }
