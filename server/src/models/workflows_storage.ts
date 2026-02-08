@@ -21,6 +21,10 @@ const ColumnKeyMappings = {
     deletionTimestamp: 'deletion_timestamp',
     modificationTimestamp: 'modification_timestamp',
   },
+  RepeatingJob: {
+    workflowName: 'workflow_name',
+    isRecurring: 'is_recurring',
+  },
 };
 
 const SqlCommands = {
@@ -58,7 +62,6 @@ const SqlCommands = {
       $1::varchar(100),
       $2::boolean
     );`,
-
   EnqueueWorkflowRuns: `
     UPDATE      core.workflow_runs 
     SET         job_id = src.job_id,
@@ -68,6 +71,12 @@ const SqlCommands = {
     FROM unnest($1::uuid[], $2::varchar[]) AS src(run_id, job_id)
     WHERE workflow_runs.run_id = src.run_id
       AND workflow_runs.deletion_timestamp IS NULL;`,
+  CancelActiveWorkflowRuns: `
+    UPDATE      core.workflow_runs
+    SET         status = '${WorkflowStatus.Cancelled}',
+                modification_timestamp = now()
+    WHERE       workflow_runs.deletion_timestamp IS NULL
+      AND       workflow_runs.status IN ('${WorkflowStatus.Queued}', '${WorkflowStatus.Running}');`,
   StartWorkflowRun: `
     UPDATE      core.workflow_runs
     SET         status = '${WorkflowStatus.Running}',
@@ -103,7 +112,6 @@ export async function getWorkflowRunById(runId: string): Promise<WorkflowRun> {
   });
 }
 
-// TODO(johnli): May need to include payload.
 export async function insertWorkflowRun(params: { workflowName: string; isRecurring: boolean }): Promise<void> {
   await nonQuery({
     commandIdentifier: 'InsertWorkflowRun',
@@ -117,6 +125,14 @@ export async function updateWorkflowRunsWithJobIds(params: { runIds: string[]; j
     commandIdentifier: 'EnqueueWorkflowRuns',
     query: SqlCommands.EnqueueWorkflowRuns,
     params: [params.runIds, params.jobIds],
+  });
+}
+
+export async function cancelActiveWorkflowRuns(): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'CancelActiveWorkflowRuns',
+    query: SqlCommands.CancelActiveWorkflowRuns,
+    params: [],
   });
 }
 

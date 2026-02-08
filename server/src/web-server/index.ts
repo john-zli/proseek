@@ -1,5 +1,4 @@
 import config from '../config';
-import { shutdownQueue } from './queue-manager';
 import { startServer } from './server';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
@@ -24,7 +23,6 @@ async function start() {
 async function shutdown() {
   logger.info('Shutting down server...');
   try {
-    await shutdownQueue();
     logger.info('Server and queue closed successfully');
     process.exit(0);
   } catch (error) {
