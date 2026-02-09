@@ -8,9 +8,8 @@ async function start() {
   try {
     const app = startAdminServer();
 
-    // Bind to localhost only — not reachable from external networks
-    app.listen(port, '127.0.0.1', () => {
-      logger.info(`Admin server started on 127.0.0.1:${port}`);
+    app.listen(port, () => {
+      logger.info(`Admin server started on port ${port}`);
     });
   } catch (error) {
     logger.error('Failed to start admin server:', error);
