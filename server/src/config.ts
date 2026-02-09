@@ -29,6 +29,7 @@ interface ServerConfig {
   clientUrl: string;
   resendApiKey?: string;
   fromEmail: string;
+  adminPort: number;
 }
 
 const config: ServerConfig = {
@@ -45,6 +46,7 @@ const config: ServerConfig = {
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   resendApiKey: process.env.RESEND_API_KEY,
   fromEmail: process.env.FROM_EMAIL || 'notifications@proseek.church',
+  adminPort: process.env.ADMIN_PORT ? parseInt(process.env.ADMIN_PORT, 10) : 3001,
 };
 
 export default config;
