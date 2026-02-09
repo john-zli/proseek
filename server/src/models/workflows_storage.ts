@@ -11,10 +11,8 @@ const ColumnKeyMappings = {
   WorkflowRun: {
     runId: 'run_id',
     workflowName: 'workflow_name',
-    jobId: 'job_id',
     isRecurring: 'is_recurring',
     status: 'status',
-    queuedTimestamp: 'queued_timestamp',
     startedTimestamp: 'started_timestamp',
     completedTimestamp: 'completed_timestamp',
     creationTimestamp: 'creation_timestamp',
@@ -40,10 +38,8 @@ const SqlCommands = {
   GetWorkflowRunById: `
     SELECT      workflow_runs.run_id,
                 workflow_runs.workflow_name,
-                workflow_runs.job_id,
                 workflow_runs.is_recurring,
                 workflow_runs.status,
-                EXTRACT(EPOCH FROM workflow_runs.queued_timestamp)::bigint AS queued_timestamp,
                 EXTRACT(EPOCH FROM workflow_runs.started_timestamp)::bigint AS started_timestamp,
                 EXTRACT(EPOCH FROM workflow_runs.completed_timestamp)::bigint AS completed_timestamp,
                 EXTRACT(EPOCH FROM workflow_runs.creation_timestamp)::bigint AS creation_timestamp,
@@ -62,15 +58,6 @@ const SqlCommands = {
       $2::boolean
     )
     RETURNING run_id;`,
-  EnqueueWorkflowRuns: `
-    UPDATE      core.workflow_runs 
-    SET         job_id = src.job_id,
-                status = '${WorkflowStatus.Queued}',
-                queued_timestamp = now(),
-                modification_timestamp = now()
-    FROM unnest($1::uuid[], $2::varchar[]) AS src(run_id, job_id)
-    WHERE workflow_runs.run_id = src.run_id
-      AND workflow_runs.deletion_timestamp IS NULL;`,
   StartWorkflowRun: `
     UPDATE      core.workflow_runs
     SET         status = '${WorkflowStatus.Running}',
@@ -111,14 +98,6 @@ export async function insertWorkflowRun(params: { workflowName: string; isRecurr
     commandIdentifier: 'InsertWorkflowRun',
     query: SqlCommands.InsertWorkflowRun,
     params: [params.workflowName, params.isRecurring],
-  });
-}
-
-export async function updateWorkflowRunsWithJobIds(params: { runIds: string[]; jobIds: string[] }): Promise<void> {
-  await nonQuery({
-    commandIdentifier: 'EnqueueWorkflowRuns',
-    query: SqlCommands.EnqueueWorkflowRuns,
-    params: [params.runIds, params.jobIds],
   });
 }
 

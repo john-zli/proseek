@@ -14,14 +14,12 @@ ON CONFLICT DO NOTHING;
 CREATE TABLE IF NOT EXISTS core.workflow_runs (
   run_id                    uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
   workflow_name             varchar(100)        NOT NULL,
-  job_id                    varchar(100)        UNIQUE, -- BullMQ job ID
-  
+
   -- Status and timing
   status                    varchar(20)         NOT NULL DEFAULT 'queued',
   
   -- TODO(johnli): Add a priority column?
   -- Timing information
-  queued_timestamp          timestamp,
   started_timestamp         timestamp,
   completed_timestamp       timestamp,
   deletion_timestamp        timestamp,
@@ -48,13 +46,3 @@ BEGIN
   END IF;
 END $$;
 
--- Migration: Remove 'unprocessed' status, change default to 'queued'
-DO $$
-BEGIN
-  -- Update any existing 'unprocessed' rows to 'queued'
-  UPDATE core.workflow_runs SET status = 'queued' WHERE status = 'unprocessed';
-  -- Change default
-  ALTER TABLE core.workflow_runs ALTER COLUMN status SET DEFAULT 'queued';
-  -- Remove the old status value
-  DELETE FROM core.workflow_run_status WHERE status = 'unprocessed';
-END $$;

@@ -1,4 +1,4 @@
-import { getQueuedWorkflowRuns, updateWorkflowRunsWithJobIds } from '@server/models/workflows_storage';
+import { getQueuedWorkflowRuns } from '@server/models/workflows_storage';
 import { logger } from '@server/services/logger';
 import { REDIS_CONFIG, RECURRING_WORKFLOW_SCHEDULES, WorkflowName, WorkflowParams } from '@server/types/workflows';
 import { Queue, RepeatOptions } from 'bullmq';
@@ -50,11 +50,8 @@ async function sweepQueuedWorkflowRuns() {
 
     logger.info(`Sweeper found ${queuedRuns.length} queued workflow run(s)`);
 
-    const runIds: string[] = [];
-    const jobIds: string[] = [];
-
     for (const run of queuedRuns) {
-      const job = await jobQueue.add(
+      await jobQueue.add(
         run.workflowName,
         {
           type: run.workflowName as WorkflowName,
@@ -62,17 +59,9 @@ async function sweepQueuedWorkflowRuns() {
         },
         { jobId: run.runId }
       );
-
-      if (job.id) {
-        runIds.push(run.runId);
-        jobIds.push(job.id);
-      }
     }
 
-    if (runIds.length > 0) {
-      await updateWorkflowRunsWithJobIds({ runIds, jobIds });
-      logger.info(`Sweeper enqueued ${runIds.length} workflow run(s) into BullMQ`);
-    }
+    logger.info(`Sweeper enqueued ${queuedRuns.length} workflow run(s) into BullMQ`);
   } catch (error) {
     logger.error(error, 'Error in sweeper:');
   }

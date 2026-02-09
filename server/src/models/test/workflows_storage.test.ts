@@ -6,7 +6,6 @@ import {
   getWorkflowRunById,
   insertWorkflowRun,
   startWorkflowRun,
-  updateWorkflowRunsWithJobIds,
 } from '../workflows_storage';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { WorkflowName, WorkflowStatus } from '@server/types/workflows';
@@ -79,41 +78,7 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
         status: WorkflowStatus.Queued,
-        jobId: null,
-        queuedTimestamp: null,
-        startedTimestamp: null,
-        completedTimestamp: null,
-        deletionTimestamp: null,
-        creationTimestamp: expect.any(Number),
-        modificationTimestamp: expect.any(Number),
-      });
-    });
-  });
 
-  describe('updateWorkflowRunsWithJobIds', () => {
-    let runId: string;
-
-    beforeEach(async () => {
-      runId = await insertWorkflowRun({
-        workflowName: WorkflowName.SendChurchMatchNotifications,
-        isRecurring: true,
-      });
-    });
-
-    test('should update a workflow run with job id', async () => {
-      await updateWorkflowRunsWithJobIds({
-        runIds: [runId],
-        jobIds: ['job-123'],
-      });
-
-      const workflowRun = await getWorkflowRunById(runId);
-      expect(workflowRun).toEqual({
-        runId,
-        workflowName: WorkflowName.SendChurchMatchNotifications,
-        isRecurring: true,
-        status: WorkflowStatus.Queued,
-        jobId: 'job-123',
-        queuedTimestamp: expect.any(Number),
         startedTimestamp: null,
         completedTimestamp: null,
         deletionTimestamp: null,
@@ -131,16 +96,9 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
       });
-
-      // Queue the run first
-      await updateWorkflowRunsWithJobIds({
-        runIds: [runId],
-        jobIds: ['job-123'],
-      });
     });
 
     test('should start a workflow run and set status to running', async () => {
-      // Start the run
       await startWorkflowRun(runId);
 
       const workflowRun = await getWorkflowRunById(runId);
@@ -149,8 +107,7 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
         status: WorkflowStatus.Running,
-        jobId: 'job-123',
-        queuedTimestamp: expect.any(Number),
+
         startedTimestamp: expect.any(Number),
         completedTimestamp: null,
         deletionTimestamp: null,
@@ -169,12 +126,6 @@ describe('workflows_storage', () => {
         isRecurring: true,
       });
 
-      // Queue and start the run
-      await updateWorkflowRunsWithJobIds({
-        runIds: [runId],
-        jobIds: ['job-123'],
-      });
-
       await startWorkflowRun(runId);
     });
 
@@ -191,8 +142,7 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
         status: WorkflowStatus.Completed,
-        jobId: 'job-123',
-        queuedTimestamp: expect.any(Number),
+
         startedTimestamp: expect.any(Number),
         completedTimestamp: expect.any(Number),
         deletionTimestamp: null,
@@ -214,8 +164,7 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
         status: WorkflowStatus.Failed,
-        jobId: 'job-123',
-        queuedTimestamp: expect.any(Number),
+
         startedTimestamp: expect.any(Number),
         completedTimestamp: expect.any(Number),
         deletionTimestamp: null,
