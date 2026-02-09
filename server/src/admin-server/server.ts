@@ -5,6 +5,7 @@ import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
 import { errorHandler } from '@server/middleware/error_handler';
+import { sessionMiddleware } from '@server/middleware/session';
 import { adminRouter } from '@server/routes/admin_router';
 import { logger } from '@server/services/logger';
 import express, { Express, NextFunction, Request, Response, json, urlencoded } from 'express';
@@ -15,6 +16,7 @@ export function startAdminServer(): Express {
 
   app.use(json());
   app.use(urlencoded({ extended: true }));
+  app.use(sessionMiddleware);
 
   if (config.env === NodeEnvs.Dev) {
     app.use(morgan('dev'));
