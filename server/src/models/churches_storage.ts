@@ -1,4 +1,4 @@
-import { queryRows, queryScalar, querySingleRow } from './db_query_helper';
+import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
 import { Church, ListChurchesNearUserParams } from './storage_types';
 
 const ColumnKeyMappings = {
@@ -66,6 +66,36 @@ const SqlCommands = {
     FROM        core.churches
     WHERE       churches.church_id = $1::uuid
                 AND churches.deletion_timestamp IS NULL;`,
+  ListAllChurches: `
+    SELECT      churches.church_id,
+                churches.name,
+                churches.address,
+                churches.city,
+                churches.state,
+                churches.zip,
+                churches.county,
+                churches.email
+    FROM        core.churches
+    WHERE       churches.deletion_timestamp IS NULL
+    ORDER BY    churches.creation_timestamp DESC;`,
+  UpdateChurch: `
+    UPDATE      core.churches
+    SET         name = $2::varchar(100),
+                address = $3::varchar(200),
+                city = $4::varchar(100),
+                state = $5::varchar(50),
+                zip = $6::varchar(20),
+                county = $7::varchar(100),
+                email = $8::varchar(100),
+                modification_timestamp = now()
+    WHERE       church_id = $1::uuid
+                AND deletion_timestamp IS NULL;`,
+  DeleteChurch: `
+    UPDATE      core.churches
+    SET         deletion_timestamp = now(),
+                modification_timestamp = now()
+    WHERE       church_id = $1::uuid
+                AND deletion_timestamp IS NULL;`,
 };
 
 export async function listChurchesNearUser(params: ListChurchesNearUserParams): Promise<Church[]> {
@@ -102,5 +132,48 @@ export async function createChurch(params: {
     query: SqlCommands.CreateChurch,
     allowNull: false,
     params: [params.name, params.address, params.city, params.state, params.zip, params.county, params.email],
+  });
+}
+
+export async function listAllChurches(): Promise<Church[]> {
+  return queryRows<Church>({
+    commandIdentifier: 'ListAllChurches',
+    query: SqlCommands.ListAllChurches,
+    params: [],
+    mapping: ColumnKeyMappings.Church,
+  });
+}
+
+export async function updateChurch(params: {
+  churchId: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  county: string;
+  email: string;
+}): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'UpdateChurch',
+    query: SqlCommands.UpdateChurch,
+    params: [
+      params.churchId,
+      params.name,
+      params.address,
+      params.city,
+      params.state,
+      params.zip,
+      params.county,
+      params.email,
+    ],
+  });
+}
+
+export async function deleteChurch(churchId: string): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'DeleteChurch',
+    query: SqlCommands.DeleteChurch,
+    params: [churchId],
   });
 }

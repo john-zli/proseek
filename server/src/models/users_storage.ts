@@ -1,4 +1,4 @@
-import { queryRows, queryScalar, querySingleRow } from './db_query_helper';
+import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
 import { SanitizedUser, User } from '@common/server-api/types/users';
 
 const ColumnKeyMappings = {
@@ -101,6 +101,33 @@ const SqlCommands = {
                   $6::varchar(20)
                 );`,
   GenerateInvitationCode: `SELECT core.generate_invitation_code($1::uuid, $2::uuid, $3::varchar(100)) as code;`,
+  ListAllUsers: `
+    SELECT      users.user_id,
+                users.church_id,
+                users.first_name,
+                users.last_name,
+                users.email,
+                users.gender,
+                EXTRACT(EPOCH FROM users.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM users.modification_timestamp)::bigint AS modification_timestamp
+    FROM        core.users
+    WHERE       users.deletion_timestamp IS NULL
+    ORDER BY    users.creation_timestamp DESC;`,
+  UpdateUser: `
+    UPDATE      core.users
+    SET         first_name = $2::varchar(50),
+                last_name = $3::varchar(50),
+                email = $4::varchar(100),
+                gender = $5::varchar(10),
+                modification_timestamp = now()
+    WHERE       user_id = $1::uuid
+                AND deletion_timestamp IS NULL;`,
+  DeleteUser: `
+    UPDATE      core.users
+    SET         deletion_timestamp = now(),
+                modification_timestamp = now()
+    WHERE       user_id = $1::uuid
+                AND deletion_timestamp IS NULL;`,
 };
 
 export async function listUsersFromChurch(churchId: string): Promise<User[]> {
@@ -184,5 +211,36 @@ export async function generateInvitationCode(
     query: SqlCommands.GenerateInvitationCode,
     allowNull: false,
     params: [churchId, createdByUserId, targetEmail],
+  });
+}
+
+export async function listAllUsers(): Promise<SanitizedUser[]> {
+  return queryRows<SanitizedUser>({
+    commandIdentifier: 'ListAllUsers',
+    query: SqlCommands.ListAllUsers,
+    params: [],
+    mapping: ColumnKeyMappings.SanitizedUser,
+  });
+}
+
+export async function updateUser(params: {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  gender: string;
+}): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'UpdateUser',
+    query: SqlCommands.UpdateUser,
+    params: [params.userId, params.firstName, params.lastName, params.email, params.gender],
+  });
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'DeleteUser',
+    query: SqlCommands.DeleteUser,
+    params: [userId],
   });
 }
