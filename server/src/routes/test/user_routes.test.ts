@@ -42,6 +42,7 @@ describe('user routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
 
       adminUser = await createAdminUser({
@@ -141,6 +142,7 @@ describe('user routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
     });
 
@@ -211,6 +213,7 @@ describe('user routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
 
       const req = createMockRequest({
@@ -304,6 +307,7 @@ describe('user routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
 
       const req = createMockRequest({
@@ -355,6 +359,7 @@ describe('user routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
 
       adminUser = await createAdminUser({

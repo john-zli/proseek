@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS core.churches (
   zip                       varchar(20)         NOT NULL,
   country                   varchar(50)         NOT NULL,
   county                    varchar(50),
+  email                     varchar(100)        NOT NULL UNIQUE,
 
   -- Metadata
   creation_timestamp        timestamp           NOT NULL DEFAULT now(),
@@ -33,4 +34,4 @@ BEGIN
       ON core.churches (name, address, city, state, zip, country)
       WHERE deletion_timestamp IS NULL;
   END IF;
-END $$; 
+END $$;

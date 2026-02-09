@@ -224,6 +224,15 @@ Combines DB transactions + mock request helpers + `FakeServicesBuilder`.
 - Standard columns: `creation_timestamp`, `modification_timestamp`, `deletion_timestamp` (soft delete)
 - UUIDs for primary keys, auto-generated via `gen_random_uuid()` defaults
 
+### Migrations
+
+No versioned migration system. SQL files are idempotent and re-run on every bootstrap:
+
+- **New tables:** `CREATE TABLE IF NOT EXISTS`
+- **New columns:** `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE ...) THEN ALTER TABLE ADD COLUMN ...; END IF; END $$;`
+- **New indexes:** `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE ...) THEN CREATE INDEX ...; END IF; END $$;`
+- **Seed data:** `ON CONFLICT ... DO UPDATE SET` or `DO NOTHING` in `dev_additions.sql`
+
 ## Linting & Type Checking
 
 ```bash

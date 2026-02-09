@@ -1,10 +1,10 @@
 import { getNearestChurchToUser } from './helpers.ts ';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createPrayerRequestChat } from '@server/models/prayer_request_chats_storage';
-import { ServicesBuilder } from '@server/services/services_builder';
+import { IServicesBuilder } from '@server/services/services_builder';
 import { RequestHandler } from 'express';
 
-export function createPrayerRequestChatController(services: ServicesBuilder): RequestHandler {
+export function createPrayerRequestChatController(services: IServicesBuilder): RequestHandler {
   return async (req, res, next) => {
     try {
       const nearestChurch = await getNearestChurchToUser(services, {

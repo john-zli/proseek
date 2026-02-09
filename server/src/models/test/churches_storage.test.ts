@@ -22,6 +22,7 @@ describe('churches_storage', () => {
         state: 'CA',
         zip: '12345',
         county: 'County 1',
+        email: 'church1@test.com',
       });
 
       // List churches by zip
@@ -36,6 +37,7 @@ describe('churches_storage', () => {
         state: 'CA',
         zip: '12345',
         county: 'County 1',
+        email: 'church1@test.com',
       });
     });
 
@@ -48,6 +50,7 @@ describe('churches_storage', () => {
         state: 'CA',
         zip: '54321',
         county: 'County 2',
+        email: 'church2@test.com',
       });
 
       // List churches by city and county
@@ -62,6 +65,7 @@ describe('churches_storage', () => {
         state: 'CA',
         zip: '54321',
         county: 'County 2',
+        email: 'church2@test.com',
       });
     });
 
@@ -80,6 +84,7 @@ describe('churches_storage', () => {
         state: 'CA',
         zip: '12345',
         county: 'Test County',
+        email: 'duplicate@test.com',
       };
 
       // Create first church

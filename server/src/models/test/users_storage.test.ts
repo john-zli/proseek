@@ -18,6 +18,7 @@ describe('users_storage', () => {
       state: 'CA',
       zip: '12345',
       county: 'Test County',
+      email: 'test@church.com',
     });
   });
 
@@ -185,6 +186,7 @@ describe('users_storage', () => {
         state: 'CA',
         zip: '67890',
         county: 'Other County',
+        email: 'other@church.com',
       });
 
       await createAdminUser({

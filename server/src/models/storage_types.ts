@@ -15,6 +15,7 @@ export interface Church {
   city: string;
   state: string;
   address: string;
+  email: string;
 }
 
 export interface CreatedUser {

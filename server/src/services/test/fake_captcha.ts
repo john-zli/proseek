@@ -1,6 +1,6 @@
-import { CaptchaService } from '../captcha';
+import { ICaptchaService } from '../interfaces';
 
-export class FakeCaptchaService extends CaptchaService {
+export class FakeCaptchaService implements ICaptchaService {
   async validateToken(_token: string): Promise<{ success: boolean }> {
     return { success: true };
   }
@@ -17,7 +17,7 @@ export class FakeCaptchaService extends CaptchaService {
     return {
       challenge: { c: 1, s: 1, d: 1 },
       token: 'fake-token',
-      expires: Date.now() + 3600000, // 1 hour from now
+      expires: Date.now() + 3600000,
     };
   }
 }

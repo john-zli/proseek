@@ -46,6 +46,7 @@ describe('prayer request chats routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
 
       const req = createMockRequest({
@@ -90,6 +91,7 @@ describe('prayer request chats routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
 
       const req = createMockRequest({
@@ -138,6 +140,7 @@ describe('prayer request chats routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
 
       await listChurchesNearUser({ zip: '12345' });
@@ -181,6 +184,7 @@ describe('prayer request chats routes', () => {
         state: 'CA',
         zip: '12345',
         county: 'Anytown',
+        email: 'test@church.com',
       });
 
       const prayerRequestChatId = await createPrayerRequestChat({

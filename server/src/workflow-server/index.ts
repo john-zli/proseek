@@ -1,4 +1,4 @@
-import { setupRecurringJobs, shutdownRecurringJobManager } from './recurring_job_manager';
+import { setupRecurringJobs, shutdownRecurringJobManager } from './queue_manager';
 import { WorkflowDefinitions } from './workflow_definitions';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
