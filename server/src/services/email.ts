@@ -1,4 +1,5 @@
 import { logger } from './logger';
+import config from '@server/config';
 import { Resend } from 'resend';
 
 export class EmailService {
@@ -6,8 +7,8 @@ export class EmailService {
   private fromEmail: string;
 
   constructor() {
-    this.resend = new Resend(process.env.RESEND_API_KEY);
-    this.fromEmail = process.env.FROM_EMAIL || 'notifications@proseek.app';
+    this.resend = new Resend(config.resendApiKey);
+    this.fromEmail = config.fromEmail;
   }
 
   async sendEmail(to: string, subject: string, html: string): Promise<boolean> {

@@ -1,3 +1,4 @@
+import config from '@server/config';
 import { getChurchById } from '@server/models/churches_storage';
 import {
   listPrayerRequestChats,
@@ -7,8 +8,6 @@ import {
 import { logger } from '@server/services/logger';
 import { IServicesBuilder } from '@server/services/services_builder';
 import { WorkflowName, WorkflowParams } from '@server/types/workflows';
-
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 export async function sendChurchMatchNotifications(
   services: IServicesBuilder,
@@ -43,7 +42,7 @@ export async function sendChurchMatchNotifications(
     const messages = await listPrayerRequestChatMessages({ requestId: prayerRequest.requestId });
     const initialMessages = messages.slice(0, 3);
 
-    const chatLink = `${CLIENT_URL}/chats/${prayerRequest.requestId}`;
+    const chatLink = `${config.clientUrl}/chats/${prayerRequest.requestId}`;
     const contactInfo = [
       prayerRequest.requestContactEmail && `Email: ${prayerRequest.requestContactEmail}`,
       prayerRequest.requestContactPhone && `Phone: ${prayerRequest.requestContactPhone}`,

@@ -4,6 +4,11 @@
 
 ProSeek connects people seeking prayer with local churches and religious communities. A user submits a prayer request through a chat-like interface, provides their location, and gets matched with nearby churches that can offer spiritual support. Churches sign up, manage incoming prayer requests, and follow up with individuals via chat or video. The goal is to bridge the gap between people in need of prayer and the communities that want to help — making it easy, private, and accessible.
 
+## Tool Usage (Serena)
+
+- **Reading & searching:** ALWAYS use Serena tools (`read_file`, `find_symbol`, `search_for_pattern`, `get_symbols_overview`, `find_referencing_symbols`, `list_dir`, `find_file`, etc.) for all code exploration, searching, and reading.
+- **Editing files:** Use Claude's built-in `Edit` / `Write` tools for all file modifications so the user sees clean diffs. Do NOT use Serena's `replace_content`, `replace_symbol_body`, `insert_after_symbol`, or `insert_before_symbol` for edits.
+
 ## Ground Rules
 
 - **Do only what is asked.** Do not add extra features, refactors, tests, PRs, or improvements beyond the scope of the request.

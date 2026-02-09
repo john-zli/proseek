@@ -1,3 +1,5 @@
+import config from '@server/config';
+
 // Workflow types
 export enum WorkflowName {
   SendChurchMatchNotifications = 'SendChurchMatchNotifications',
@@ -47,7 +49,7 @@ export const RECURRING_WORKFLOW_SCHEDULES: Record<WorkflowName, WorkflowSchedule
 };
 // Redis configuration
 export const REDIS_CONFIG = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  password: process.env.REDIS_PASSWORD,
+  host: config.redisHost,
+  port: config.redisPort,
+  password: config.redisPassword,
 };
