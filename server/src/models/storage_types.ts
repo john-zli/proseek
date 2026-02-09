@@ -23,7 +23,7 @@ export interface CreatedUser {
   churchId: string;
 }
 
-export interface UnprocessedWorkflowRun {
+export interface QueuedWorkflowRun {
   runId: string;
   workflowName: string;
   isRecurring: boolean;
@@ -39,8 +39,6 @@ export interface WorkflowRun {
   workflowName: string;
   isRecurring: boolean;
   status: WorkflowStatus;
-  jobId: string | null;
-  queuedTimestamp: number | null;
   startedTimestamp: number | null;
   completedTimestamp: number | null;
   creationTimestamp: number;

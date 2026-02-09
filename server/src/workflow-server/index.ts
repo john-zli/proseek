@@ -1,4 +1,5 @@
-import { setupRecurringJobs, shutdownRecurringJobManager } from './queue_manager';
+import { finishWorkflowRun, insertWorkflowRun, startWorkflowRun } from '@server/models/workflows_storage';
+import { setupRecurringJobs, shutdownRecurringJobManager, startSweeper, stopSweeper } from './queue_manager';
 import { WorkflowDefinitions } from './workflow_definitions';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
@@ -13,40 +14,59 @@ async function main() {
   // Setup recurring jobs
   await setupRecurringJobs();
 
-  // Define worker for processing recurring jobs
+  // Define worker for processing jobs
   recurringWorker = new Worker<WorkflowParams<WorkflowName>>(
-    'recurring-job-queue',
+    'queue',
     async job => {
-      logger.info(`Processing recurring job ${job.id} of type ${job.data.type}`);
+      const workflowName = job.data.type as WorkflowName;
+      logger.info(`Processing job ${job.id} of type ${workflowName}`);
+
+      // For one-off jobs, the runId is already in job data (created by the caller, enqueued by the sweeper).
+      // For recurring jobs, we insert a new workflow run record here.
+      // TODO(johnli): If the server crashes mid-execution (OOM, power loss), BullMQ retries the stalled job.
+      // For recurring jobs this creates a duplicate DB row, leaving the old one stuck as 'running' forever.
+      // Consider adding a startup cleanup that marks stale 'running' rows as 'failed'.
+      let runId: string;
+      if (job.data.runId) {
+        runId = job.data.runId;
+      } else {
+        runId = await insertWorkflowRun({ workflowName, isRecurring: true });
+      }
+      await startWorkflowRun(runId);
 
       try {
-        // Process job based on its type
-        const handler = WorkflowDefinitions[job.data.type];
+        const handler = WorkflowDefinitions[workflowName];
         if (!handler) {
-          throw new Error(`No handler found for recurring job type: ${job.data.type}`);
+          throw new Error(`No handler found for job type: ${workflowName}`);
         }
 
         await handler(services, job.data);
-        logger.info(`Recurring job ${job.id} completed successfully`);
+        logger.info(`Job ${job.id} completed successfully`);
+        return runId;
       } catch (error) {
-        logger.error(error, `Error processing recurring job ${job.id}:`);
+        logger.error(error, `Error processing job ${job.id}:`);
+        await finishWorkflowRun({ runId, status: 'failed' });
         throw error;
       }
     },
     {
       connection: REDIS_CONFIG,
-      concurrency: 3, // Process 3 recurring jobs concurrently
-      stalledInterval: 30000, // Check for stalled jobs every 30 seconds
+      concurrency: 3,
+      stalledInterval: 30000,
     }
   );
 
   // Handle worker events
-  recurringWorker.on('completed', job => {
-    logger.info(`Recurring job ${job.id} has completed`);
+  recurringWorker.on('completed', async job => {
+    const runId = job.returnvalue as string;
+    if (runId) {
+      await finishWorkflowRun({ runId, status: 'completed' });
+    }
+    logger.info(`Job ${job.id} has completed`);
   });
 
   recurringWorker.on('failed', (job, error) => {
-    logger.error(`Recurring job ${job?.id} has failed with error:`, error);
+    logger.error(`Job ${job?.id} has failed with error:`, error);
   });
 
   recurringWorker.on('error', error => {
@@ -57,7 +77,10 @@ async function main() {
     logger.warn(`Recurring job ${jobId} has stalled`);
   });
 
-  logger.info('Workflow server started - handling recurring jobs only');
+  // Start sweeper for queued one-off jobs
+  startSweeper();
+
+  logger.info('Workflow server started');
 }
 
 // Graceful shutdown
@@ -69,6 +92,7 @@ async function shutdown() {
   }
 
   try {
+    stopSweeper();
     await recurringWorker.close();
     await shutdownRecurringJobManager();
     logger.info('Workflow server closed successfully');

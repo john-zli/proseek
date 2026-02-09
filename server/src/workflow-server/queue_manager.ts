@@ -1,4 +1,4 @@
-import { cancelActiveWorkflowRuns } from '@server/models/workflows_storage';
+import { getQueuedWorkflowRuns } from '@server/models/workflows_storage';
 import { logger } from '@server/services/logger';
 import { REDIS_CONFIG, RECURRING_WORKFLOW_SCHEDULES, WorkflowName, WorkflowParams } from '@server/types/workflows';
 import { Queue, RepeatOptions } from 'bullmq';
@@ -26,7 +26,8 @@ export async function setupRecurringJobs() {
       }
 
       await jobQueue.upsertJobScheduler(schedule.name, repeatOptions, {
-        name: type as unknown as WorkflowName,
+        name: type,
+        data: { type: type as WorkflowName },
       });
       logger.info(`Added recurring job: ${schedule.name} with pattern: ${schedule.cron ?? schedule.every}`);
     }
@@ -38,12 +39,50 @@ export async function setupRecurringJobs() {
   }
 }
 
+// Sweep for queued one-off jobs and enqueue them into BullMQ
+const SWEEP_INTERVAL_MS = 10_000;
+let sweepInterval: ReturnType<typeof setInterval> | null = null;
+
+async function sweepQueuedWorkflowRuns() {
+  try {
+    const queuedRuns = await getQueuedWorkflowRuns();
+    if (queuedRuns.length === 0) return;
+
+    logger.info(`Sweeper found ${queuedRuns.length} queued workflow run(s)`);
+
+    for (const run of queuedRuns) {
+      await jobQueue.add(
+        run.workflowName,
+        {
+          type: run.workflowName as WorkflowName,
+          runId: run.runId,
+        },
+        { jobId: run.runId }
+      );
+    }
+
+    logger.info(`Sweeper enqueued ${queuedRuns.length} workflow run(s) into BullMQ`);
+  } catch (error) {
+    logger.error(error, 'Error in sweeper:');
+  }
+}
+
+export function startSweeper() {
+  sweepInterval = setInterval(sweepQueuedWorkflowRuns, SWEEP_INTERVAL_MS);
+  logger.info(`Sweeper started, polling every ${SWEEP_INTERVAL_MS / 1000}s`);
+}
+
+export function stopSweeper() {
+  if (sweepInterval) {
+    clearInterval(sweepInterval);
+    sweepInterval = null;
+    logger.info('Sweeper stopped');
+  }
+}
+
 // Graceful shutdown
 export async function shutdownRecurringJobManager() {
   try {
-    await cancelActiveWorkflowRuns();
-    logger.info('Cancelled active workflow runs on shutdown');
-
     await jobQueue.close();
     logger.info('Recurring job manager closed successfully');
   } catch (error) {
