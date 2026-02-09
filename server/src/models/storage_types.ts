@@ -23,7 +23,7 @@ export interface CreatedUser {
   churchId: string;
 }
 
-export interface UnprocessedWorkflowRun {
+export interface QueuedWorkflowRun {
   runId: string;
   workflowName: string;
   isRecurring: boolean;

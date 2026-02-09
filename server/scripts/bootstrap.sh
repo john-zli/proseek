@@ -72,6 +72,6 @@ echo "PostgreSQL database initialized."
 NODE_ENV=development sh "$ROOT_DIR/scripts/migrations.sh"
 echo "Database bootstrapped successfully."
 
-# # Run setup_test_db.sh to set up the test database
-# echo "Setting up test database..."
-# sh "$ROOT_DIR/scripts/setup_test_db.sh"
+# Run setup_test_db.sh to set up the test database
+echo "Setting up test database..."
+sh "$ROOT_DIR/scripts/setup_test_db.sh"

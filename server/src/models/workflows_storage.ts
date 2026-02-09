@@ -1,9 +1,9 @@
-import { nonQuery, queryRows, querySingleRow } from './db_query_helper';
-import { UnprocessedWorkflowRun, WorkflowRun } from './storage_types';
+import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
+import { QueuedWorkflowRun, WorkflowRun } from './storage_types';
 import { WorkflowStatus } from '@server/types/workflows';
 
 const ColumnKeyMappings = {
-  UnprocessedWorkflowRun: {
+  QueuedWorkflowRun: {
     runId: 'run_id',
     workflowName: 'workflow_name',
     isRecurring: 'is_recurring',
@@ -28,14 +28,13 @@ const ColumnKeyMappings = {
 };
 
 const SqlCommands = {
-  // 1. Query that fetches only "unprocessed" workflow_run_statuses
-  GetUnprocessedWorkflowRuns: `
+  GetQueuedWorkflowRuns: `
     SELECT      workflow_runs.run_id,
                 workflow_runs.workflow_name,
                 workflow_runs.is_recurring
     FROM        core.workflow_runs
     WHERE       workflow_runs.deletion_timestamp IS NULL AND
-                workflow_runs.status = 'unprocessed'
+                workflow_runs.status = '${WorkflowStatus.Queued}'
     ORDER BY    workflow_runs.creation_timestamp ASC;`,
 
   GetWorkflowRunById: `
@@ -61,7 +60,8 @@ const SqlCommands = {
     VALUES (
       $1::varchar(100),
       $2::boolean
-    );`,
+    )
+    RETURNING run_id;`,
   EnqueueWorkflowRuns: `
     UPDATE      core.workflow_runs 
     SET         job_id = src.job_id,
@@ -71,12 +71,6 @@ const SqlCommands = {
     FROM unnest($1::uuid[], $2::varchar[]) AS src(run_id, job_id)
     WHERE workflow_runs.run_id = src.run_id
       AND workflow_runs.deletion_timestamp IS NULL;`,
-  CancelActiveWorkflowRuns: `
-    UPDATE      core.workflow_runs
-    SET         status = '${WorkflowStatus.Cancelled}',
-                modification_timestamp = now()
-    WHERE       workflow_runs.deletion_timestamp IS NULL
-      AND       workflow_runs.status IN ('${WorkflowStatus.Queued}', '${WorkflowStatus.Running}');`,
   StartWorkflowRun: `
     UPDATE      core.workflow_runs
     SET         status = '${WorkflowStatus.Running}',
@@ -94,12 +88,12 @@ const SqlCommands = {
                 deletion_timestamp IS NULL;`,
 };
 
-export async function getUnprocessedWorkflowRuns(): Promise<UnprocessedWorkflowRun[]> {
-  return queryRows<UnprocessedWorkflowRun>({
-    commandIdentifier: 'GetUnprocessedWorkflowRuns',
-    query: SqlCommands.GetUnprocessedWorkflowRuns,
+export async function getQueuedWorkflowRuns(): Promise<QueuedWorkflowRun[]> {
+  return queryRows<QueuedWorkflowRun>({
+    commandIdentifier: 'GetQueuedWorkflowRuns',
+    query: SqlCommands.GetQueuedWorkflowRuns,
     params: [],
-    mapping: ColumnKeyMappings.UnprocessedWorkflowRun,
+    mapping: ColumnKeyMappings.QueuedWorkflowRun,
   });
 }
 
@@ -112,8 +106,8 @@ export async function getWorkflowRunById(runId: string): Promise<WorkflowRun> {
   });
 }
 
-export async function insertWorkflowRun(params: { workflowName: string; isRecurring: boolean }): Promise<void> {
-  await nonQuery({
+export async function insertWorkflowRun(params: { workflowName: string; isRecurring: boolean }): Promise<string> {
+  return queryScalar<string>({
     commandIdentifier: 'InsertWorkflowRun',
     query: SqlCommands.InsertWorkflowRun,
     params: [params.workflowName, params.isRecurring],
@@ -125,14 +119,6 @@ export async function updateWorkflowRunsWithJobIds(params: { runIds: string[]; j
     commandIdentifier: 'EnqueueWorkflowRuns',
     query: SqlCommands.EnqueueWorkflowRuns,
     params: [params.runIds, params.jobIds],
-  });
-}
-
-export async function cancelActiveWorkflowRuns(): Promise<void> {
-  await nonQuery({
-    commandIdentifier: 'CancelActiveWorkflowRuns',
-    query: SqlCommands.CancelActiveWorkflowRuns,
-    params: [],
   });
 }
 

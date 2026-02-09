@@ -2,8 +2,7 @@ CREATE TABLE IF NOT EXISTS core.workflow_run_status (
   status        varchar(20) PRIMARY KEY
 );
 
-INSERT INTO core.workflow_run_status(status) VALUES 
-  ('unprocessed'),
+INSERT INTO core.workflow_run_status(status) VALUES
   ('queued'),
   ('running'),
   ('completed'),
@@ -18,7 +17,7 @@ CREATE TABLE IF NOT EXISTS core.workflow_runs (
   job_id                    varchar(100)        UNIQUE, -- BullMQ job ID
   
   -- Status and timing
-  status                    varchar(20)         NOT NULL DEFAULT 'unprocessed',
+  status                    varchar(20)         NOT NULL DEFAULT 'queued',
   
   -- TODO(johnli): Add a priority column?
   -- Timing information
@@ -47,4 +46,15 @@ BEGIN
   ) THEN
     CREATE INDEX workflow_runs_status_idx ON core.workflow_runs (status);
   END IF;
+END $$;
+
+-- Migration: Remove 'unprocessed' status, change default to 'queued'
+DO $$
+BEGIN
+  -- Update any existing 'unprocessed' rows to 'queued'
+  UPDATE core.workflow_runs SET status = 'queued' WHERE status = 'unprocessed';
+  -- Change default
+  ALTER TABLE core.workflow_runs ALTER COLUMN status SET DEFAULT 'queued';
+  -- Remove the old status value
+  DELETE FROM core.workflow_run_status WHERE status = 'unprocessed';
 END $$;

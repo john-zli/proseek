@@ -7,7 +7,6 @@ export enum WorkflowName {
 }
 
 export enum WorkflowStatus {
-  Unprocessed = 'unprocessed',
   Queued = 'queued',
   Running = 'running',
   Completed = 'completed',
@@ -18,6 +17,7 @@ export enum WorkflowStatus {
 // Workflow data interface
 export interface WorkflowParams<T extends WorkflowName> {
   type: T;
+  runId?: string;
   payload?: WorkflowParamsForWorkflowName[T];
 }
 
