@@ -1,5 +1,5 @@
 bootstrap:
-	sh ./scripts/bootstrap.sh
+	doppler run sh ./scripts/bootstrap.sh
 
 .PHONY: bs
 bs: bootstrap

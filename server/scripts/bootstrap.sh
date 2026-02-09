@@ -2,26 +2,19 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$SCRIPT_DIR/.."
 
+# Check that Doppler is installed and configured
+if ! command -v doppler &> /dev/null; then
+  echo "❌ Doppler is not installed. Install it first:"
+  echo "   brew install gnupg && brew install dopplerhq/cli/doppler"
+  echo "   doppler login"
+  echo "   doppler setup"
+  exit 1
+fi
+
 # Loading environment variables
 set -a
 source "$ROOT_DIR/config/.env.development" > /dev/null 2>&1
 set +a
-
-# Install Doppler
-if command -v doppler &> /dev/null; then
-  echo "Doppler is already installed."
-else
-  echo "Doppler is not installed. Installing Doppler..."
-  brew install gnupg
-  brew install dopplerhq/cli/doppler
-
-  if command -v doppler &> /dev/null; then
-    echo "✅ Doppler installed successfully."
-  else
-    echo "❌ Doppler installation failed."
-    exit 1
-  fi
-fi
 
 # Install PostgreSQL using Homebrew
 if command -v psql &> /dev/null; then
@@ -79,6 +72,6 @@ echo "PostgreSQL database initialized."
 NODE_ENV=development sh "$ROOT_DIR/scripts/migrations.sh"
 echo "Database bootstrapped successfully."
 
-# Run setup_test_db.sh to set up the test database
-echo "Setting up test database..."
-sh "$ROOT_DIR/scripts/setup_test_db.sh"
+# # Run setup_test_db.sh to set up the test database
+# echo "Setting up test database..."
+# sh "$ROOT_DIR/scripts/setup_test_db.sh"

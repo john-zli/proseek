@@ -12,7 +12,6 @@ async function main() {
 
   // Setup recurring jobs
   await setupRecurringJobs();
-  logger.info('Recurring jobs setup completed');
 
   // Define worker for processing recurring jobs
   recurringWorker = new Worker<WorkflowParams<WorkflowName>>(

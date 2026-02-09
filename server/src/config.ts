@@ -44,7 +44,7 @@ const config: ServerConfig = {
   disableHelmet: !!process.env.DISABLE_HELMET,
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
   resendApiKey: process.env.RESEND_API_KEY,
-  fromEmail: process.env.FROM_EMAIL || 'notifications@proseek.app',
+  fromEmail: process.env.FROM_EMAIL || 'notifications@proseek.church',
 };
 
 export default config;

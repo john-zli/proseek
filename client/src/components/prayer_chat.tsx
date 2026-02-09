@@ -1,19 +1,18 @@
-import clsx from 'clsx';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
-
+import classes from '@client/App.module.less';
 import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
 import attachmentIcon from '@client/assets/attachment.svg';
 import clearIcon from '@client/assets/clear.svg';
 import sendIcon from '@client/assets/send.svg';
-import classes from '@client/components/App.module.less';
 import { ModalContext, ModalType } from '@client/contexts/modal_context_provider';
 import { SessionContext } from '@client/contexts/session_context_provider';
 import { Button, ButtonStyle } from '@client/shared-components/button';
 import { Callout } from '@client/shared-components/callout';
 import { withTooltip } from '@client/shared-components/with_tooltip';
 import { useCaptcha } from '@client/widget/use_captcha';
+import clsx from 'clsx';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { v4 as uuidv4 } from 'uuid';
 
 interface PrayerRequestChatMessage {
   messageId: string;
@@ -87,7 +86,16 @@ export const PrayerChat = (props: Props) => {
       requestId: chatroomId,
     });
     setChatroomInitialized(true);
-    setMessages(response.messages);
+    setMessages(
+      response.messages.map(message => ({
+        messageId: message.messageId,
+        requestId: message.requestId,
+        message: message.message,
+        messageTimestamp: message.messageTimestamp,
+        assignedUserId: message.assignedUserId ?? undefined,
+        deletionTimestamp: message.deletionTimestamp ?? undefined,
+      }))
+    );
   }, [chatroomId, chatroomInitialized, isVerified]);
 
   // Only show verification on initial page load with chatroomId in URL
