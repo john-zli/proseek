@@ -36,7 +36,7 @@ export function startServer(services: IServicesBuilder): Express {
 
   // Security
   if (config.env === NodeEnvs.Production) {
-    if (!process.env.DISABLE_HELMET) {
+    if (!config.disableHelmet) {
       app.use(helmet());
     }
   }

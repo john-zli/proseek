@@ -241,3 +241,17 @@ Key environment variables:
 | `REDIS_HOST` | Redis host (default: localhost) |
 | `REDIS_PORT` | Redis port (default: 6379) |
 | `REDIS_PASSWORD` | Redis password (optional) |
+| `RESEND_API_KEY` | Resend API key (for email notifications) |
+| `FROM_EMAIL` | Sender email address (default: `notifications@proseek.church`) |
+| `CLIENT_URL` | Client app URL for email links (default: `http://localhost:5173`) |
+
+## Database Migrations
+
+There is no versioned migration system. Schema files in `src/sql/` are run on every bootstrap via `setup.sql` and are written to be idempotent:
+
+- **New tables** — Use `CREATE TABLE IF NOT EXISTS`
+- **New columns** — Use a `DO $$ BEGIN IF NOT EXISTS ... END $$` block that checks `information_schema.columns` before running `ALTER TABLE ADD COLUMN`
+- **New indexes** — Use a `DO $$ BEGIN IF NOT EXISTS ... END $$` block that checks `pg_indexes` before running `CREATE INDEX`
+- **Seed data** — Use `ON CONFLICT ... DO UPDATE SET` or `DO NOTHING` in `dev_additions.sql`
+
+This means `setup.sql` can be re-run safely on an existing database without losing data.

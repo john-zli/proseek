@@ -8,7 +8,7 @@ import { createClient } from 'redis';
 
 // Create Redis client
 const redisClient = createClient({
-  url: process.env.REDIS_URL || 'redis://localhost:6379',
+  url: config.redisUrl,
 });
 
 redisClient.connect().catch(error => logger.error(error, 'Error connecting to Redis:'));
@@ -16,7 +16,7 @@ redisClient.connect().catch(error => logger.error(error, 'Error connecting to Re
 // Configure session middleware
 export const sessionMiddleware = session({
   store: new RedisStore({ client: redisClient }),
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  secret: config.sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {

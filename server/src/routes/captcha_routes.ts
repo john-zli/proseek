@@ -1,9 +1,9 @@
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
-import { ServicesBuilder } from '@server/services/services_builder';
+import { IServicesBuilder } from '@server/services/services_builder';
 import { Router } from 'express';
 
-export function captchaRouter(services: ServicesBuilder) {
+export function captchaRouter(services: IServicesBuilder) {
   const router = Router();
 
   // Endpoint to get a new captcha challenge

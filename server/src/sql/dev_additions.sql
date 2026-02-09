@@ -9,7 +9,8 @@ INSERT INTO core.churches (
     state,
     zip,
     country,
-    county
+    county,
+    email
 ) VALUES (
     'PBC Palo Alto',
     '3505 Middlefield Rd',
@@ -17,9 +18,10 @@ INSERT INTO core.churches (
     'CA',
     '94306',
     'USA',
-    'Santa Clara'
-) ON CONFLICT (name, address, city, state, zip, country) 
-WHERE deletion_timestamp IS NULL DO NOTHING;
+    'Santa Clara',
+    'johnjohnlili12345@gmail.com'
+) ON CONFLICT (name, address, city, state, zip, country)
+DO UPDATE SET email = EXCLUDED.email;
 
 -- Insert John Li user
 -- Note: Password hash is a dummy value for development only

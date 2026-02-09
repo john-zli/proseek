@@ -35,6 +35,7 @@ describe('church routes', () => {
         city: 'Test City',
         state: 'TS',
         zip: '12345',
+        email: 'test@church.com',
       },
       session: {
         user: {
@@ -65,6 +66,7 @@ describe('church routes', () => {
         city: 'Test City',
         state: 'TS',
         zip: '12345',
+        email: 'test@church.com',
       },
       session: {
         user: {

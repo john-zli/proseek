@@ -4,15 +4,15 @@ import * as churchesStorage from '../models/churches_storage';
 import { CreateChurchSchema } from '../schemas/churches';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
-import { ServicesBuilder } from '@server/services/services_builder';
+import { IServicesBuilder } from '@server/services/services_builder';
 import { Router } from 'express';
 
-export function churchRouter(_services: ServicesBuilder): Router {
+export function churchRouter(_services: IServicesBuilder): Router {
   const router = Router();
 
   // Create a new church - Requires authentication
   router.post('/', ensureAuthenticated, validate(CreateChurchSchema), async (req, res, next) => {
-    const { name, address, city, state, zip } = req.body;
+    const { name, address, city, state, zip, email } = req.body;
 
     try {
       const church = await churchesStorage.createChurch({
@@ -22,6 +22,7 @@ export function churchRouter(_services: ServicesBuilder): Router {
         state,
         zip,
         county: city,
+        email,
       });
       res.status(HttpStatusCodes.CREATED).json(church);
     } catch (error) {

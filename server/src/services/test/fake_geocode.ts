@@ -1,7 +1,8 @@
-import { GeocodeService } from '../geocode';
+import { GeocodeResult } from '../geocode';
+import { IGeocodeService } from '../interfaces';
 
-export class FakeGeocodeService extends GeocodeService {
-  async geocodeAddress(_address: string) {
+export class FakeGeocodeService implements IGeocodeService {
+  async geocodeAddress(_address: string): Promise<GeocodeResult | null> {
     return {
       latitude: 37.7749,
       longitude: -122.4194,
@@ -12,7 +13,7 @@ export class FakeGeocodeService extends GeocodeService {
     };
   }
 
-  async reverseGeocode(_latitude: number, _longitude: number) {
+  async reverseGeocode(_latitude: number, _longitude: number): Promise<GeocodeResult | null> {
     return {
       latitude: 37.7749,
       longitude: -122.4194,

@@ -20,10 +20,10 @@ import { createPrayerRequestChatController } from '@server/controllers/create-pr
 import { ensureAuthenticated } from '@server/middleware/auth';
 import { verifyCaptcha } from '@server/middleware/verify_captcha';
 import { logger } from '@server/services/logger';
-import { ServicesBuilder } from '@server/services/services_builder';
+import { IServicesBuilder } from '@server/services/services_builder';
 import { Router } from 'express';
 
-export function prayerRequestChatsRouter(services: ServicesBuilder): Router {
+export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
   const router = Router();
 
   // Create a new prayer request

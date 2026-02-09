@@ -1,4 +1,4 @@
-import { setupRecurringJobs, shutdownRecurringJobManager } from './recurring_job_manager';
+import { setupRecurringJobs, shutdownRecurringJobManager } from './queue_manager';
 import { WorkflowDefinitions } from './workflow_definitions';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
@@ -12,7 +12,6 @@ async function main() {
 
   // Setup recurring jobs
   await setupRecurringJobs();
-  logger.info('Recurring jobs setup completed');
 
   // Define worker for processing recurring jobs
   recurringWorker = new Worker<WorkflowParams<WorkflowName>>(

@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS core.churches (
   zip                       varchar(20)         NOT NULL,
   country                   varchar(50)         NOT NULL,
   county                    varchar(50),
+  email                     varchar(100)        NOT NULL UNIQUE,
 
   -- Metadata
   creation_timestamp        timestamp           NOT NULL DEFAULT now(),
@@ -33,4 +34,18 @@ BEGIN
       ON core.churches (name, address, city, state, zip, country)
       WHERE deletion_timestamp IS NULL;
   END IF;
-END $$; 
+END $$;
+
+-- Migration: Add email column if it doesn't exist (for existing databases)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'core'
+      AND table_name = 'churches'
+      AND column_name = 'email'
+  ) THEN
+    ALTER TABLE core.churches ADD COLUMN email varchar(100) NOT NULL UNIQUE;
+  END IF;
+END $$;

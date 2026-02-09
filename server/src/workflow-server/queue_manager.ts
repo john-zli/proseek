@@ -28,7 +28,7 @@ export async function setupRecurringJobs() {
       await jobQueue.upsertJobScheduler(schedule.name, repeatOptions, {
         name: type as unknown as WorkflowName,
       });
-      logger.info(`Added recurring job: ${schedule.name} with pattern: ${schedule.cron}`);
+      logger.info(`Added recurring job: ${schedule.name} with pattern: ${schedule.cron ?? schedule.every}`);
     }
 
     logger.info('Recurring jobs setup completed');

@@ -1,7 +1,7 @@
-import { ServicesBuilder } from '@server/services/services_builder';
+import { IServicesBuilder } from '@server/services/services_builder';
 import { NextFunction, Request, Response } from 'express';
 
-export function verifyCaptcha(services: ServicesBuilder) {
+export function verifyCaptcha(services: IServicesBuilder) {
   return async function (req: Request, res: Response, next: NextFunction) {
     const { token } = req.body;
     if (!token) {

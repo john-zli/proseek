@@ -8,7 +8,7 @@ export const CreateChurchSchema = z.object({
     state: z.string().min(1, 'State is required'),
     zip: z.string().min(1, 'ZIP code is required'),
     phone: z.string().optional(),
-    email: z.string().email().optional(),
+    email: z.string().email('Valid email is required'),
     website: z.string().url().optional(),
   }),
 });

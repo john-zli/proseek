@@ -18,8 +18,6 @@ if [ -z "$DATABASE_CONNECTION_STRING" ]; then
   exit 1
 fi
 
-DATABASE_CONNECTION_STRING="$(echo "$DATABASE_CONNECTION_STRING" | tr -d '\r')"
-
 # Run migrations
 echo "Running migrations for test database..."
 sh "$SCRIPT_DIR/migrations.sh"

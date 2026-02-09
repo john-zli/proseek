@@ -2,10 +2,10 @@ import { captchaRouter } from './captcha_routes';
 import { churchRouter } from './church_routes';
 import { prayerRequestChatsRouter } from './prayer_request_chats_routes';
 import { userRouter } from './user_routes';
-import { ServicesBuilder } from '@server/services/services_builder';
+import { IServicesBuilder } from '@server/services/services_builder';
 import { Router } from 'express';
 
-export function apiRouter(services: ServicesBuilder): Router {
+export function apiRouter(services: IServicesBuilder): Router {
   const apiRouter = Router();
 
   // Session endpoint

@@ -1,13 +1,13 @@
 import { listChurchesNearUser } from '@server/models/churches_storage';
 import { Church } from '@server/models/storage_types';
-import { ServicesBuilder } from '@server/services/services_builder';
+import { IServicesBuilder } from '@server/services/services_builder';
 import haversine from 'haversine';
 
 const MIN_MILES_TO_CHURCH = 20;
 
 // Write test cases for you.
 export async function getNearestChurchToUser(
-  services: ServicesBuilder,
+  services: IServicesBuilder,
   params: { userLatitude?: number; userLongitude?: number }
 ): Promise<Church | undefined> {
   const { userLatitude, userLongitude } = params;

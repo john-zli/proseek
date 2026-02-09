@@ -50,20 +50,36 @@ export async function queryRows<T>({
  * Executes a database query and returns a single row, transformed from snake_case to camelCase.
  * Throws an error if no rows or multiple rows are found.
  */
-export async function querySingleRow<T, A extends boolean = false>({
+export async function querySingleRow<T>(args: {
+  query: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: any[];
+  mapping: ColumnMapping<T>;
+  commandIdentifier: string;
+  allowNull: true;
+}): Promise<T | null>;
+export async function querySingleRow<T>(args: {
+  query: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: any[];
+  mapping: ColumnMapping<T>;
+  commandIdentifier: string;
+  allowNull?: false;
+}): Promise<T>;
+export async function querySingleRow<T>({
   query,
   params,
   mapping,
   commandIdentifier,
-  allowNull = false as A,
+  allowNull = false,
 }: {
   query: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any[];
   mapping: ColumnMapping<T>;
   commandIdentifier: string;
-  allowNull?: A;
-}): Promise<A extends true ? T | null : T> {
+  allowNull?: boolean;
+}): Promise<T | null> {
   const rows = await queryRows<T>({
     query,
     params,
@@ -79,36 +95,50 @@ export async function querySingleRow<T, A extends boolean = false>({
     throw new Error(`No results found for command ${commandIdentifier}`);
   }
 
-  return rows[0] as A extends true ? T | null : T;
+  return rows[0] ?? null;
 }
 
 /**
  * Executes a database query and just returns the scalar value.
  */
-export async function queryScalar<T, A extends boolean = false>({
+export async function queryScalar<T>(args: {
+  query: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: any[];
+  allowNull: true;
+  commandIdentifier: string;
+}): Promise<T | null>;
+export async function queryScalar<T>(args: {
+  query: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params: any[];
+  allowNull?: false;
+  commandIdentifier: string;
+}): Promise<T>;
+export async function queryScalar<T>({
   query,
   params,
-  allowNull = false as A,
+  allowNull = false,
   commandIdentifier,
 }: {
   query: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   params: any[];
-  allowNull?: A;
+  allowNull?: boolean;
   commandIdentifier: string;
-}): Promise<A extends true ? T | null : T> {
+}): Promise<T | null> {
   const pool = getPool();
   try {
     const result = await pool.query(query, params);
 
     if (result.rows.length === 0) {
       if (allowNull) {
-        return null as A extends true ? T | null : T;
+        return null;
       }
       throw new Error(`No results found for command ${commandIdentifier}`);
     }
 
-    return Object.values(result.rows[0])[0] as A extends true ? T | null : T;
+    return Object.values(result.rows[0])[0] as T;
   } catch (error) {
     if (error instanceof Error && error.message.includes('No results found')) {
       throw error;

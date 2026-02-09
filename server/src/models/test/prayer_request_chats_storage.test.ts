@@ -27,6 +27,7 @@ describe('prayer_request_chats_storage', () => {
       state: 'CA',
       zip: '12345',
       county: 'Test County',
+      email: 'test@church.com',
     });
   });
 

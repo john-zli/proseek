@@ -1,4 +1,4 @@
-import { queryRows, queryScalar } from './db_query_helper';
+import { queryRows, queryScalar, querySingleRow } from './db_query_helper';
 import { Church, ListChurchesNearUserParams } from './storage_types';
 
 const ColumnKeyMappings = {
@@ -10,6 +10,7 @@ const ColumnKeyMappings = {
     city: 'city',
     state: 'state',
     address: 'address',
+    email: 'email',
   },
 };
 
@@ -21,7 +22,8 @@ const SqlCommands = {
                 churches.city,
                 churches.state,
                 churches.zip,
-                churches.county
+                churches.county,
+                churches.email
     FROM        core.churches
     WHERE       churches.deletion_timestamp IS NULL AND
                 (
@@ -38,7 +40,8 @@ const SqlCommands = {
       state,
       zip,
       county,
-      country
+      country,
+      email
     )
     VALUES (
       $1::varchar(100),
@@ -47,9 +50,22 @@ const SqlCommands = {
       $4::varchar(50),
       $5::varchar(20),
       $6::varchar(100),
-      'US'
+      'US',
+      $7::varchar(100)
     )
     RETURNING church_id;`,
+  GetChurchById: `
+    SELECT      churches.church_id,
+                churches.name,
+                churches.address,
+                churches.city,
+                churches.state,
+                churches.zip,
+                churches.county,
+                churches.email
+    FROM        core.churches
+    WHERE       churches.church_id = $1::uuid
+                AND churches.deletion_timestamp IS NULL;`,
 };
 
 export async function listChurchesNearUser(params: ListChurchesNearUserParams): Promise<Church[]> {
@@ -62,6 +78,16 @@ export async function listChurchesNearUser(params: ListChurchesNearUserParams): 
   });
 }
 
+export async function getChurchById(churchId: string): Promise<Church | null> {
+  return querySingleRow<Church>({
+    commandIdentifier: 'GetChurchById',
+    query: SqlCommands.GetChurchById,
+    params: [churchId],
+    mapping: ColumnKeyMappings.Church,
+    allowNull: true,
+  });
+}
+
 export async function createChurch(params: {
   name: string;
   address: string;
@@ -69,11 +95,12 @@ export async function createChurch(params: {
   state: string;
   zip: string;
   county: string;
+  email: string;
 }): Promise<string> {
   return queryScalar<string>({
     commandIdentifier: 'CreateChurch',
     query: SqlCommands.CreateChurch,
     allowNull: false,
-    params: [params.name, params.address, params.city, params.state, params.zip, params.county],
+    params: [params.name, params.address, params.city, params.state, params.zip, params.county, params.email],
   });
 }
