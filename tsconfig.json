@@ -12,12 +12,16 @@
     "paths": {
       "@common/*": ["common/*"],
       "@server/*": ["server/src/*"],
-      "@client/*": ["client/src/*"]
+      "@client/*": ["client/src/*"],
+      "@admin-client/*": ["admin-client/src/*"]
     }
   },
   "exclude": ["**/node_modules", "**/dist", "**/.eslintrc.js"],
   "files": [],
   "references": [
+    {
+      "path": "./admin-client"
+    },
     {
       "path": "./client"
     },

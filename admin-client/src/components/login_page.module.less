@@ -1,0 +1,72 @@
+@import '../styles/colors.module.less';
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: @color-background-body;
+}
+
+.form {
+  background: @color-background-main;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  width: 360px;
+  gap: 16px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: @color-text-primary;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.input {
+  padding: 10px 14px;
+  border: 1px solid @color-border-light;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &:focus {
+    border-color: @color-primary;
+  }
+
+  &::placeholder {
+    color: @color-text-placeholder;
+  }
+}
+
+.error {
+  color: @color-error;
+  font-size: 13px;
+}
+
+.button {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: @color-button-primary;
+  color: @color-text-button;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin-top: 4px;
+
+  &:hover {
+    background: @color-button-primary-hover;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

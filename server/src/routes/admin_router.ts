@@ -59,6 +59,15 @@ export function adminRouter(): Router {
     });
   });
 
+  // Session endpoint (before auth gate so the UI can check auth status)
+  router.get('/session', (req, res) => {
+    const sessionData = {
+      isAuthenticated: !!req.session.user,
+      user: req.session.user,
+    };
+    res.json(sessionData);
+  });
+
   // All routes below require authentication
   router.use(ensureAuthenticated);
 

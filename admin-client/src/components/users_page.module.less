@@ -1,0 +1,170 @@
+@import '../styles/colors.module.less';
+
+.page {
+  max-width: 1000px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: @color-text-primary;
+}
+
+.formCard {
+  background: @color-background-main;
+  padding: 24px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.formTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.input {
+  padding: 8px 12px;
+  border: 1px solid @color-border-light;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+
+  &:focus {
+    border-color: @color-primary;
+  }
+
+  &::placeholder {
+    color: @color-text-placeholder;
+  }
+}
+
+.formError {
+  color: @color-error;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.formActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.saveButton {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: @color-button-primary;
+  color: @color-text-button;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: @color-button-primary-hover;
+  }
+}
+
+.cancelButton {
+  padding: 8px 16px;
+  border: 1px solid @color-button-secondary-border;
+  border-radius: 6px;
+  background: @color-button-secondary-bg;
+  color: @color-text-button-secondary;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background: @color-button-secondary-hover;
+  }
+}
+
+.table {
+  width: 100%;
+  background: @color-background-main;
+  border-radius: 8px;
+  border-collapse: collapse;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+
+  th,
+  td {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 13px;
+  }
+
+  th {
+    background: @color-background-body;
+    color: @color-text-secondary;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+
+  td {
+    border-top: 1px solid @color-border-light;
+    color: @color-text-primary;
+  }
+
+  tbody tr:hover {
+    background: #fafafa;
+  }
+}
+
+.emptyRow {
+  text-align: center !important;
+  color: @color-text-secondary !important;
+  padding: 32px !important;
+}
+
+.idCell {
+  font-family: monospace;
+  font-size: 11px;
+  color: @color-text-secondary !important;
+}
+
+.actionButton {
+  padding: 4px 10px;
+  border: 1px solid @color-button-secondary-border;
+  border-radius: 4px;
+  background: @color-button-secondary-bg;
+  color: @color-text-button-secondary;
+  font-size: 12px;
+  cursor: pointer;
+  margin-right: 6px;
+
+  &:hover {
+    background: @color-button-secondary-hover;
+  }
+}
+
+.deleteButton {
+  color: @color-error;
+  border-color: @color-error;
+
+  &:hover {
+    background: fade(@color-error, 5%);
+  }
+}
+
+.error {
+  color: @color-error;
+  font-size: 14px;
+}
