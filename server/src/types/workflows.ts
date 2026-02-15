@@ -3,7 +3,7 @@ import config from '@server/config';
 // Workflow types
 export enum WorkflowName {
   SendChurchMatchNotifications = 'SendChurchMatchNotifications',
-  // Add more workflow types here
+  InviteUser = 'InviteUser',
 }
 
 export enum WorkflowStatus {
@@ -18,15 +18,18 @@ export enum WorkflowStatus {
 export interface WorkflowParams<T extends WorkflowName> {
   type: T;
   runId?: string;
-  payload?: WorkflowParamsForWorkflowName[T];
+  payload: WorkflowParamsForWorkflowName[T];
 }
 
-// Specific payload types for different workflows
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export interface SendChurchMatchNotificationsPayload extends Record<string, unknown> {}
+export interface InviteUserPayload extends Record<string, unknown> {
+  targetEmail: string;
+  churchId: string;
+  createdByUserId: string;
+}
 
 export interface WorkflowParamsForWorkflowName {
-  [WorkflowName.SendChurchMatchNotifications]: SendChurchMatchNotificationsPayload;
+  [WorkflowName.SendChurchMatchNotifications]: undefined;
+  [WorkflowName.InviteUser]: InviteUserPayload;
 }
 
 interface WorkflowSchedule {
@@ -40,8 +43,10 @@ interface WorkflowSchedule {
   endDate?: Date;
 }
 
+export type RecurringWorkflowName = WorkflowName.SendChurchMatchNotifications;
+
 // Workflow schedules
-export const RECURRING_WORKFLOW_SCHEDULES: Record<WorkflowName, WorkflowSchedule> = {
+export const RECURRING_WORKFLOW_SCHEDULES: Record<RecurringWorkflowName, WorkflowSchedule> = {
   [WorkflowName.SendChurchMatchNotifications]: {
     every: 5 * 60 * 1000, // Every 5 minutes
     name: WorkflowName.SendChurchMatchNotifications,

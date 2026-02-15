@@ -46,3 +46,12 @@ BEGIN
   END IF;
 END $$;
 
+-- Add payload column for one-off workflow parameters
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'core' AND table_name = 'workflow_runs' AND column_name = 'payload'
+  ) THEN
+    ALTER TABLE core.workflow_runs ADD COLUMN payload jsonb;
+  END IF;
+END $$;

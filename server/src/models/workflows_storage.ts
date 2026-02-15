@@ -7,12 +7,14 @@ const ColumnKeyMappings = {
     runId: 'run_id',
     workflowName: 'workflow_name',
     isRecurring: 'is_recurring',
+    payload: 'payload',
   },
   WorkflowRun: {
     runId: 'run_id',
     workflowName: 'workflow_name',
     isRecurring: 'is_recurring',
     status: 'status',
+    payload: 'payload',
     startedTimestamp: 'started_timestamp',
     completedTimestamp: 'completed_timestamp',
     creationTimestamp: 'creation_timestamp',
@@ -29,7 +31,8 @@ const SqlCommands = {
   GetQueuedWorkflowRuns: `
     SELECT      workflow_runs.run_id,
                 workflow_runs.workflow_name,
-                workflow_runs.is_recurring
+                workflow_runs.is_recurring,
+                workflow_runs.payload
     FROM        core.workflow_runs
     WHERE       workflow_runs.deletion_timestamp IS NULL AND
                 workflow_runs.status = '${WorkflowStatus.Queued}'
@@ -40,6 +43,7 @@ const SqlCommands = {
                 workflow_runs.workflow_name,
                 workflow_runs.is_recurring,
                 workflow_runs.status,
+                workflow_runs.payload,
                 EXTRACT(EPOCH FROM workflow_runs.started_timestamp)::bigint AS started_timestamp,
                 EXTRACT(EPOCH FROM workflow_runs.completed_timestamp)::bigint AS completed_timestamp,
                 EXTRACT(EPOCH FROM workflow_runs.creation_timestamp)::bigint AS creation_timestamp,
@@ -51,11 +55,13 @@ const SqlCommands = {
   InsertWorkflowRun: `
     INSERT INTO core.workflow_runs (
       workflow_name,
-      is_recurring
+      is_recurring,
+      payload
     )
     VALUES (
       $1::varchar(100),
-      $2::boolean
+      $2::boolean,
+      $3::jsonb
     )
     RETURNING run_id;`,
   StartWorkflowRun: `
@@ -93,11 +99,15 @@ export async function getWorkflowRunById(runId: string): Promise<WorkflowRun> {
   });
 }
 
-export async function insertWorkflowRun(params: { workflowName: string; isRecurring: boolean }): Promise<string> {
+export async function insertWorkflowRun(params: {
+  workflowName: string;
+  isRecurring: boolean;
+  payload?: Record<string, unknown>;
+}): Promise<string> {
   return queryScalar<string>({
     commandIdentifier: 'InsertWorkflowRun',
     query: SqlCommands.InsertWorkflowRun,
-    params: [params.workflowName, params.isRecurring],
+    params: [params.workflowName, params.isRecurring, params.payload ? JSON.stringify(params.payload) : null],
   });
 }
 

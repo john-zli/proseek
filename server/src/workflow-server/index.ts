@@ -40,7 +40,8 @@ async function main() {
           throw new Error(`No handler found for job type: ${workflowName}`);
         }
 
-        await handler(services, job.data);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await handler(services, job.data as any);
         logger.info(`Job ${job.id} completed successfully`);
         return runId;
       } catch (error) {

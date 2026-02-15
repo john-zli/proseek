@@ -1,4 +1,4 @@
-import { WorkflowStatus } from '@server/types/workflows';
+import { WorkflowName, WorkflowParamsForWorkflowName, WorkflowStatus } from '@server/types/workflows';
 
 // At least one of them must be populated.
 export interface ListChurchesNearUserParams {
@@ -14,8 +14,9 @@ export interface CreatedUser {
 
 export interface QueuedWorkflowRun {
   runId: string;
-  workflowName: string;
+  workflowName: WorkflowName;
   isRecurring: boolean;
+  payload: WorkflowParamsForWorkflowName[WorkflowName] | null;
 }
 
 export interface RepeatingJob {
@@ -25,9 +26,10 @@ export interface RepeatingJob {
 
 export interface WorkflowRun {
   runId: string;
-  workflowName: string;
+  workflowName: WorkflowName;
   isRecurring: boolean;
   status: WorkflowStatus;
+  payload: WorkflowParamsForWorkflowName[WorkflowName] | null;
   startedTimestamp: number | null;
   completedTimestamp: number | null;
   creationTimestamp: number;

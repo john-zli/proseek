@@ -8,11 +8,13 @@ import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createChurch } from '@server/models/churches_storage';
 import { createAdminUser, generateInvitationCode } from '@server/models/users_storage';
+import { getQueuedWorkflowRuns } from '@server/models/workflows_storage';
 import { IServicesBuilder } from '@server/services/services_builder';
 import { FakeServicesBuilder } from '@server/services/test/fake_services_builder';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { MockResponse, createMockNext, createMockRequest, createMockResponse } from '@server/test/request_test_helper';
 import { MockNextFunction } from '@server/test/request_test_helper';
+import { WorkflowName } from '@server/types/workflows';
 
 describe('user routes', () => {
   let res: MockResponse;
@@ -372,8 +374,7 @@ describe('user routes', () => {
       });
     });
 
-    test('should generate an invitation code', async () => {
-      // Create mock request
+    test('should enqueue an InviteUser workflow run', async () => {
       const req = createMockRequest({
         body: {
           email: 'newuser@example.com',
@@ -386,12 +387,21 @@ describe('user routes', () => {
         },
       });
 
-      // Call the route handler
       await testRoute(userRouter(services), 'POST', '/invite', req, res, next);
 
-      // Verify response
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
-      expect(res.json.mock.calls[0][0]).toEqual({ invitationCode: expect.any(String) });
+      expect(res.json.mock.calls[0][0]).toEqual({ message: 'Invitation sent' });
+
+      // Verify a workflow run was inserted
+      const queuedRuns = await getQueuedWorkflowRuns();
+      const inviteRun = queuedRuns.find(r => r.workflowName === WorkflowName.InviteUser);
+      expect(inviteRun).toBeDefined();
+      expect(inviteRun!.isRecurring).toBe(false);
+      expect(inviteRun!.payload).toEqual({
+        targetEmail: 'newuser@example.com',
+        churchId,
+        createdByUserId: adminUser.userId,
+      });
     });
 
     test('should error if not authenticated', async () => {
