@@ -14,6 +14,7 @@ ON CONFLICT DO NOTHING;
 CREATE TABLE IF NOT EXISTS core.workflow_runs (
   run_id                    uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
   workflow_name             varchar(100)        NOT NULL,
+  payload                   jsonb,
 
   -- Status and timing
   status                    varchar(20)         NOT NULL DEFAULT 'queued',
@@ -43,15 +44,5 @@ BEGIN
                     AND indexname = 'workflow_runs_status_idx'
   ) THEN
     CREATE INDEX workflow_runs_status_idx ON core.workflow_runs (status);
-  END IF;
-END $$;
-
--- Add payload column for one-off workflow parameters
-DO $$ BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'core' AND table_name = 'workflow_runs' AND column_name = 'payload'
-  ) THEN
-    ALTER TABLE core.workflow_runs ADD COLUMN payload jsonb;
   END IF;
 END $$;
