@@ -7,17 +7,6 @@ export interface ListChurchesNearUserParams {
   city?: string;
 }
 
-export interface Church {
-  churchId: string;
-  name: string;
-  zip: string;
-  county: string;
-  city: string;
-  state: string;
-  address: string;
-  email: string;
-}
-
 export interface CreatedUser {
   userId: string;
   churchId: string;

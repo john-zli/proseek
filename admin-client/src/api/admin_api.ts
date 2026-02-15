@@ -1,16 +1,6 @@
 import { api } from './helpers';
+import { Church } from '@common/server-api/types/churches';
 import { SanitizedUser } from '@common/server-api/types/users';
-
-export interface Church {
-  churchId: string;
-  name: string;
-  zip: string;
-  county: string;
-  city: string;
-  state: string;
-  address: string;
-  email: string;
-}
 
 export interface CreateChurchParams {
   name: string;
