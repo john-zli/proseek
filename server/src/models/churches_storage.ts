@@ -1,5 +1,6 @@
 import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
-import { Church, ListChurchesNearUserParams } from './storage_types';
+import { ListChurchesNearUserParams } from './storage_types';
+import { Church } from '@common/server-api/types/churches';
 
 const ColumnKeyMappings = {
   Church: {

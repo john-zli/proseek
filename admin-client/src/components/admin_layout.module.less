@@ -1,0 +1,59 @@
+@import '../styles/colors.module.less';
+
+@sidebar-width: 220px;
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: @sidebar-width;
+  background: @color-sidebar-bg;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  padding: 24px 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 0;
+  flex: 1;
+}
+
+.navItem {
+  display: block;
+  padding: 10px 20px;
+  color: @color-sidebar-text;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: @color-sidebar-item-hover;
+    color: @color-sidebar-text-active;
+  }
+}
+
+.navItemActive {
+  color: @color-sidebar-text-active;
+  background: @color-sidebar-item-active;
+}
+
+.content {
+  flex: 1;
+  padding: 32px;
+  background: @color-background-body;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}

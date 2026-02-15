@@ -1,5 +1,5 @@
+import { Church } from '@common/server-api/types/churches';
 import { listChurchesNearUser } from '@server/models/churches_storage';
-import { Church } from '@server/models/storage_types';
 import { IServicesBuilder } from '@server/services/services_builder';
 import haversine from 'haversine';
 

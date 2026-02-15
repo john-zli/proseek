@@ -1,0 +1,56 @@
+@import './styles/colors.module.less';
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color: @color-text-primary;
+  background-color: @color-background-body;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+a {
+  font-weight: 500;
+  color: @color-link;
+  text-decoration: inherit;
+}
+
+a:hover {
+  color: @color-link-hover;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  color: @color-text-primary;
+}
+
+p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: @color-text-secondary;
+}
+
+input, button, textarea {
+  font-family: inherit;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
