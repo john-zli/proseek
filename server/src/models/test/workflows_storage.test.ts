@@ -34,6 +34,7 @@ describe('workflows_storage', () => {
         runId,
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: false,
+        payload: null,
       });
     });
   });
@@ -78,6 +79,7 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
         status: WorkflowStatus.Queued,
+        payload: null,
 
         startedTimestamp: null,
         completedTimestamp: null,
@@ -107,6 +109,7 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
         status: WorkflowStatus.Running,
+        payload: null,
 
         startedTimestamp: expect.any(Number),
         completedTimestamp: null,
@@ -142,6 +145,7 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
         status: WorkflowStatus.Completed,
+        payload: null,
 
         startedTimestamp: expect.any(Number),
         completedTimestamp: expect.any(Number),
@@ -164,6 +168,7 @@ describe('workflows_storage', () => {
         workflowName: WorkflowName.SendChurchMatchNotifications,
         isRecurring: true,
         status: WorkflowStatus.Failed,
+        payload: null,
 
         startedTimestamp: expect.any(Number),
         completedTimestamp: expect.any(Number),

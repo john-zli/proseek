@@ -14,6 +14,7 @@ ON CONFLICT DO NOTHING;
 CREATE TABLE IF NOT EXISTS core.workflow_runs (
   run_id                    uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
   workflow_name             varchar(100)        NOT NULL,
+  payload                   jsonb,
 
   -- Status and timing
   status                    varchar(20)         NOT NULL DEFAULT 'queued',
@@ -45,4 +46,3 @@ BEGIN
     CREATE INDEX workflow_runs_status_idx ON core.workflow_runs (status);
   END IF;
 END $$;
-

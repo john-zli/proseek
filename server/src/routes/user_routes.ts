@@ -1,6 +1,7 @@
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { createAdminUser, createUser, generateInvitationCode, getUserByEmail } from '../models/users_storage';
+import { createAdminUser, createUser, getUserByEmail } from '../models/users_storage';
+import { insertWorkflowRun } from '../models/workflows_storage';
 import { CreateAdminUserSchema, CreateUserSchema, InviteUserSchema, LoginUserSchema } from '../schemas/users';
 import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
@@ -8,6 +9,7 @@ import HttpStatusCodes from '@server/common/status_codes';
 import config from '@server/config';
 import { logger } from '@server/services/logger';
 import { IServicesBuilder } from '@server/services/services_builder';
+import { WorkflowName } from '@server/types/workflows';
 import { compare, hash } from 'bcrypt';
 import { Router } from 'express';
 
@@ -160,7 +162,7 @@ export function userRouter(_services: IServicesBuilder): Router {
     });
   });
 
-  // Generate Invitation Code
+  // Invite User (enqueues workflow to generate code + send email)
   router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (req, res, next) => {
     // ensureAuthenticated guarantees req.session.user, user.id, and user.churchId exist
     const user = req.session.user!;
@@ -168,12 +170,13 @@ export function userRouter(_services: IServicesBuilder): Router {
     const { email } = req.body;
 
     try {
-      const invitationCode = await generateInvitationCode(churchId, userId, email);
+      await insertWorkflowRun({
+        workflowName: WorkflowName.InviteUser,
+        isRecurring: false,
+        payload: { targetEmail: email, churchId, createdByUserId: userId },
+      });
 
-      // TODO: Send email to `email` with the `invitationCode` (Email: ${email})
-
-      // 3. Return the generated code
-      res.status(HttpStatusCodes.CREATED).json({ invitationCode });
+      res.status(HttpStatusCodes.CREATED).json({ message: 'Invitation sent' });
     } catch (error) {
       return next(error);
     }

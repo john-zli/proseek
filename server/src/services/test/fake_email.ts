@@ -1,7 +1,10 @@
 import { IEmailService } from '../interfaces';
 
 export class FakeEmailService implements IEmailService {
-  async sendEmail(_to: string, _subject: string, _html: string): Promise<boolean> {
+  sentEmails: Array<{ to: string; subject: string; html: string }> = [];
+
+  async sendEmail(to: string, subject: string, html: string): Promise<boolean> {
+    this.sentEmails.push({ to, subject, html });
     return true;
   }
 }

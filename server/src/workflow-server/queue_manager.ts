@@ -27,7 +27,9 @@ export async function setupRecurringJobs() {
 
       await jobQueue.upsertJobScheduler(schedule.name, repeatOptions, {
         name: type,
-        data: { type: type as WorkflowName },
+        // TODO(johnli): We may need to setup recurring jobs separately on admin, instead of assuming
+        // everything is the same. For now, we'll just use an empty payload.
+        data: { type: type as WorkflowName, payload: undefined },
       });
       logger.info(`Added recurring job: ${schedule.name} with pattern: ${schedule.cron ?? schedule.every}`);
     }
@@ -54,8 +56,9 @@ async function sweepQueuedWorkflowRuns() {
       await jobQueue.add(
         run.workflowName,
         {
-          type: run.workflowName as WorkflowName,
+          type: run.workflowName,
           runId: run.runId,
+          payload: run.payload ?? undefined,
         },
         { jobId: run.runId }
       );
