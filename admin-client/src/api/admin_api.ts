@@ -1,5 +1,4 @@
 import { api } from './helpers';
-import { SessionData } from '@common/server-api/types/session';
 import { SanitizedUser } from '@common/server-api/types/users';
 
 export interface Church {
@@ -40,13 +39,6 @@ export interface UpdateUserParams {
 }
 
 export const AdminApi = {
-  // Auth
-  login: (params: { email: string; password: string }) => api.post<{ user: SanitizedUser }>('/login', params),
-
-  logout: () => api.post('/logout', {}),
-
-  getSession: () => api.get<SessionData>('/session'),
-
   // Churches
   listChurches: () => api.get<Church[]>('/churches'),
 

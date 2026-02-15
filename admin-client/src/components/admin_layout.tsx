@@ -1,17 +1,7 @@
 import classes from './admin_layout.module.less';
-import { SessionContext } from '@admin-client/contexts/session_context';
-import { useContext } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 
 export function AdminLayout() {
-  const { session, logout } = useContext(SessionContext);
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
   return (
     <div className={classes.layout}>
       <aside className={classes.sidebar}>
@@ -30,12 +20,6 @@ export function AdminLayout() {
             Users
           </NavLink>
         </nav>
-        <div className={classes.sidebarFooter}>
-          <div className={classes.userInfo}>{session?.user?.email}</div>
-          <button className={classes.logoutButton} onClick={handleLogout}>
-            Log out
-          </button>
-        </div>
       </aside>
       <main className={classes.content}>
         <Outlet />

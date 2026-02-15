@@ -12,10 +12,6 @@
   background: @color-sidebar-bg;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
 }
 
 .brand {
@@ -53,37 +49,11 @@
   background: @color-sidebar-item-active;
 }
 
-.sidebarFooter {
-  padding: 16px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.userInfo {
-  color: @color-sidebar-text;
-  font-size: 12px;
-  margin-bottom: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.logoutButton {
-  background: none;
-  border: none;
-  color: @color-sidebar-text;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 4px 0;
-
-  &:hover {
-    color: @color-sidebar-text-active;
-  }
-}
-
 .content {
-  margin-left: @sidebar-width;
   flex: 1;
   padding: 32px;
   background: @color-background-body;
-  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
