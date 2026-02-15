@@ -1,5 +1,6 @@
 import classes from './churches_page.module.less';
-import { AdminApi, Church, CreateChurchParams, UpdateChurchParams } from '@admin-client/api/admin_api';
+import { AdminApi, CreateChurchParams, UpdateChurchParams } from '@admin-client/api/admin_api';
+import { Church } from '@common/server-api/types/churches';
 import { useCallback, useEffect, useState } from 'react';
 
 type ChurchFormData = CreateChurchParams & { county?: string };

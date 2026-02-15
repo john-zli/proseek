@@ -128,10 +128,7 @@ Create `src/workflows/my_new_workflow.ts`:
 import { ServicesBuilder } from '@server/services/services_builder';
 import { WorkflowName, WorkflowParams } from '@server/types/workflows';
 
-export async function myNewWorkflow(
-  services: ServicesBuilder,
-  payload: WorkflowParams<WorkflowName.MyNewWorkflow>
-) {
+export async function myNewWorkflow(services: ServicesBuilder, payload: WorkflowParams<WorkflowName.MyNewWorkflow>) {
   // Your workflow logic here
 }
 ```
@@ -188,7 +185,7 @@ import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 
 describe('my_storage', () => {
   beforeEach(async () => {
-    await setupTestDb();   // BEGIN transaction
+    await setupTestDb(); // BEGIN transaction
   });
 
   afterEach(async () => {
@@ -233,17 +230,17 @@ Server config is loaded from `config/.env.{NODE_ENV}` via dotenv. Secrets are ma
 
 Key environment variables:
 
-| Variable | Description |
-|---|---|
-| `PORT` | Web server port (default: 3000) |
-| `DATABASE_CONNECTION_STRING` | Postgres connection string |
-| `GOOGLE_MAPS_API_KEY` | For geocoding services |
-| `REDIS_HOST` | Redis host (default: localhost) |
-| `REDIS_PORT` | Redis port (default: 6379) |
-| `REDIS_PASSWORD` | Redis password (optional) |
-| `RESEND_API_KEY` | Resend API key (for email notifications) |
-| `FROM_EMAIL` | Sender email address (default: `notifications@proseek.church`) |
-| `CLIENT_URL` | Client app URL for email links (default: `http://localhost:5173`) |
+| Variable                     | Description                                                       |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `PORT`                       | Web server port (default: 3000)                                   |
+| `DATABASE_CONNECTION_STRING` | Postgres connection string                                        |
+| `GOOGLE_MAPS_API_KEY`        | For geocoding services                                            |
+| `REDIS_HOST`                 | Redis host (default: localhost)                                   |
+| `REDIS_PORT`                 | Redis port (default: 6379)                                        |
+| `REDIS_PASSWORD`             | Redis password (optional)                                         |
+| `RESEND_API_KEY`             | Resend API key (for email notifications)                          |
+| `FROM_EMAIL`                 | Sender email address (default: `notifications@proseek.church`)    |
+| `CLIENT_URL`                 | Client app URL for email links (default: `http://localhost:5173`) |
 
 ## Database Migrations
 
