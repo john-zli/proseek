@@ -1,4 +1,4 @@
-import { api } from './helpers';
+import { api } from '@client/api/helpers';
 import type {
   AssignPrayerRequestChatResponse,
   AssignPrayerRequestChatToUserParams,

@@ -1,6 +1,5 @@
+import classes from '@client/shared-components/with_tooltip.module.less';
 import { ReactNode } from 'react';
-
-import classes from './with_tooltip.module.less';
 
 export enum TooltipPosition {
   Top = 'top',

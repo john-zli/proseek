@@ -1,6 +1,5 @@
+import classes from '@client/shared-components/button.module.less';
 import clsx from 'clsx';
-
-import classes from './button.module.less';
 
 export enum ButtonStyle {
   Primary = 'Primary',

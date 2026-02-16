@@ -1,6 +1,5 @@
+import classes from '@client/components/map.module.less';
 import GoogleMapReact from 'google-map-react';
-
-import classes from './map.module.less';
 
 // TODO(johnli): Might not need this anymore.
 export function Map() {

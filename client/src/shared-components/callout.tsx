@@ -1,7 +1,6 @@
+import styles from '@client/shared-components/callout.module.less';
 import clsx from 'clsx';
 import { ReactNode } from 'react';
-
-import styles from './callout.module.less';
 
 interface CalloutProps {
   children: ReactNode;

@@ -1,4 +1,4 @@
-import { api } from './helpers';
+import { api } from '@client/api/helpers';
 import { SanitizedUser } from '@common/server-api/types/users';
 
 export interface LoginParams {
