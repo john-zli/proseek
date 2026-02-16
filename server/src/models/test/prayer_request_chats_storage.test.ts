@@ -5,6 +5,7 @@ import {
   assignPrayerRequestChat,
   createPrayerRequestChat,
   createPrayerRequestChatMessage,
+  getPrayerRequestChat,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
   updateMatchNotificationTimestamps,
@@ -290,6 +291,47 @@ describe('prayer_request_chats_storage', () => {
         assignedUserId: null,
         deletionTimestamp: null,
       });
+    });
+  });
+
+  describe('getPrayerRequestChat', () => {
+    test('should return a prayer request chat by ID', async () => {
+      const params = {
+        requestContactEmail: 'user@example.com',
+        requestContactPhone: '123-456-7890',
+        zip: '12345',
+        city: 'Test City',
+        churchId,
+        messages: [
+          {
+            messageId: uuidv4(),
+            message: 'Hello',
+            messageTimestamp: 1700000000 * 1000,
+          },
+        ],
+      };
+
+      const requestId = await createPrayerRequestChat(params);
+      const result = await getPrayerRequestChat(requestId);
+
+      expect(result).toEqual({
+        requestId,
+        assignedUserId: null,
+        assignedChurchId: churchId,
+        responded: false,
+        requestContactEmail: 'user@example.com',
+        requestContactPhone: '123-456-7890',
+        zip: '12345',
+        city: 'Test City',
+        creationTimestamp: expect.any(Number),
+        modificationTimestamp: expect.any(Number),
+        matchNotificationTimestamp: null,
+      });
+    });
+
+    test('should return null for non-existent request ID', async () => {
+      const result = await getPrayerRequestChat(uuidv4());
+      expect(result).toBeNull();
     });
   });
 });
