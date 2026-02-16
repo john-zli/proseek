@@ -109,7 +109,7 @@ const SqlCommands = {
     SELECT      inv.target_email,
                 ch.name AS church_name
     FROM        core.user_invitations inv
-    JOIN        core.churches ch ON ch.church_id = inv.church_id
+    JOIN        core.churches ch USING (church_id)
     WHERE       inv.code = $1::varchar(20)
                 AND inv.redeemed_by_user_id IS NULL
                 AND (inv.expiration_timestamp IS NULL OR inv.expiration_timestamp > now());`,
