@@ -1,5 +1,5 @@
 import { extractArraysByKeys } from './db_helpers';
-import { nonQuery, queryRows, queryScalar } from './db_query_helper';
+import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
 import {
   AssignPrayerRequestChatToUserParams,
   CreatePrayerRequestChatMessageParams,
@@ -55,6 +55,20 @@ const SqlCommands = {
                 ($3::boolean IS NOT TRUE OR
                  ($3::boolean AND prayer_request_chats.match_notification_timestamp IS NULL))
     ORDER BY    prayer_request_chats.creation_timestamp DESC;`,
+  GetPrayerRequestChat: `
+    SELECT      prayer_request_chats.request_id,
+                prayer_request_chats.assigned_user_id,
+                prayer_request_chats.assigned_church_id,
+                prayer_request_chats.responded,
+                prayer_request_chats.request_contact_email,
+                prayer_request_chats.request_contact_phone,
+                prayer_request_chats.zip,
+                prayer_request_chats.city,
+                EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp)::bigint AS modification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.match_notification_timestamp)::bigint AS match_notification_timestamp
+    FROM        core.prayer_request_chats
+    WHERE       prayer_request_chats.request_id = $1::uuid;`,
   VerifyPrayerRequestChat: `
     SELECT      prayer_request_chats.request_id
     FROM        core.prayer_request_chats
@@ -120,6 +134,16 @@ export async function listPrayerRequestChats(params: ListPrayerRequestChatsParam
     query: SqlCommands.ListPrayerRequestChats,
     params: [userId, churchId, onlyUnnotified],
     mapping: ColumnKeyMappings.PrayerRequestChat,
+  });
+}
+
+export async function getPrayerRequestChat(requestId: string): Promise<PrayerRequestChat | null> {
+  return querySingleRow<PrayerRequestChat>({
+    commandIdentifier: 'GetPrayerRequestChat',
+    query: SqlCommands.GetPrayerRequestChat,
+    params: [requestId],
+    mapping: ColumnKeyMappings.PrayerRequestChat,
+    allowNull: true,
   });
 }
 

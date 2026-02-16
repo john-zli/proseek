@@ -2,6 +2,7 @@ import { validate } from '../middleware/validate';
 import {
   assignPrayerRequestChat,
   createPrayerRequestChatMessage,
+  getPrayerRequestChat,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
   verifyPrayerRequestChat,
@@ -46,6 +47,18 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
     }
   });
 
+  // List prayer requests for the authenticated church user's dashboard
+  router.get('/dashboard', ensureAuthenticated, async (req, res, next) => {
+    const { churchId } = req.session.user!;
+
+    try {
+      const prayerRequests = await listPrayerRequestChats({ churchId });
+      res.status(HttpStatusCodes.OK).json({ prayerRequests });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
   // Assign a prayer request to a user
   router.post(
     '/:requestId/assign',
@@ -68,6 +81,7 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
   router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res, next) => {
     const { requestId } = req.params;
     const { message, messageId, messageTimestamp } = req.body;
+    const assignedUserId = req.session.user?.userId;
 
     try {
       await createPrayerRequestChatMessage({
@@ -75,6 +89,7 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
         message,
         messageId,
         messageTimestamp,
+        assignedUserId,
       });
       res.status(HttpStatusCodes.CREATED).send();
     } catch (error) {
@@ -86,6 +101,14 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
     const { requestId } = req.params;
 
     try {
+      // If authenticated church member, verify they belong to the assigned church
+      if (req.session.user) {
+        const prayerRequest = await getPrayerRequestChat(requestId);
+        if (!prayerRequest || prayerRequest.assignedChurchId !== req.session.user.churchId) {
+          return next(new RouteError(HttpStatusCodes.FORBIDDEN, 'You do not have access to this prayer request'));
+        }
+      }
+
       const chatMessages = await listPrayerRequestChatMessages({ requestId });
       res.status(HttpStatusCodes.OK).json({ messages: chatMessages });
     } catch (error) {

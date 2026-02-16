@@ -144,7 +144,7 @@ export async function getMyEntity(id: string): Promise<MyEntity> {
 
 To add a new workflow:
 
-1. Add to `WorkflowName` enum in `types/workflows.ts`
+1. Add to `WorkflowName` enum in `types/workflows.ts`. If recurring, also add to the appropriate type.
 2. Add payload interface + register in `WorkflowParamsForWorkflowName`
 3. Add schedule in `RECURRING_WORKFLOW_SCHEDULES`
 4. Create handler in `workflows/`
@@ -154,7 +154,7 @@ To add a new workflow:
 
 - **Styling:** Co-located `.module.less` files per component
 - **State:** React Context only (no Redux/Zustand). Session in `SessionContextProvider`, modals in `ModalContextProvider`
-- **API calls:** Thin fetch wrappers in `api/` directory, organized by resource
+- **API calls:** Thin fetch wrappers in `api/` directory, organized by resource. All new fetch functions should have error handling handled as well.
 - **Shared components:** Generic UI primitives in `shared-components/`, feature components in `components/`
 
 ## Testing
@@ -171,6 +171,13 @@ bun run test church
 # Single file
 bun test src/models/test/workflows_storage.test.ts
 ```
+
+### Critical: Any new significant branching, new functions, or new routes should be tested if possible
+
+This means that any new logic change that has some sort of branching, if a new function was created (storage or otherwise),
+or if a new API route was created of some kind, we would need this to be tested.
+
+Currently, admin console based code changes does not need testing since that is purely internal.
 
 ### Critical: Tests must run one file at a time
 

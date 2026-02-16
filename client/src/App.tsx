@@ -1,9 +1,22 @@
 import classes from './App.module.less';
+import { DashboardPage } from './components/dashboard_page';
 import { Header } from './components/header';
 import { InvitePage } from './components/invite_page';
 import { LoginPage } from './components/login_page';
 import { PrayerChat } from './components/prayer_chat';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { SessionContext } from './contexts/session_context_provider';
+import { useContext } from 'react';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
+function HomePage() {
+  const { session, sessionLoading } = useContext(SessionContext);
+
+  if (sessionLoading) return null;
+  if (session?.isAuthenticated && session.user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <PrayerChat />;
+}
 
 function App() {
   return (
@@ -11,7 +24,8 @@ function App() {
       <BrowserRouter>
         <Header />
         <Routes>
-          <Route path="/" element={<PrayerChat />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/chats/:chatroomId" element={<PrayerChat startsExpanded={true} />} />
           <Route path="/invite" element={<InvitePage />} />
           <Route path="/login" element={<LoginPage />} />

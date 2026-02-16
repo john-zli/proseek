@@ -1,9 +1,8 @@
-import { useCallback, useState } from 'react';
-
 import { ModalContext, ModalPayload, ModalType } from '../contexts/modal_context_provider';
 import { ChatroomVerificationModal } from './modals/chatroom_verification_modal';
 import { ConfirmationModal } from './modals/confirmation_modal';
 import { ContactInfoModal } from './modals/contact_info_modal';
+import { useCallback, useState } from 'react';
 
 type ModalState = {
   [K in ModalType]: { type: K; payload: ModalPayload[K] };

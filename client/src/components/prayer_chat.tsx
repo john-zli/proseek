@@ -102,7 +102,11 @@ export const PrayerChat = (props: Props) => {
   useEffect(() => {
     // If session has already verified this chatroom, load messages and skip verification.
     if (chatroomId && !chatroomInitialized && !sessionLoading) {
-      if (session?.verifiedChatIds?.includes(chatroomId)) {
+      if (session?.isAuthenticated && session.user) {
+        // Authenticated church users bypass verification entirely
+        setIsVerified(true);
+        setShowCallout(false);
+      } else if (session?.verifiedChatIds?.includes(chatroomId)) {
         setIsVerified(true);
         setShowCallout(false);
       } else if (!isVerified) {
@@ -117,6 +121,8 @@ export const PrayerChat = (props: Props) => {
     chatroomId,
     chatroomInitialized,
     session?.verifiedChatIds,
+    session?.isAuthenticated,
+    session?.user,
     sessionLoading,
     openModal,
     handleVerification,
@@ -137,8 +143,11 @@ export const PrayerChat = (props: Props) => {
 
     const messageId = uuidv4();
     const messageTimestamp = Date.now();
-    // TODO(johnli): Add userId to the message if we are authenticated.
-    setMessages(prev => [...prev, { messageId, requestId: chatroomId, message: inputValue, messageTimestamp }]);
+    const assignedUserId = session?.user?.userId;
+    setMessages(prev => [
+      ...prev,
+      { messageId, requestId: chatroomId, message: inputValue, messageTimestamp, assignedUserId },
+    ]);
     setInputValue('');
     setIsExpanded(true);
 
@@ -150,7 +159,7 @@ export const PrayerChat = (props: Props) => {
         messageTimestamp,
       });
     }
-  }, [inputValue, chatroomId]);
+  }, [inputValue, chatroomId, session?.user?.userId]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);
