@@ -38,3 +38,10 @@ export const InviteUserSchema = z.object({
     email: z.string().email('Valid email is required for invitation'),
   }),
 });
+
+// Schema for looking up an invitation by code
+export const GetInvitationSchema = z.object({
+  query: z.object({
+    code: z.string().min(1, 'Invitation code is required'),
+  }),
+});

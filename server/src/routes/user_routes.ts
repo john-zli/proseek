@@ -1,8 +1,14 @@
 import { ensureAuthenticated } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { createAdminUser, createUser, getUserByEmail } from '../models/users_storage';
+import { createAdminUser, createUser, getInvitationByCode, getUserByEmail } from '../models/users_storage';
 import { insertWorkflowRun } from '../models/workflows_storage';
-import { CreateAdminUserSchema, CreateUserSchema, InviteUserSchema, LoginUserSchema } from '../schemas/users';
+import {
+  CreateAdminUserSchema,
+  CreateUserSchema,
+  GetInvitationSchema,
+  InviteUserSchema,
+  LoginUserSchema,
+} from '../schemas/users';
 import { NodeEnvs } from '@server/common/constants';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
@@ -160,6 +166,22 @@ export function userRouter(_services: IServicesBuilder): Router {
       res.clearCookie('connect.sid'); // Ensure the session cookie is cleared
       res.status(HttpStatusCodes.OK).json({ message: 'Logout successful' });
     });
+  });
+
+  // Look up invitation by code (public, used by the invite signup page)
+  router.get('/invitation', validate(GetInvitationSchema), async (req, res, next) => {
+    try {
+      const { code } = req.query as { code: string };
+      const invitation = await getInvitationByCode(code);
+
+      if (!invitation) {
+        return next(new RouteError(HttpStatusCodes.NOT_FOUND, 'Invalid or expired invitation'));
+      }
+
+      res.json(invitation);
+    } catch (error) {
+      return next(error);
+    }
   });
 
   // Invite User (enqueues workflow to generate code + send email)

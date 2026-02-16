@@ -21,6 +21,10 @@ const ColumnKeyMappings = {
     email: 'email',
     gender: 'gender',
   },
+  InvitationInfo: {
+    targetEmail: 'target_email',
+    churchName: 'church_name',
+  },
 };
 
 const SqlCommands = {
@@ -101,6 +105,14 @@ const SqlCommands = {
                   $6::varchar(20)
                 );`,
   GenerateInvitationCode: `SELECT core.generate_invitation_code($1::uuid, $2::uuid, $3::varchar(100)) as code;`,
+  GetInvitationByCode: `
+    SELECT      inv.target_email,
+                ch.name AS church_name
+    FROM        core.user_invitations inv
+    JOIN        core.churches ch USING (church_id)
+    WHERE       inv.code = $1::varchar(20)
+                AND inv.redeemed_by_user_id IS NULL
+                AND (inv.expiration_timestamp IS NULL OR inv.expiration_timestamp > now());`,
   ListAllUsers: `
     SELECT      users.user_id,
                 users.church_id,
@@ -212,6 +224,21 @@ export async function generateInvitationCode(
     allowNull: false,
     params: [churchId, createdByUserId, targetEmail],
   });
+}
+
+export interface InvitationInfo {
+  targetEmail: string;
+  churchName: string;
+}
+
+export async function getInvitationByCode(code: string): Promise<InvitationInfo | null> {
+  const rows = await queryRows<InvitationInfo>({
+    commandIdentifier: 'GetInvitationByCode',
+    query: SqlCommands.GetInvitationByCode,
+    params: [code],
+    mapping: ColumnKeyMappings.InvitationInfo,
+  });
+  return rows.length > 0 ? rows[0] : null;
 }
 
 export async function listAllUsers(): Promise<SanitizedUser[]> {

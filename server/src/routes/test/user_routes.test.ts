@@ -350,6 +350,59 @@ describe('user routes', () => {
     });
   });
 
+  describe('GET /invitation', () => {
+    let churchId: string;
+    let adminUser: SanitizedUser;
+
+    beforeEach(async () => {
+      churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St, Anytown, USA',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+        email: 'test@church.com',
+      });
+
+      adminUser = await createAdminUser({
+        churchId,
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        gender: Gender.Male,
+        passwordHash: 'password123',
+      });
+    });
+
+    test('should return invitation info for a valid code', async () => {
+      const code = await generateInvitationCode(churchId, adminUser.userId, 'invitee@example.com');
+
+      const req = createMockRequest({
+        query: { code },
+      });
+
+      await testRoute(userRouter(services), 'GET', '/invitation', req, res, next);
+
+      expect(res.json.mock.calls[0][0]).toEqual({
+        targetEmail: 'invitee@example.com',
+        churchName: 'Test Church',
+      });
+    });
+
+    test('should return 404 for an invalid code', async () => {
+      const req = createMockRequest({
+        query: { code: 'INVALID_CODE' },
+      });
+
+      await testRoute(userRouter(services), 'GET', '/invitation', req, res, next);
+
+      expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
+      expect((next.mock.calls[1][0] as RouteError).status).toBe(HttpStatusCodes.NOT_FOUND);
+      expect((next.mock.calls[1][0] as RouteError).message).toBe('Invalid or expired invitation');
+    });
+  });
+
   describe('POST /invite', () => {
     let churchId: string;
     let adminUser: SanitizedUser;
