@@ -5,6 +5,7 @@ import type {
   CreatePrayerRequestChatMessageParams,
   CreatePrayerRequestChatParams,
   CreatePrayerRequestChatResponse,
+  DashboardPrayerRequestsResponse,
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatMessagesResponse,
   ListPrayerRequestChatsResponse,
@@ -15,6 +16,17 @@ import type {
 export type CaptchaProtected<T> = T & { token: string };
 
 export const PrayerRequestChatsApi = {
+  // Get dashboard prayer requests for the authenticated church user
+  getDashboardRequests: async (): Promise<DashboardPrayerRequestsResponse> => {
+    try {
+      const response = await api.get<DashboardPrayerRequestsResponse>('/prayer-requests/dashboard');
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to fetch dashboard prayer requests');
+    }
+  },
+
   // Create a new prayer request chatroom
   createPrayerRequestChatroom: async (
     params: CaptchaProtected<CreatePrayerRequestChatParams>

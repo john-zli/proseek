@@ -77,6 +77,10 @@ export interface ListPrayerRequestChatMessagesResponse {
   messages: PrayerRequestChatMessage[];
 }
 
+export interface DashboardPrayerRequestsResponse {
+  prayerRequests: PrayerRequestChat[];
+}
+
 export interface VerifyPrayerRequestChatParams {
   requestId: string;
   requestContactEmail?: string;

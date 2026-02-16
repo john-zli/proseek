@@ -42,4 +42,8 @@ export const UsersApi = {
   register: (params: RegisterParams): Promise<{ userId: string }> => {
     return api.post<{ userId: string }>('/users/', params);
   },
+
+  logout: (): Promise<void> => {
+    return api.post('/users/logout', {});
+  },
 };
