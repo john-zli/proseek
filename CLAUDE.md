@@ -172,6 +172,13 @@ bun run test church
 bun test src/models/test/workflows_storage.test.ts
 ```
 
+### Critical: Any new significant branching, new functions, or new routes should be tested if possible
+
+This means that any new logic change that has some sort of branching, if a new function was created (storage or otherwise),
+or if a new API route was created of some kind, we would need this to be tested.
+
+Currently, admin console based code changes does not need testing since that is purely internal.
+
 ### Critical: Tests must run one file at a time
 
 The test runner (`scripts/test_runner.sh`) runs each test file as a separate `bun test` process. This prevents:

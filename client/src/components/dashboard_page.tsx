@@ -1,26 +1,16 @@
 import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
 import classes from '@client/components/dashboard_page.module.less';
 import { SessionContext } from '@client/contexts/session_context_provider';
+import { formatDate, maskEmail } from '@client/format_helpers';
+import { LoadingSpinner } from '@client/shared-components/loading_spinner';
 import type { PrayerRequestChat } from '@common/server-api/types/prayer_request_chats';
 import clsx from 'clsx';
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type Tab = 'mine' | 'all';
-
-function maskEmail(email: string): string {
-  const [local, domain] = email.split('@');
-  if (!domain) return email;
-  const visible = local.slice(0, 2);
-  return `${visible}***@${domain}`;
-}
-
-function formatDate(timestamp: number): string {
-  return new Date(timestamp * 1000).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+enum Tab {
+  Mine = 'mine',
+  All = 'all',
 }
 
 export function DashboardPage() {
@@ -29,10 +19,11 @@ export function DashboardPage() {
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequestChat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<Tab>('mine');
+  const [activeTab, setActiveTab] = useState<Tab>(Tab.Mine);
 
   useEffect(() => {
     if (sessionLoading) return;
+
     if (!session?.isAuthenticated || !session.user) {
       navigate('/login');
       return;
@@ -48,17 +39,19 @@ export function DashboardPage() {
     window.open(`/chats/${requestId}`, '_blank');
   }, []);
 
+  const filteredRequests = useMemo(() => {
+    return activeTab === Tab.Mine
+      ? prayerRequests.filter(r => r.assignedUserId === session?.user?.userId)
+      : prayerRequests;
+  }, [prayerRequests, activeTab, session?.user?.userId]);
+
   if (sessionLoading || loading) {
     return (
       <div className={classes.container}>
-        <div className={classes.loading}>Loading...</div>
+        <LoadingSpinner />
       </div>
     );
   }
-
-  const userId = session?.user?.userId;
-  const filteredRequests =
-    activeTab === 'mine' ? prayerRequests.filter(r => r.assignedUserId === userId) : prayerRequests;
 
   return (
     <div className={classes.container}>
@@ -67,14 +60,14 @@ export function DashboardPage() {
 
         <div className={classes.tabs}>
           <button
-            className={clsx(classes.tab, { [classes.active]: activeTab === 'mine' })}
-            onClick={() => setActiveTab('mine')}
+            className={clsx(classes.tab, { [classes.active]: activeTab === Tab.Mine })}
+            onClick={() => setActiveTab(Tab.Mine)}
           >
             My Requests
           </button>
           <button
-            className={clsx(classes.tab, { [classes.active]: activeTab === 'all' })}
-            onClick={() => setActiveTab('all')}
+            className={clsx(classes.tab, { [classes.active]: activeTab === Tab.All })}
+            onClick={() => setActiveTab(Tab.All)}
           >
             All Church Requests
           </button>
@@ -84,7 +77,7 @@ export function DashboardPage() {
 
         {!error && filteredRequests.length === 0 && (
           <div className={classes.emptyState}>
-            {activeTab === 'mine'
+            {activeTab === Tab.Mine
               ? 'No prayer requests assigned to you yet.'
               : 'No prayer requests for your church yet.'}
           </div>
@@ -109,14 +102,7 @@ export function DashboardPage() {
                     )}
                   </div>
                 </div>
-                <span
-                  className={clsx(classes.badge, {
-                    [classes.assignedBadge]: request.assignedUserId,
-                    [classes.unassignedBadge]: !request.assignedUserId,
-                  })}
-                >
-                  {request.assignedUserId ? 'Assigned' : 'Unassigned'}
-                </span>
+                {request.assignedUserId && <span className={classes.badge}>Assigned</span>}
                 <span className={classes.openIcon}>&rsaquo;</span>
               </div>
             ))}

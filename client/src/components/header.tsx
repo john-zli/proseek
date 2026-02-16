@@ -1,8 +1,8 @@
-import { Button, ButtonStyle } from '../shared-components/button';
-import { Link } from '../shared-components/link';
-import classes from './header.module.less';
 import { UsersApi } from '@client/api/users';
+import classes from '@client/components/header.module.less';
 import { SessionContext } from '@client/contexts/session_context_provider';
+import { Button, ButtonStyle } from '@client/shared-components/button';
+import { Link } from '@client/shared-components/link';
 import clsx from 'clsx';
 import { useCallback, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
