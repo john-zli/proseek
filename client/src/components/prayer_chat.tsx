@@ -1,5 +1,5 @@
-import classes from '@client/App.module.less';
 import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
+import classes from '@client/App.module.less';
 import attachmentIcon from '@client/assets/attachment.svg';
 import clearIcon from '@client/assets/clear.svg';
 import sendIcon from '@client/assets/send.svg';

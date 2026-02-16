@@ -1,12 +1,11 @@
+import classes from '@client/components/modals/contact_info_modal.module.less';
+import { useContactForm } from '@client/hooks/use_contact_form';
+import { Button, ButtonStyle } from '@client/shared-components/button';
+import { CheckboxView } from '@client/shared-components/checkbox_view';
+import { ModalContainer } from '@client/shared-components/modal_container';
+import { TextInput } from '@client/shared-components/text_input';
 import clsx from 'clsx';
 import { useCallback, useMemo } from 'react';
-
-import { useContactForm } from '../../hooks/use_contact_form';
-import { Button, ButtonStyle } from '../../shared-components/button';
-import { CheckboxView } from '../../shared-components/checkbox_view';
-import { ModalContainer } from '../../shared-components/modal_container';
-import { TextInput } from '../../shared-components/text_input';
-import classes from './contact_info_modal.module.less';
 
 interface Props {
   onSubmit: (email: string | undefined, phone: string | undefined) => void;

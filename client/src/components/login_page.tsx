@@ -1,12 +1,10 @@
-import { useContext } from 'react';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
 import { UsersApi } from '@client/api/users';
 import classes from '@client/components/login_page.module.less';
 import { SessionContext } from '@client/contexts/session_context_provider';
 import { Button, ButtonStyle } from '@client/shared-components/button';
 import { TextInput } from '@client/shared-components/text_input';
+import { useContext, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');

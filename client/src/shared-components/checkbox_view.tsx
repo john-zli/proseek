@@ -1,6 +1,5 @@
+import classes from '@client/shared-components/checkbox_view.module.less';
 import clsx from 'clsx';
-
-import classes from './checkbox_view.module.less';
 
 interface Props {
   checked: boolean;

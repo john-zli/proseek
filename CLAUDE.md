@@ -79,7 +79,7 @@ proseek/
 - **Path aliases:** `@server/*` → `server/src/*`, `@client/*` → `client/src/*`, `@common/*` → `common/*`
 - **No ORMs.** Raw parameterized SQL via `db_query_helper.ts`
 - **Formatting:** Prettier with 120 char width, single quotes, trailing commas (ES5), 2-space indent. Enforced on commit via Husky + lint-staged
-- **Imports:** Alphabetically ordered, enforced by ESLint. `bun:test` imports come first
+- **Imports:** Alphabetically ordered, enforced by ESLint. `bun:test` imports come first. In client code, always use `@client/` path aliases instead of relative imports (`../` or `./`). Import order: `@client/*` and `@common/*` aliases first, then third-party packages (e.g. `clsx`, `react`, `react-router-dom`), all sorted alphabetically within each group
 - **Unused variables:** Prefix with `_` (e.g. `_services`, `_payload`)
 
 ### Server Patterns

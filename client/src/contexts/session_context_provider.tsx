@@ -1,6 +1,5 @@
-import React, { createContext, useEffect, useState } from 'react';
-
 import { SessionData } from '@common/server-api/types/session';
+import React, { createContext, useEffect, useState } from 'react';
 
 interface SessionContextType {
   session: SessionData | null;

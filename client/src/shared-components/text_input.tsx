@@ -1,7 +1,6 @@
+import classes from '@client/shared-components/text_input.module.less';
 import clsx from 'clsx';
 import React from 'react';
-
-import classes from './text_input.module.less';
 
 interface TextInputProps {
   type?: string;

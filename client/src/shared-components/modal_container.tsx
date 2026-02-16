@@ -1,7 +1,6 @@
+import { ModalContext } from '@client/contexts/modal_context_provider';
+import classes from '@client/shared-components/modal_container.module.less';
 import { useCallback, useContext } from 'react';
-
-import { ModalContext } from '../contexts/modal_context_provider';
-import classes from './modal_container.module.less';
 
 interface ModalContainerProps {
   onClose?: () => void;

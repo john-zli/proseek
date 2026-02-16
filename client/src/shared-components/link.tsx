@@ -1,6 +1,5 @@
+import classes from '@client/shared-components/link.module.less';
 import clsx from 'clsx';
-
-import classes from './link.module.less';
 
 interface Props {
   className?: string;
