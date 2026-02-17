@@ -5,9 +5,10 @@ import { Link } from '@client/shared-components/link';
 import { LoadingSpinner } from '@client/shared-components/loading_spinner';
 import clsx from 'clsx';
 import { useCallback, useContext } from 'react';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 export function PortalLayout() {
+  const { churchId } = useParams<{ churchId: string }>();
   const { session, sessionLoading, refetchSession } = useContext(SessionContext);
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,6 +31,8 @@ export function PortalLayout() {
     return <Navigate to="/portal/login" replace />;
   }
 
+  const portalPath = `/portal/${churchId}`;
+
   return (
     <div className={classes.layout}>
       <div className={classes.headerContainer}>
@@ -39,9 +42,9 @@ export function PortalLayout() {
             <div className={classes.navLinks}>
               <Link
                 className={clsx(classes.navLink, {
-                  [classes.active]: location.pathname === '/portal',
+                  [classes.active]: location.pathname === portalPath,
                 })}
-                href="/portal"
+                href={portalPath}
               >
                 Portal
               </Link>

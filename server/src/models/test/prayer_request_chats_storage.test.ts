@@ -170,7 +170,7 @@ describe('prayer_request_chats_storage', () => {
         passwordHash: 'password',
       });
 
-      await assignPrayerRequestChat({ requestId, userId: user.userId, churchId });
+      await assignPrayerRequestChat({ requestId, userId: user.userId });
 
       // Verify the assignment
       const prayerRequests = await listPrayerRequestChats({ userId: user.userId });

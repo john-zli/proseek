@@ -64,8 +64,8 @@ export function InvitePage() {
         password,
         invitationCode: code,
       });
-      await refetchSession();
-      navigate('/portal');
+      const sessionData = await refetchSession();
+      navigate(`/portal/${sessionData?.user?.churchIds[0]}`);
     } catch (err) {
       setSubmitError((err as Error).message);
     } finally {

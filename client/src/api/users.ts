@@ -1,5 +1,5 @@
 import { api } from '@client/api/helpers';
-import { SanitizedUser } from '@common/server-api/types/users';
+import { SessionUser } from '@common/server-api/types/users';
 
 export interface LoginParams {
   email: string;
@@ -7,7 +7,7 @@ export interface LoginParams {
 }
 
 export interface LoginResponse {
-  user: SanitizedUser;
+  user: SessionUser;
 }
 
 export interface InvitationInfo {

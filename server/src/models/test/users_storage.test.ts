@@ -39,7 +39,7 @@ describe('users_storage', () => {
 
       expect(user).toEqual({
         userId: expect.any(String),
-        churchId,
+        churchIds: [churchId],
         firstName: 'Test',
         lastName: 'User',
         email: 'test@example.com',
@@ -76,7 +76,7 @@ describe('users_storage', () => {
 
       expect(user).toEqual({
         userId: expect.any(String),
-        churchId,
+        churchIds: [churchId],
         firstName: 'Test',
         lastName: 'User',
         email: 'test1@example.com',
@@ -141,7 +141,7 @@ describe('users_storage', () => {
 
       expect(user).toEqual({
         userId: createdUser.userId,
-        churchId,
+        churchIds: [churchId],
         firstName: 'Test',
         lastName: 'User',
         email: 'test1@example.com',
@@ -206,23 +206,17 @@ describe('users_storage', () => {
         expect.arrayContaining([
           {
             userId: user1.userId,
-            churchId,
             firstName: 'Test1',
             lastName: 'User1',
             email: 'test1@example.com',
             gender: Gender.Male,
-            creationTimestamp: expect.any(Number),
-            modificationTimestamp: expect.any(Number),
           },
           {
             userId: user2.userId,
-            churchId,
             firstName: 'Test2',
             lastName: 'User2',
             email: 'test2@example.com',
             gender: Gender.Female,
-            creationTimestamp: expect.any(Number),
-            modificationTimestamp: expect.any(Number),
           },
         ])
       );

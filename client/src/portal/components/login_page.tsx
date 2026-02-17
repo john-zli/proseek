@@ -21,9 +21,9 @@ export function LoginPage() {
     }
     try {
       await UsersApi.login({ email, password });
-      await refetchSession();
+      const sessionData = await refetchSession();
 
-      navigate('/portal');
+      navigate(`/portal/${sessionData?.user?.churchIds[0]}`);
     } catch (err) {
       setError((err as Error).message);
     }

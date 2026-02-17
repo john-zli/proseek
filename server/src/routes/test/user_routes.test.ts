@@ -431,11 +431,12 @@ describe('user routes', () => {
       const req = createMockRequest({
         body: {
           email: 'newuser@example.com',
+          churchId,
         },
         session: {
           user: {
             userId: adminUser.userId,
-            churchId: churchId,
+            churchIds: [churchId],
           },
         },
       });
@@ -458,11 +459,18 @@ describe('user routes', () => {
     });
 
     test('should error if not authenticated', async () => {
-      const req = createMockRequest();
+      const req = createMockRequest({
+        body: {
+          email: 'newuser@example.com',
+          churchId,
+        },
+        session: {},
+      });
+
       await testRoute(userRouter(services), 'POST', '/invite', req, res, next);
 
-      expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
-      expect((next.mock.calls[0][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
+      expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
+      expect((next.mock.calls[1][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
     });
   });
 });
