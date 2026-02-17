@@ -25,7 +25,7 @@ export function PortalPage() {
     if (sessionLoading || !session?.user || !churchId) return;
 
     PrayerRequestChatsApi.listPrayerRequestChats(churchId)
-      .then(res => setPrayerRequests(res.chatrooms))
+      .then(res => setPrayerRequests(res.prayerRequests))
       .catch(() => setError('Failed to load prayer requests.'))
       .finally(() => setLoading(false));
   }, [session, sessionLoading, churchId]);
@@ -36,7 +36,7 @@ export function PortalPage() {
 
   const filteredRequests = useMemo(() => {
     return activeTab === Tab.Mine
-      ? prayerRequests.filter(r => r.assignedUserId === session?.user?.userId)
+      ? prayerRequests?.filter(r => r.assignedUserId === session?.user?.userId)
       : prayerRequests;
   }, [prayerRequests, activeTab, session?.user?.userId]);
 

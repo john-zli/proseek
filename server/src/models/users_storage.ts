@@ -235,6 +235,7 @@ export async function createUser(params: {
       params.invitationCode,
     ],
   });
+  // SQL function create_user_and_redeem_code returns a single church_id; wrap to match SessionUser
   return {
     userId: result.userId,
     churchIds: [result.churchId],

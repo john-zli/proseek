@@ -20,7 +20,7 @@ export async function sendUserInvitation(services: IServicesBuilder, params: Wor
 
   const churchName = church.name;
 
-  const inviteLink = `${config.clientUrl}/invite?code=${invitationCode}`;
+  const inviteLink = `${config.clientUrl}/portal/invite?code=${invitationCode}`;
 
   const html = `
     <h2>You've Been Invited to Join ${churchName} on ProSeek</h2>

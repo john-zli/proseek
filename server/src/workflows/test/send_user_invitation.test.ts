@@ -59,7 +59,7 @@ describe('sendUserInvitation', () => {
     expect(services.email.sentEmails[0].to).toBe('newuser@example.com');
     expect(services.email.sentEmails[0].subject).toContain('Grace Community Church');
     expect(services.email.sentEmails[0].html).toContain('Grace Community Church');
-    expect(services.email.sentEmails[0].html).toContain('/invite?code=');
+    expect(services.email.sentEmails[0].html).toContain('/portal/invite?code=');
   });
 
   test('should handle missing church gracefully', async () => {

@@ -97,7 +97,7 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
       // If authenticated church member, verify they belong to the assigned church
       if (req.session.user) {
         const prayerRequest = await getPrayerRequestChat(requestId);
-        if (!prayerRequest || !req.session.user.churchIds.includes(prayerRequest.assignedChurchId!)) {
+        if (!prayerRequest?.assignedChurchId || !req.session.user.churchIds.includes(prayerRequest.assignedChurchId)) {
           return next(new RouteError(HttpStatusCodes.FORBIDDEN, 'You do not have access to this prayer request'));
         }
       }

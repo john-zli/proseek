@@ -65,7 +65,7 @@ export interface CreatePrayerRequestChatResponse {
 }
 
 export interface ListPrayerRequestChatsResponse {
-  chatrooms: PrayerRequestChat[];
+  prayerRequests: PrayerRequestChat[];
 }
 
 export interface AssignPrayerRequestChatResponse {
