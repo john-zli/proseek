@@ -1,5 +1,5 @@
 import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
-import { SanitizedUser, SessionUser, User } from '@common/server-api/types/users';
+import { InvitationInfo, SanitizedUser, SessionUser, User } from '@common/server-api/types/users';
 
 const ColumnKeyMappings = {
   User: {
@@ -40,6 +40,7 @@ const ColumnKeyMappings = {
   InvitationInfo: {
     targetEmail: 'target_email',
     churchName: 'church_name',
+    churchId: 'church_id',
   },
 };
 
@@ -134,7 +135,8 @@ const SqlCommands = {
   GenerateInvitationCode: `SELECT core.generate_invitation_code($1::uuid, $2::uuid, $3::varchar(100)) as code;`,
   GetInvitationByCode: `
     SELECT      inv.target_email,
-                ch.name AS church_name
+                ch.name AS church_name,
+                ch.church_id AS church_id
     FROM        core.user_invitations inv
     JOIN        core.churches ch USING (church_id)
     WHERE       inv.code = $1::varchar(20)
@@ -244,13 +246,13 @@ export async function createUser(params: {
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-  const users = await queryRows<User>({
+  return querySingleRow<User>({
     commandIdentifier: 'GetUserByEmail',
     query: SqlCommands.GetUserByEmail,
     params: [email],
     mapping: ColumnKeyMappings.User,
+    allowNull: true,
   });
-  return users.length > 0 ? users[0] : null;
 }
 
 // Function to generate an invitation code
@@ -267,19 +269,14 @@ export async function generateInvitationCode(
   });
 }
 
-export interface InvitationInfo {
-  targetEmail: string;
-  churchName: string;
-}
-
 export async function getInvitationByCode(code: string): Promise<InvitationInfo | null> {
-  const rows = await queryRows<InvitationInfo>({
+  return querySingleRow<InvitationInfo>({
     commandIdentifier: 'GetInvitationByCode',
     query: SqlCommands.GetInvitationByCode,
     params: [code],
     mapping: ColumnKeyMappings.InvitationInfo,
+    allowNull: true,
   });
-  return rows.length > 0 ? rows[0] : null;
 }
 
 export async function listAllUsers(): Promise<SanitizedUser[]> {

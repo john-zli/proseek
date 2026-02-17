@@ -1,8 +1,9 @@
-import { InvitationInfo, UsersApi } from '@client/api/users';
+import { UsersApi } from '@client/api/users';
 import { SessionContext } from '@client/contexts/session_context_provider';
 import classes from '@client/portal/components/invite_page.module.less';
 import { Button, ButtonStyle } from '@client/shared-components/button';
 import { TextInput } from '@client/shared-components/text_input';
+import { InvitationInfo } from '@common/server-api/types/users';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -64,8 +65,9 @@ export function InvitePage() {
         password,
         invitationCode: code,
       });
-      const sessionData = await refetchSession();
-      navigate(`/portal/${sessionData?.user?.churchIds[0]}`);
+
+      await refetchSession();
+      navigate(`/portal/${invitation.churchId}`);
     } catch (err) {
       setSubmitError((err as Error).message);
     } finally {

@@ -15,3 +15,9 @@ export type SanitizedUser = Omit<User, 'passwordHash' | 'creationTimestamp' | 'm
 
 // Stored in session — has churchIds for auth checks, no sensitive data
 export type SessionUser = Omit<User, 'passwordHash' | 'creationTimestamp' | 'modificationTimestamp'>;
+
+export interface InvitationInfo {
+  targetEmail: string;
+  churchName: string;
+  churchId: string;
+}

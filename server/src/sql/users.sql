@@ -7,11 +7,6 @@ INSERT INTO core.genders(gender) VALUES
   ('Female')
 ON CONFLICT DO NOTHING;
 
-DROP TABLE IF EXISTS core.prayer_request_chat_messages;
-DROP TABLE IF EXISTS core.prayer_request_chats;
-DROP TABLE IF EXISTS core.church_members;
-DROP TABLE IF EXISTS core.user_invitations;
-DROP TABLE IF EXISTS core.users;
 CREATE TABLE IF NOT EXISTS core.users (
   user_id                   uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
   first_name                varchar(50)         NOT NULL,
