@@ -1,7 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
-import { createChurch, listChurchesNearUser } from '../churches_storage';
+import { createChurch, listChurchMembers, listChurchesNearUser } from '../churches_storage';
+import { createAdminUser } from '../users_storage';
+import { Gender } from '@common/server-api/types/gender';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('churches_storage', () => {
   beforeEach(async () => {
@@ -29,7 +32,7 @@ describe('churches_storage', () => {
       const churches = await listChurchesNearUser({ zip: '12345' });
 
       expect(churches).toHaveLength(1);
-      expect(churches[0]).toEqual({
+      expect(churches[0]).toMatchObject({
         churchId,
         name: 'Church 1',
         address: '123 Main St',
@@ -57,7 +60,7 @@ describe('churches_storage', () => {
       const churches = await listChurchesNearUser({ city: 'City 2', county: 'County 2' });
 
       expect(churches).toHaveLength(1);
-      expect(churches[0]).toEqual({
+      expect(churches[0]).toMatchObject({
         churchId,
         name: 'Church 2',
         address: '456 Other St',
@@ -92,6 +95,60 @@ describe('churches_storage', () => {
 
       // Try to create a church with the same name
       await expect(createChurch(params)).rejects.toThrow();
+    });
+  });
+
+  describe('listChurchMembers', () => {
+    test('should list members of a church with their roles', async () => {
+      const churchId = await createChurch({
+        name: 'Members Church',
+        address: '123 Main St',
+        city: 'Test City',
+        state: 'CA',
+        zip: '12345',
+        county: 'Test County',
+        email: 'members@test.com',
+      });
+
+      const user = await createAdminUser({
+        churchId,
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@test.com',
+        gender: Gender.Male,
+        passwordHash: 'password',
+      });
+
+      const members = await listChurchMembers(churchId);
+
+      expect(members).toHaveLength(1);
+      expect(members[0]).toEqual({
+        userId: user.userId,
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@test.com',
+        role: 'Admin',
+      });
+    });
+
+    test('should return empty array for church with no members', async () => {
+      const churchId = await createChurch({
+        name: 'Empty Church',
+        address: '123 Main St',
+        city: 'Test City',
+        state: 'CA',
+        zip: '11111',
+        county: 'Test County',
+        email: 'empty@test.com',
+      });
+
+      const members = await listChurchMembers(churchId);
+      expect(members).toEqual([]);
+    });
+
+    test('should return empty array for non-existent church', async () => {
+      const members = await listChurchMembers(uuidv4());
+      expect(members).toEqual([]);
     });
   });
 });

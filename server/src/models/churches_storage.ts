@@ -1,6 +1,6 @@
 import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
 import { ListChurchesNearUserParams } from './storage_types';
-import { Church } from '@common/server-api/types/churches';
+import { Church, ChurchMember } from '@common/server-api/types/churches';
 
 const ColumnKeyMappings = {
   Church: {
@@ -12,6 +12,15 @@ const ColumnKeyMappings = {
     state: 'state',
     address: 'address',
     email: 'email',
+    creationTimestamp: 'creation_timestamp',
+    modificationTimestamp: 'modification_timestamp',
+  },
+  ChurchMember: {
+    userId: 'user_id',
+    firstName: 'first_name',
+    lastName: 'last_name',
+    email: 'email',
+    role: 'role',
   },
 };
 
@@ -24,7 +33,9 @@ const SqlCommands = {
                 churches.state,
                 churches.zip,
                 churches.county,
-                churches.email
+                churches.email,
+                EXTRACT(EPOCH FROM churches.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM churches.modification_timestamp)::bigint AS modification_timestamp
     FROM        core.churches
     WHERE       churches.deletion_timestamp IS NULL AND
                 (
@@ -63,7 +74,9 @@ const SqlCommands = {
                 churches.state,
                 churches.zip,
                 churches.county,
-                churches.email
+                churches.email,
+                EXTRACT(EPOCH FROM churches.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM churches.modification_timestamp)::bigint AS modification_timestamp
     FROM        core.churches
     WHERE       churches.church_id = $1::uuid
                 AND churches.deletion_timestamp IS NULL;`,
@@ -75,7 +88,9 @@ const SqlCommands = {
                 churches.state,
                 churches.zip,
                 churches.county,
-                churches.email
+                churches.email,
+                EXTRACT(EPOCH FROM churches.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM churches.modification_timestamp)::bigint AS modification_timestamp
     FROM        core.churches
     WHERE       churches.deletion_timestamp IS NULL
     ORDER BY    churches.creation_timestamp DESC;`,
@@ -97,6 +112,19 @@ const SqlCommands = {
                 modification_timestamp = now()
     WHERE       church_id = $1::uuid
                 AND deletion_timestamp IS NULL;`,
+  ListChurchMembers: `
+    SELECT      users.user_id,
+                users.first_name,
+                users.last_name,
+                users.email,
+                cm.role
+    FROM        core.users
+    JOIN        core.church_members cm
+                ON cm.user_id = users.user_id
+                AND cm.church_id = $1::uuid
+                AND cm.deletion_timestamp IS NULL
+    WHERE       users.deletion_timestamp IS NULL
+    ORDER BY    cm.role ASC, users.last_name ASC;`,
 };
 
 export async function listChurchesNearUser(params: ListChurchesNearUserParams): Promise<Church[]> {
@@ -176,5 +204,14 @@ export async function deleteChurch(churchId: string): Promise<void> {
     commandIdentifier: 'DeleteChurch',
     query: SqlCommands.DeleteChurch,
     params: [churchId],
+  });
+}
+
+export async function listChurchMembers(churchId: string): Promise<ChurchMember[]> {
+  return queryRows<ChurchMember>({
+    commandIdentifier: 'ListChurchMembers',
+    query: SqlCommands.ListChurchMembers,
+    params: [churchId],
+    mapping: ColumnKeyMappings.ChurchMember,
   });
 }

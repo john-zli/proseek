@@ -1,6 +1,6 @@
 import { api } from './helpers';
-import { Church } from '@common/server-api/types/churches';
-import { SanitizedUser } from '@common/server-api/types/users';
+import { Church, ChurchMember } from '@common/server-api/types/churches';
+import { SanitizedUser, UserChurchMembership } from '@common/server-api/types/users';
 
 export interface CreateChurchParams {
   name: string;
@@ -33,11 +33,20 @@ export interface InviteUserParams {
   churchId: string;
 }
 
+export type ChurchDetail = Church & { members: ChurchMember[] };
+
+export type UserDetail = Omit<SanitizedUser, never> & {
+  churchIds: string[];
+  creationTimestamp: number;
+  modificationTimestamp: number;
+  churches: UserChurchMembership[];
+};
+
 export const AdminApi = {
   // Churches
   listChurches: () => api.get<Church[]>('/churches'),
 
-  getChurch: (churchId: string) => api.get<Church>(`/churches/${churchId}`),
+  getChurch: (churchId: string) => api.get<ChurchDetail>(`/churches/${churchId}`),
 
   createChurch: (params: CreateChurchParams) => api.post<{ churchId: string }>('/churches', params),
 
@@ -48,7 +57,7 @@ export const AdminApi = {
   // Users
   listUsers: () => api.get<SanitizedUser[]>('/users'),
 
-  getUser: (userId: string) => api.get<SanitizedUser>(`/users/${userId}`),
+  getUser: (userId: string) => api.get<UserDetail>(`/users/${userId}`),
 
   updateUser: (userId: string, params: UpdateUserParams) => api.put(`/users/${userId}`, params),
 

@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 
 import { createChurch } from '../churches_storage';
-import { $getUser, createAdminUser, createUser, generateInvitationCode, listUsersFromChurch } from '../users_storage';
+import {
+  $getUser,
+  createAdminUser,
+  createUser,
+  generateInvitationCode,
+  listChurchesForUser,
+  listUsersFromChurch,
+} from '../users_storage';
 import { Gender } from '@common/server-api/types/gender';
 import { setupTestDb, teardownTestDb } from '@server/test/db_test_helper';
 import { v4 as uuidv4 } from 'uuid';
@@ -225,6 +232,33 @@ describe('users_storage', () => {
     test('should return empty array for non-existent church', async () => {
       const users = await listUsersFromChurch(uuidv4());
       expect(users).toEqual([]);
+    });
+  });
+
+  describe('listChurchesForUser', () => {
+    test('should list churches a user belongs to with roles', async () => {
+      const user = await createAdminUser({
+        churchId,
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'churches-test@example.com',
+        gender: Gender.Male,
+        passwordHash: 'password',
+      });
+
+      const churches = await listChurchesForUser(user.userId);
+
+      expect(churches).toHaveLength(1);
+      expect(churches[0]).toEqual({
+        churchId,
+        churchName: 'Test Church',
+        role: 'Admin',
+      });
+    });
+
+    test('should return empty array for non-existent user', async () => {
+      const churches = await listChurchesForUser(uuidv4());
+      expect(churches).toEqual([]);
     });
   });
 });

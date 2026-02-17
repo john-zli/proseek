@@ -20,12 +20,13 @@ export function userRouter(): Router {
     }
   });
 
-  // Get user by ID (no password hash)
+  // Get user by ID (no password hash) with church memberships
   router.get('/:userId', validate(UserIdParamsSchema), async (req, res, next) => {
     try {
       const user = await usersStorage.$getUser(req.params.userId);
       const { passwordHash: _pw, ...sanitizedUser } = user;
-      res.json(sanitizedUser);
+      const churches = await usersStorage.listChurchesForUser(req.params.userId);
+      res.json({ ...sanitizedUser, churches });
     } catch (error) {
       return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, error as Error));
     }

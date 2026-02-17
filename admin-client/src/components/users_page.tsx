@@ -2,10 +2,12 @@ import classes from './shared_page.module.less';
 import { AdminApi, UpdateUserParams } from '@admin-client/api/admin_api';
 import { SanitizedUser } from '@common/server-api/types/users';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const emptyForm: UpdateUserParams = { firstName: '', lastName: '', email: '', gender: 'Male' };
 
 export function UsersPage() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<SanitizedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -154,7 +156,7 @@ export function UsersPage() {
             </tr>
           ) : (
             users.map(user => (
-              <tr key={user.userId}>
+              <tr key={user.userId} onClick={() => navigate(`/users/${user.userId}`)} style={{ cursor: 'pointer' }}>
                 <td className={classes.idCell}>{user.userId}</td>
                 <td>
                   {user.firstName} {user.lastName}
@@ -162,12 +164,21 @@ export function UsersPage() {
                 <td>{user.email}</td>
                 <td>{user.gender}</td>
                 <td>
-                  <button className={classes.actionButton} onClick={() => handleEdit(user)}>
+                  <button
+                    className={classes.actionButton}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleEdit(user);
+                    }}
+                  >
                     Edit
                   </button>
                   <button
                     className={`${classes.actionButton} ${classes.deleteButton}`}
-                    onClick={() => handleDelete(user.userId)}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleDelete(user.userId);
+                    }}
                   >
                     Delete
                   </button>
