@@ -102,7 +102,7 @@ export const PrayerChat = (props: Props) => {
   useEffect(() => {
     // If session has already verified this chatroom, load messages and skip verification.
     if (chatroomId && !chatroomInitialized && !sessionLoading) {
-      if (session?.isAuthenticated && session.user) {
+      if (session?.user) {
         // Authenticated church users bypass verification entirely
         setIsVerified(true);
         setShowCallout(false);
@@ -121,7 +121,6 @@ export const PrayerChat = (props: Props) => {
     chatroomId,
     chatroomInitialized,
     session?.verifiedChatIds,
-    session?.isAuthenticated,
     session?.user,
     sessionLoading,
     openModal,

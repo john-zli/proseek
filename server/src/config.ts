@@ -43,7 +43,7 @@ const config: ServerConfig = {
   redisPassword: process.env.REDIS_PASSWORD,
   sessionSecret: process.env.SESSION_SECRET || 'your-secret-key',
   disableHelmet: !!process.env.DISABLE_HELMET,
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  clientUrl: process.env.CLIENT_URL || 'http://localhost:3000',
   resendApiKey: process.env.RESEND_API_KEY,
   fromEmail: process.env.FROM_EMAIL || 'notifications@proseek.church',
   adminPort: process.env.ADMIN_PORT ? parseInt(process.env.ADMIN_PORT, 10) : 3001,

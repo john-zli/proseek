@@ -182,9 +182,8 @@ BEGIN
     LOOP
         -- Generate a random alphanumeric code
         SELECT string_agg(
-            (
-                SELECT substr('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', floor(random() * 62)::integer + 1, 1)
-            ), ''
+          substr('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', floor(random() * 62)::integer + 1, 1),
+          ''
         )
         INTO VAR_generated_code
         FROM generate_series(1, PARAM_code_length);
@@ -223,3 +222,13 @@ BEGIN
     RETURN VAR_generated_code;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Add payload column for one-off workflow parameters
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'core' AND table_name = 'user_invitations' AND column_name = 'target_email'
+  ) THEN
+    ALTER TABLE core.user_invitations ADD COLUMN target_email varchar(100) NOT NULL;
+  END IF;
+END $$;
