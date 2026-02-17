@@ -5,7 +5,7 @@ import { testRoute } from './test_helpers';
 import { Gender } from '@common/server-api/types/gender';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
-import { createChurch, listChurchesNearUser } from '@server/models/churches_storage';
+import { createChurch } from '@server/models/churches_storage';
 import {
   assignPrayerRequestChat,
   createPrayerRequestChat,
@@ -128,53 +128,6 @@ describe('prayer request chats routes', () => {
     });
   });
 
-  describe('GET /church/:churchId', () => {
-    test('should list prayer requests for a church', async () => {
-      /** Setting up test data */
-      await listChurchesNearUser({ zip: '12345' });
-
-      const churchId = await createChurch({
-        name: 'Test Church',
-        address: '123 Main St, Anytown, USA',
-        city: 'Anytown',
-        state: 'CA',
-        zip: '12345',
-        county: 'Anytown',
-        email: 'test@church.com',
-      });
-
-      await listChurchesNearUser({ zip: '12345' });
-
-      const prayerRequestChatId = await createPrayerRequestChat({
-        requestContactEmail: 'test@example.com',
-        requestContactPhone: '1234567890',
-        zip: '12345',
-        city: 'Anytown',
-        region: 'CA',
-        messages: [],
-        churchId,
-      });
-
-      // Create mock request
-      const req = createMockRequest({
-        params: {
-          churchId,
-        },
-      });
-
-      // Call the route handler
-      await testRoute(prayerRequestChatsRouter(services), 'GET', '/church/:churchId', req, res, next);
-
-      // Verify response
-      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
-      expect(res.json.mock.calls[0][0]).toHaveLength(1);
-      expect((res.json.mock.calls[0][0] as { requestId: string }[])[0]).toHaveProperty(
-        'requestId',
-        prayerRequestChatId
-      );
-    });
-  });
-
   describe('POST /:requestId/assign', () => {
     test('should assign a prayer request to a church', async () => {
       const churchId = await createChurch({
@@ -209,7 +162,6 @@ describe('prayer request chats routes', () => {
       await assignPrayerRequestChat({
         requestId: prayerRequestChatId,
         userId: user.userId,
-        churchId,
       });
 
       const req = createMockRequest({
@@ -385,7 +337,7 @@ describe('prayer request chats routes', () => {
     });
   });
 
-  describe('GET /portal', () => {
+  describe('GET /church/:churchId', () => {
     test('should return prayer requests for the authenticated user church', async () => {
       const churchId = await createChurch({
         name: 'Test Church',
@@ -417,10 +369,13 @@ describe('prayer request chats routes', () => {
       });
 
       const req = createMockRequest({
+        params: {
+          churchId,
+        },
         session: {
           user: {
             userId: user.userId,
-            churchId,
+            churchIds: [churchId],
             firstName: 'Test',
             lastName: 'User',
             email: 'test@example.com',
@@ -429,7 +384,7 @@ describe('prayer request chats routes', () => {
         },
       });
 
-      await testRoute(prayerRequestChatsRouter(services), 'GET', '/portal', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'GET', `/church/:churchId`, req, res, next);
 
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
       const responseBody = res.json.mock.calls[0][0] as { prayerRequests: { requestId: string }[] };
@@ -438,14 +393,27 @@ describe('prayer request chats routes', () => {
     });
 
     test('should return 401 if not authenticated', async () => {
+      const churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+        email: 'test@church.com',
+      });
+
       const req = createMockRequest({
+        params: {
+          churchId,
+        },
         session: {},
       });
 
-      await testRoute(prayerRequestChatsRouter(services), 'GET', '/portal', req, res, next);
-
-      expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
-      expect((next.mock.calls[0][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
+      await testRoute(prayerRequestChatsRouter(services), 'GET', `/church/:churchId`, req, res, next);
+      // 1 because we fail on ensureAuthenticated, happening after validate middleware.
+      expect(next.mock.calls[1][0]).toBeInstanceOf(RouteError);
+      expect((next.mock.calls[1][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);
     });
   });
 
@@ -492,7 +460,7 @@ describe('prayer request chats routes', () => {
         session: {
           user: {
             userId: user.userId,
-            churchId,
+            churchIds: [churchId],
             firstName: 'Test',
             lastName: 'User',
             email: 'test@example.com',
@@ -554,7 +522,7 @@ describe('prayer request chats routes', () => {
         session: {
           user: {
             userId: user.userId,
-            churchId: otherChurchId,
+            churchIds: [otherChurchId],
             firstName: 'Other',
             lastName: 'User',
             email: 'other@example.com',

@@ -1,6 +1,6 @@
-import { SanitizedUser } from './users';
+import { SessionUser } from './users';
 
 export interface SessionData {
   verifiedChatIds?: string[];
-  user?: SanitizedUser;
+  user?: SessionUser;
 }

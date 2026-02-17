@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@client/shared-components/loading_spinner';
 import type { PrayerRequestChat } from '@common/server-api/types/prayer_request_chats';
 import clsx from 'clsx';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 
 enum Tab {
   Mine = 'mine',
@@ -13,6 +14,7 @@ enum Tab {
 }
 
 export function PortalPage() {
+  const { churchId } = useParams<{ churchId: string }>();
   const { session, sessionLoading } = useContext(SessionContext);
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequestChat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,13 +22,13 @@ export function PortalPage() {
   const [activeTab, setActiveTab] = useState<Tab>(Tab.Mine);
 
   useEffect(() => {
-    if (sessionLoading || !session?.user) return;
+    if (sessionLoading || !session?.user || !churchId) return;
 
-    PrayerRequestChatsApi.getPortalRequests()
-      .then(res => setPrayerRequests(res.prayerRequests))
+    PrayerRequestChatsApi.listPrayerRequestChats(churchId)
+      .then(res => setPrayerRequests(res.chatrooms))
       .catch(() => setError('Failed to load prayer requests.'))
       .finally(() => setLoading(false));
-  }, [session, sessionLoading]);
+  }, [session, sessionLoading, churchId]);
 
   const handleOpenChat = useCallback((requestId: string) => {
     window.open(`/chats/${requestId}`, '_blank');
