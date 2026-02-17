@@ -5,12 +5,15 @@ import { Router } from 'express';
 export function pageRouter(_services: IServicesBuilder): Router {
   const router = Router();
 
-  // Routes that are accessible via UI
+  // Seeker routes
   router.get('/', serveStaticHtmlFile());
   router.get('/chats/:chatroomId', /* Add validation for chatroomId */ serveStaticHtmlFile());
-  router.get('/invite', serveStaticHtmlFile());
-  router.get('/dashboard', serveStaticHtmlFile());
-  router.get('/login', serveStaticHtmlFile());
+
+  // Portal routes
+  router.get('/portal', serveStaticHtmlFile());
+  router.get('/portal/dashboard', serveStaticHtmlFile());
+  router.get('/portal/login', serveStaticHtmlFile());
+  router.get('/portal/invite', serveStaticHtmlFile());
 
   return router;
 }

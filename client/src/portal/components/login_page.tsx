@@ -1,6 +1,6 @@
 import { UsersApi } from '@client/api/users';
-import classes from '@client/components/login_page.module.less';
 import { SessionContext } from '@client/contexts/session_context_provider';
+import classes from '@client/portal/components/login_page.module.less';
 import { Button, ButtonStyle } from '@client/shared-components/button';
 import { TextInput } from '@client/shared-components/text_input';
 import { useContext, useState } from 'react';
@@ -23,8 +23,7 @@ export function LoginPage() {
       await UsersApi.login({ email, password });
       await refetchSession();
 
-      // TODO: Redirect to the churches' admin page.
-      navigate('/');
+      navigate('/portal/dashboard');
     } catch (err) {
       setError((err as Error).message);
     }

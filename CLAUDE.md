@@ -18,34 +18,43 @@ ProSeek connects people seeking prayer with local churches and religious communi
 
 ## Project Overview
 
-Bun monorepo with three packages: `client/` (React SPA), `server/` (Express API + BullMQ workflow server), `common/` (shared types). Only `client` and `server` are Bun workspaces.
+Bun monorepo with four packages: `client/` (React SPA — seeker + church portal), `admin-client/` (React SPA — internal admin console), `server/` (Express API + BullMQ workflow server + admin API server), `common/` (shared types). Only `client` and `server` are Bun workspaces.
 
 ## Project Structure
 
 ```
 proseek/
-├── client/                          — React SPA
+├── client/                          — React SPA (consumer + church portal)
 │   └── src/
-│       ├── components/              — Page-level and feature components
-│       │   └── modals/              — Modal components (contact info, confirmation, verification)
+│       ├── seeker/                  — Prayer seeker experience (anonymous users, routes: /, /chats/:id)
+│       │   └── components/          — Chat interface, modal manager, seeker-specific modals
+│       ├── portal/                  — Church member portal (authenticated, routes: /portal/*)
+│       │   └── components/          — Dashboard, login, invite pages
+│       ├── components/              — Shared page components (header)
 │       ├── shared-components/       — Reusable UI primitives (Button, TextInput, Modal, etc.)
 │       ├── contexts/                — React Context providers (session, modals)
 │       ├── hooks/                   — Custom React hooks
 │       ├── widget/                  — Standalone widget utilities (e.g. CAPTCHA)
 │       ├── api/                     — Fetch wrappers for server API calls
 │       ├── types/                   — Client-specific TypeScript types
-│       ├── styles/                  — Global styles
-│       ├── App.tsx                  — Router and top-level layout
-│       └── main.tsx                 — Entry point
+│       └── styles/                  — Global styles (colors, constants, z-index)
 │
-├── server/                          — Express API + Workflow server
+├── admin-client/                    — React SPA (internal admin console)
+│   └── src/
+│       ├── components/              — Admin layout, churches/users/invitations pages
+│       ├── api/                     — Fetch wrappers for admin API (base: /admin)
+│       └── styles/                  — Admin-specific colors/constants
+│
+├── server/                          — Express API + Workflow server + Admin server
 │   ├── config/                      — Environment files (.env.development, .env.test, .env.production)
 │   ├── scripts/                     — Shell scripts (bootstrap, migrations, test runner)
 │   └── src/
-│       ├── web-server/              — Express app entry point (index.ts, server.ts)
+│       ├── web-server/              — Consumer Express app entry point
+│       ├── admin-server/            — Admin Express app entry point
 │       ├── workflow-server/         — BullMQ worker entry point + queue manager
-│       ├── routes/                  — HTTP route definitions
+│       ├── routes/                  — Consumer API route definitions
 │       │   └── test/                — Route tests
+│       ├── admin-routes/            — Admin API route definitions (churches, users, invitations)
 │       ├── controllers/             — Complex multi-step request handlers
 │       ├── middleware/              — Express middleware (auth, session, validation, captcha, etc.)
 │       │   └── test/                — Middleware tests
@@ -60,12 +69,12 @@ proseek/
 │       ├── sql/                     — Raw SQL schema and migration files
 │       └── test/                    — Shared test helpers (db_test_helper, request_test_helper)
 │
-├── common/                          — Shared TypeScript types (used by both client and server)
+├── common/                          — Shared TypeScript types (used by client and server)
 │   └── server-api/types/            — API contract types (users, session, gender, prayer_request_chats)
 │
 ├── CLAUDE.md                        — This file
 ├── package.json                     — Root workspace config, lint/format/dev scripts
-├── tsconfig.json                    — Root TS config with path aliases (@server, @client, @common)
+├── tsconfig.json                    — Root TS config with path aliases (@server, @client, @common, @admin-client)
 ├── .eslintrc.json                   — Shared ESLint config
 └── .prettierrc                      — Prettier config
 ```
@@ -76,7 +85,7 @@ proseek/
 
 - **File naming:** `snake_case.ts` for all files (not camelCase, not kebab-case)
 - **Variable/function naming:** `camelCase` for variables and functions, `PascalCase` for types/interfaces/enums/classes
-- **Path aliases:** `@server/*` → `server/src/*`, `@client/*` → `client/src/*`, `@common/*` → `common/*`
+- **Path aliases:** `@server/*` → `server/src/*`, `@client/*` → `client/src/*`, `@admin-client/*` → `admin-client/src/*`, `@common/*` → `common/*`
 - **No ORMs.** Raw parameterized SQL via `db_query_helper.ts`
 - **Formatting:** Prettier with 120 char width, single quotes, trailing commas (ES5), 2-space indent. Enforced on commit via Husky + lint-staged
 - **Imports:** Alphabetically ordered, enforced by ESLint. `bun:test` imports come first. In client code, always use `@client/` path aliases instead of relative imports (`../` or `./`). Import order: `@client/*` and `@common/*` aliases first, then third-party packages (e.g. `clsx`, `react`, `react-router-dom`), all sorted alphabetically within each group
@@ -155,7 +164,19 @@ To add a new workflow:
 - **Styling:** Co-located `.module.less` files per component
 - **State:** React Context only (no Redux/Zustand). Session in `SessionContextProvider`, modals in `ModalContextProvider`
 - **API calls:** Thin fetch wrappers in `api/` directory, organized by resource. All new fetch functions should have error handling handled as well.
-- **Shared components:** Generic UI primitives in `shared-components/`, feature components in `components/`
+- **Shared components:** Generic UI primitives in `shared-components/`, feature components in domain directories
+- **Client structure:** Two domains within one SPA:
+  - `seeker/` — Anonymous prayer seeker experience. Routes: `/`, `/chats/:id`. Uses `SeekerLayout` (Header + ModalManager)
+  - `portal/` — Authenticated church member portal. Routes: `/portal/*`. Uses `PortalLayout` (auth guard + portal header with logout). Login/invite pages are standalone (no portal layout wrapper)
+  - `components/` — Shared components used by both (e.g. header)
+  - `shared-components/`, `contexts/`, `api/`, `hooks/` — Shared across both domains
+
+### Admin Client Patterns
+
+- **Separate SPA** at `admin-client/` — internal admin console, served by admin-server on a separate port
+- **Same conventions** as main client: `.module.less`, fetch wrappers in `api/`, React Router
+- **No auth** currently — admin console is internal-only
+- **API base:** `/admin` (proxied to admin-server)
 
 ## Testing
 

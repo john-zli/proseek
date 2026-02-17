@@ -1,6 +1,6 @@
 import { InvitationInfo, UsersApi } from '@client/api/users';
-import classes from '@client/components/invite_page.module.less';
 import { SessionContext } from '@client/contexts/session_context_provider';
+import classes from '@client/portal/components/invite_page.module.less';
 import { Button, ButtonStyle } from '@client/shared-components/button';
 import { TextInput } from '@client/shared-components/text_input';
 import { useContext, useEffect, useState } from 'react';
@@ -65,7 +65,7 @@ export function InvitePage() {
         invitationCode: code,
       });
       await refetchSession();
-      navigate('/');
+      navigate('/portal/dashboard');
     } catch (err) {
       setSubmitError((err as Error).message);
     } finally {
