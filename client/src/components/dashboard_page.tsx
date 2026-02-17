@@ -24,7 +24,7 @@ export function DashboardPage() {
   useEffect(() => {
     if (sessionLoading) return;
 
-    if (!session?.isAuthenticated || !session.user) {
+    if (!session?.user) {
       navigate('/login');
       return;
     }

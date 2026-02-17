@@ -11,7 +11,6 @@ export function apiRouter(services: IServicesBuilder): Router {
   // Session endpoint
   apiRouter.get('/session', (req, res) => {
     const sessionData = {
-      isAuthenticated: req.session.isAuthenticated || false,
       verifiedChatIds: req.session.verifiedChatIds || [],
       user: req.session.user,
     };

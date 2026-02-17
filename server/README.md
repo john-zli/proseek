@@ -240,7 +240,7 @@ Key environment variables:
 | `REDIS_PASSWORD`             | Redis password (optional)                                         |
 | `RESEND_API_KEY`             | Resend API key (for email notifications)                          |
 | `FROM_EMAIL`                 | Sender email address (default: `notifications@proseek.church`)    |
-| `CLIENT_URL`                 | Client app URL for email links (default: `http://localhost:5173`) |
+| `CLIENT_URL`                 | Client app URL for email links (default: `http://localhost:3000`) |
 
 ## Database Migrations
 

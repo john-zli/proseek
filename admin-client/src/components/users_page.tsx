@@ -1,4 +1,4 @@
-import classes from './users_page.module.less';
+import classes from './shared_page.module.less';
 import { AdminApi, UpdateUserParams } from '@admin-client/api/admin_api';
 import { SanitizedUser } from '@common/server-api/types/users';
 import { useCallback, useEffect, useState } from 'react';
@@ -138,6 +138,7 @@ export function UsersPage() {
       <table className={classes.table}>
         <thead>
           <tr>
+            <th>User ID</th>
             <th>Name</th>
             <th>Email</th>
             <th>Gender</th>
@@ -155,6 +156,7 @@ export function UsersPage() {
           ) : (
             users.map(user => (
               <tr key={user.userId}>
+                <td className={classes.idCell}>{user.userId}</td>
                 <td>
                   {user.firstName} {user.lastName}
                 </td>

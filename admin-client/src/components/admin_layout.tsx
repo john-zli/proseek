@@ -19,6 +19,12 @@ export function AdminLayout() {
           >
             Users
           </NavLink>
+          <NavLink
+            to="/invitations"
+            className={({ isActive }) => `${classes.navItem} ${isActive ? classes.navItemActive : ''}`}
+          >
+            Invitations
+          </NavLink>
         </nav>
       </aside>
       <main className={classes.content}>

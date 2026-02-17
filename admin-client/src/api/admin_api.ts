@@ -28,6 +28,11 @@ export interface UpdateUserParams {
   gender: string;
 }
 
+export interface InviteUserParams {
+  email: string;
+  churchId: string;
+}
+
 export const AdminApi = {
   // Churches
   listChurches: () => api.get<Church[]>('/churches'),
@@ -48,4 +53,7 @@ export const AdminApi = {
   updateUser: (userId: string, params: UpdateUserParams) => api.put(`/users/${userId}`, params),
 
   deleteUser: (userId: string) => api.delete(`/users/${userId}`),
+
+  // Invitations
+  inviteUser: (params: InviteUserParams) => api.post<{ message: string }>('/users/invite', params),
 };

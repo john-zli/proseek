@@ -38,3 +38,10 @@ export const UpdateUserSchema = z.object({
     userId: z.string().uuid('Invalid user ID'),
   }),
 });
+
+export const AdminInviteUserSchema = z.object({
+  body: z.object({
+    email: z.string().email('Valid email is required for invitation'),
+    churchId: z.string().uuid('Valid church ID is required'),
+  }),
+});

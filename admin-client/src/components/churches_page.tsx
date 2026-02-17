@@ -1,4 +1,4 @@
-import classes from './churches_page.module.less';
+import classes from './shared_page.module.less';
 import { AdminApi, CreateChurchParams, UpdateChurchParams } from '@admin-client/api/admin_api';
 import { Church } from '@common/server-api/types/churches';
 import { useCallback, useEffect, useState } from 'react';
@@ -193,6 +193,7 @@ export function ChurchesPage() {
       <table className={classes.table}>
         <thead>
           <tr>
+            <th>Church ID</th>
             <th>Name</th>
             <th>City</th>
             <th>State</th>
@@ -211,6 +212,7 @@ export function ChurchesPage() {
           ) : (
             churches.map(church => (
               <tr key={church.churchId}>
+                <td className={classes.idCell}>{church.churchId}</td>
                 <td>{church.name}</td>
                 <td>{church.city}</td>
                 <td>{church.state}</td>

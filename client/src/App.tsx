@@ -12,7 +12,7 @@ function HomePage() {
   const { session, sessionLoading } = useContext(SessionContext);
 
   if (sessionLoading) return null;
-  if (session?.isAuthenticated && session.user) {
+  if (session?.user) {
     return <Navigate to="/dashboard" replace />;
   }
   return <PrayerChat />;
