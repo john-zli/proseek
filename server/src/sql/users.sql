@@ -9,14 +9,12 @@ ON CONFLICT DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS core.users (
   user_id                   uuid                PRIMARY KEY DEFAULT gen_random_uuid(),
-  church_id                 uuid                NOT NULL,
   first_name                varchar(50)         NOT NULL,
   last_name                 varchar(50)         NOT NULL,
-  password_hash             text,
+  password_hash             text                NOT NULL,
 
   -- Demographic information
-  email                     varchar(100)        UNIQUE,
-  phone                     varchar(20)         UNIQUE,
+  email                     varchar(100)        UNIQUE NOT NULL,
   gender                    varchar(10)         NOT NULL,
 
   -- Metadata
@@ -24,23 +22,8 @@ CREATE TABLE IF NOT EXISTS core.users (
   modification_timestamp    timestamp           DEFAULT now(),
   deletion_timestamp        timestamp,
 
-  CONSTRAINT church_fk FOREIGN KEY (church_id)
-    REFERENCES core.churches(church_id) ON DELETE CASCADE,
-  CONSTRAINT gender_fk FOREIGN KEY (gender) REFERENCES core.genders(gender),
-  CONSTRAINT email_or_phone_check CHECK (email IS NOT NULL OR phone IS NOT NULL)
+  CONSTRAINT gender_fk FOREIGN KEY (gender) REFERENCES core.genders(gender)
 );
-
-DO $$
-BEGIN
-  IF NOT EXISTS ( SELECT 1
-                  FROM  pg_indexes
-                  WHERE schemaname = 'core'
-                    AND tablename = 'users'
-                    AND indexname = 'users_church_id_idx'
-  ) THEN
-    CREATE INDEX users_church_id_idx ON core.users (church_id);
-  END IF;
-END $$;
 
 DO $$
 BEGIN
@@ -132,21 +115,30 @@ BEGIN
 
     -- 3. Create the user
     INSERT INTO core.users (
-        church_id,
         first_name,
         last_name,
         email,
         gender,
         password_hash
     ) VALUES (
-        VAR_church_id,
         PARAM_first_name,
         PARAM_last_name,
         PARAM_email,
         PARAM_gender,
         PARAM_password_hash
     )
-    RETURNING user_id, church_id INTO VAR_user_id, VAR_church_id;
+    RETURNING user_id INTO VAR_user_id;
+
+    INSERT INTO core.church_members (
+        user_id,
+        church_id,
+        role
+    ) VALUES (
+        VAR_user_id,
+        VAR_church_id,
+        'Member'
+    )
+    ON CONFLICT (user_id, church_id) DO NOTHING;
 
     -- 4. Redeem the invitation code
     UPDATE core.user_invitations
@@ -223,12 +215,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add payload column for one-off workflow parameters
-DO $$ BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'core' AND table_name = 'user_invitations' AND column_name = 'target_email'
-  ) THEN
-    ALTER TABLE core.user_invitations ADD COLUMN target_email varchar(100) NOT NULL;
-  END IF;
-END $$;
+CREATE TABLE IF NOT EXISTS core.church_roles (
+  role                      varchar(20)         PRIMARY KEY
+);
+
+INSERT INTO core.church_roles(role) VALUES
+  ('Admin'),
+  ('Member')
+ON CONFLICT DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS core.church_members (
+  user_id                   uuid                NOT NULL,
+  church_id                 uuid                NOT NULL,
+
+  -- Role information
+  role                      varchar(20)         NOT NULL,
+
+  -- Metadata
+  creation_timestamp        timestamp           DEFAULT now(),
+  modification_timestamp    timestamp           DEFAULT now(),
+  deletion_timestamp        timestamp,
+
+  CONSTRAINT church_member_pk PRIMARY KEY (user_id, church_id),
+  CONSTRAINT church_member_fk FOREIGN KEY (user_id)
+    REFERENCES core.users(user_id) ON DELETE CASCADE,
+  CONSTRAINT church_fk FOREIGN KEY (church_id)
+    REFERENCES core.churches(church_id) ON DELETE CASCADE,
+  CONSTRAINT role_fk FOREIGN KEY (role) REFERENCES core.church_roles(role)
+);

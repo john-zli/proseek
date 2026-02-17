@@ -36,6 +36,7 @@ export const LoginUserSchema = z.object({
 export const InviteUserSchema = z.object({
   body: z.object({
     email: z.string().email('Valid email is required for invitation'),
+    churchId: z.string().uuid('Valid church ID is required'),
   }),
 });
 

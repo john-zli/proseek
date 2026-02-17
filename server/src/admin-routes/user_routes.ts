@@ -64,7 +64,7 @@ export function userRouter(): Router {
       await insertWorkflowRun({
         workflowName: WorkflowName.InviteUser,
         isRecurring: false,
-        payload: { targetEmail: email, churchId, createdByUserId: '2896c3dd-b015-46cd-bf26-a3915a00bf0d' },
+        payload: { targetEmail: email, churchId, createdByUserId: '3c18d4d5-9611-4451-93ee-64e75acf258c' },
       });
 
       res.status(HttpStatusCodes.CREATED).json({ message: 'Invitation sent' });

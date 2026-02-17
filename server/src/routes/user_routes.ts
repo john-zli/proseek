@@ -29,7 +29,7 @@ export function userRouter(_services: IServicesBuilder): Router {
 
       const passwordHash = await hash(password, 10);
 
-      const sanitizedUser = await createUser({
+      const sessionUser = await createUser({
         email,
         firstName,
         lastName,
@@ -47,8 +47,8 @@ export function userRouter(_services: IServicesBuilder): Router {
           );
           return next(err);
         }
-        req.session.user = sanitizedUser;
-        res.status(HttpStatusCodes.CREATED).json({ userId: sanitizedUser.userId });
+        req.session.user = sessionUser;
+        res.status(HttpStatusCodes.CREATED).json({ userId: sessionUser.userId });
       });
     } catch (error) {
       logger.error({ err: error }, 'Error creating user:');
@@ -76,7 +76,7 @@ export function userRouter(_services: IServicesBuilder): Router {
 
       const passwordHash = await hash(password, 10);
 
-      const sanitizedUser = await createAdminUser({
+      const sessionUser = await createAdminUser({
         email,
         firstName,
         lastName,
@@ -94,8 +94,8 @@ export function userRouter(_services: IServicesBuilder): Router {
           );
           return next(err);
         }
-        req.session.user = sanitizedUser;
-        res.status(HttpStatusCodes.CREATED).json({ userId: sanitizedUser.userId });
+        req.session.user = sessionUser;
+        res.status(HttpStatusCodes.CREATED).json({ userId: sessionUser.userId });
       });
     } catch (error) {
       logger.error({ err: error }, 'Error creating user:');
@@ -138,17 +138,15 @@ export function userRouter(_services: IServicesBuilder): Router {
           return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, 'Login failed'));
         }
 
-        // Omit passwordHash before sending user data
         const {
           passwordHash: _passwordHash,
           creationTimestamp: _creationTimestamp,
           modificationTimestamp: _modificationTimestamp,
-          ...userWithoutPassword
+          ...sessionUser
         } = user;
-        // Store user information in session, including churchId
-        req.session.user = userWithoutPassword;
 
-        res.status(HttpStatusCodes.OK).json({ user: userWithoutPassword });
+        req.session.user = sessionUser;
+        res.status(HttpStatusCodes.OK).json({ user: sessionUser });
       });
     } catch (error) {
       return next(error);
@@ -185,11 +183,13 @@ export function userRouter(_services: IServicesBuilder): Router {
   });
 
   // Invite User (enqueues workflow to generate code + send email)
-  router.post('/invite', ensureAuthenticated, validate(InviteUserSchema), async (req, res, next) => {
-    // ensureAuthenticated guarantees req.session.user, user.id, and user.churchId exist
-    const user = req.session.user!;
-    const { userId, churchId } = user;
-    const { email } = req.body;
+  router.post('/invite', validate(InviteUserSchema), ensureAuthenticated, async (req, res, next) => {
+    const { userId, churchIds } = req.session.user!;
+    const { email, churchId } = req.body;
+
+    if (!churchIds.includes(churchId)) {
+      return next(new RouteError(HttpStatusCodes.FORBIDDEN, 'You do not have access to this church'));
+    }
 
     try {
       await insertWorkflowRun({

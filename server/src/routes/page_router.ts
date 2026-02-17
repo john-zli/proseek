@@ -10,7 +10,7 @@ export function pageRouter(_services: IServicesBuilder): Router {
   router.get('/chats/:chatroomId', /* Add validation for chatroomId */ serveStaticHtmlFile());
 
   // Portal routes
-  router.get('/portal', serveStaticHtmlFile());
+  router.get('/portal/:churchId', serveStaticHtmlFile());
   router.get('/portal/login', serveStaticHtmlFile());
   router.get('/portal/invite', serveStaticHtmlFile());
 

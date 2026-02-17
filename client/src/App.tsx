@@ -23,7 +23,7 @@ function App() {
           <Route path="/portal/invite" element={<InvitePage />} />
 
           {/* Portal - authenticated pages */}
-          <Route path="/portal" element={<PortalLayout />}>
+          <Route path="/portal/:churchId" element={<PortalLayout />}>
             <Route index element={<PortalPage />} />
           </Route>
         </Routes>

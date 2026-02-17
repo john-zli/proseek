@@ -30,7 +30,6 @@ export interface CreatePrayerRequestChatParams {
 export interface AssignPrayerRequestChatToUserParams {
   requestId: string;
   userId: string;
-  churchId: string;
 }
 
 export interface ListPrayerRequestChatsParams {
@@ -66,7 +65,7 @@ export interface CreatePrayerRequestChatResponse {
 }
 
 export interface ListPrayerRequestChatsResponse {
-  chatrooms: PrayerRequestChat[];
+  prayerRequests: PrayerRequestChat[];
 }
 
 export interface AssignPrayerRequestChatResponse {
@@ -75,10 +74,6 @@ export interface AssignPrayerRequestChatResponse {
 
 export interface ListPrayerRequestChatMessagesResponse {
   messages: PrayerRequestChatMessage[];
-}
-
-export interface PortalPrayerRequestsResponse {
-  prayerRequests: PrayerRequestChat[];
 }
 
 export interface VerifyPrayerRequestChatParams {

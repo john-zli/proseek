@@ -35,41 +35,34 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
     createPrayerRequestChatController(services)
   );
 
-  // List prayer requests for a church
-  router.get('/church/:churchId', validate(ListPrayerRequestChatsSchema), async (req, res, next) => {
-    const { churchId } = req.params;
-
-    try {
-      const prayerRequests = await listPrayerRequestChats({ churchId });
-      res.status(HttpStatusCodes.OK).json(prayerRequests);
-    } catch (error) {
-      return next(error);
-    }
-  });
-
   // List prayer requests for the authenticated church user's portal
-  router.get('/portal', ensureAuthenticated, async (req, res, next) => {
-    const { churchId } = req.session.user!;
+  router.get(
+    '/church/:churchId',
+    validate(ListPrayerRequestChatsSchema),
+    ensureAuthenticated,
+    async (req, res, next) => {
+      const { churchId } = req.params;
 
-    try {
-      const prayerRequests = await listPrayerRequestChats({ churchId });
-      res.status(HttpStatusCodes.OK).json({ prayerRequests });
-    } catch (error) {
-      return next(error);
+      try {
+        const prayerRequests = await listPrayerRequestChats({ churchId });
+        res.status(HttpStatusCodes.OK).json({ prayerRequests });
+      } catch (error) {
+        return next(error);
+      }
     }
-  });
+  );
 
   // Assign a prayer request to a user
   router.post(
     '/:requestId/assign',
-    ensureAuthenticated,
     validate(AssignPrayerRequestChatSchema),
+    ensureAuthenticated,
     async (req, res, next) => {
       const { requestId } = req.params;
-      const { userId, churchId } = req.session.user!;
+      const { userId } = req.session.user!;
 
       try {
-        await assignPrayerRequestChat({ requestId, userId, churchId });
+        await assignPrayerRequestChat({ requestId, userId });
         res.status(HttpStatusCodes.OK).json({ success: true });
       } catch (error) {
         return next(error);
@@ -104,7 +97,7 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
       // If authenticated church member, verify they belong to the assigned church
       if (req.session.user) {
         const prayerRequest = await getPrayerRequestChat(requestId);
-        if (!prayerRequest || prayerRequest.assignedChurchId !== req.session.user.churchId) {
+        if (!prayerRequest?.assignedChurchId || !req.session.user.churchIds.includes(prayerRequest.assignedChurchId)) {
           return next(new RouteError(HttpStatusCodes.FORBIDDEN, 'You do not have access to this prayer request'));
         }
       }

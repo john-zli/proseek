@@ -8,7 +8,6 @@ import type {
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatMessagesResponse,
   ListPrayerRequestChatsResponse,
-  PortalPrayerRequestsResponse,
   VerifyPrayerRequestChatParams,
   VerifyPrayerRequestChatResponse,
 } from '@common/server-api/types/prayer_request_chats';
@@ -17,9 +16,9 @@ export type CaptchaProtected<T> = T & { token: string };
 
 export const PrayerRequestChatsApi = {
   // Get portal prayer requests for the authenticated church user
-  getPortalRequests: async (): Promise<PortalPrayerRequestsResponse> => {
+  listPrayerRequestChats: async (churchId: string): Promise<ListPrayerRequestChatsResponse> => {
     try {
-      const response = await api.get<PortalPrayerRequestsResponse>('/prayer-requests/portal');
+      const response = await api.get<ListPrayerRequestChatsResponse>(`/prayer-requests/church/${churchId}`);
       return response;
     } catch (error) {
       console.error(error);
@@ -37,17 +36,6 @@ export const PrayerRequestChatsApi = {
     } catch (error) {
       console.error(error);
       throw new Error('Failed to create prayer request');
-    }
-  },
-
-  // List prayer requests for a church
-  listPrayerRequestChatroomsForChurch: async (churchId: string): Promise<ListPrayerRequestChatsResponse> => {
-    try {
-      const response = await api.get<ListPrayerRequestChatsResponse>(`/prayer-requests/church/${churchId}`);
-      return response;
-    } catch (error) {
-      console.error(error);
-      throw new Error('Failed to list prayer requests');
     }
   },
 

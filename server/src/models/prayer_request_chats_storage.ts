@@ -101,8 +101,7 @@ const SqlCommands = {
     UPDATE core.prayer_request_chats
     SET assigned_user_id = $1::uuid,
         modification_timestamp = CURRENT_TIMESTAMP
-    WHERE request_id = $2::uuid
-    AND assigned_church_id = $3::uuid;`,
+    WHERE request_id = $2::uuid;`,
 
   ListPrayerRequestChatMessages: `
     SELECT      prayer_request_chat_messages.message_id,
@@ -148,11 +147,11 @@ export async function getPrayerRequestChat(requestId: string): Promise<PrayerReq
 }
 
 export async function assignPrayerRequestChat(params: AssignPrayerRequestChatToUserParams): Promise<void> {
-  const { requestId, userId, churchId } = params;
+  const { requestId, userId } = params;
   await nonQuery({
     commandIdentifier: 'AssignPrayerRequestChatToUser',
     query: SqlCommands.AssignPrayerRequestChatToUser,
-    params: [userId, requestId, churchId],
+    params: [userId, requestId],
   });
 }
 

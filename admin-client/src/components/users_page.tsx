@@ -142,7 +142,6 @@ export function UsersPage() {
             <th>Name</th>
             <th>Email</th>
             <th>Gender</th>
-            <th>Church ID</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -162,7 +161,6 @@ export function UsersPage() {
                 </td>
                 <td>{user.email}</td>
                 <td>{user.gender}</td>
-                <td className={classes.idCell}>{user.churchId}</td>
                 <td>
                   <button className={classes.actionButton} onClick={() => handleEdit(user)}>
                     Edit
