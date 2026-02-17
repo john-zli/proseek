@@ -47,8 +47,8 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
     }
   });
 
-  // List prayer requests for the authenticated church user's dashboard
-  router.get('/dashboard', ensureAuthenticated, async (req, res, next) => {
+  // List prayer requests for the authenticated church user's portal
+  router.get('/portal', ensureAuthenticated, async (req, res, next) => {
     const { churchId } = req.session.user!;
 
     try {

@@ -1,39 +1,32 @@
 import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
-import classes from '@client/components/dashboard_page.module.less';
 import { SessionContext } from '@client/contexts/session_context_provider';
 import { formatDate, maskEmail } from '@client/format_helpers';
+import classes from '@client/portal/components/portal_page.module.less';
 import { LoadingSpinner } from '@client/shared-components/loading_spinner';
 import type { PrayerRequestChat } from '@common/server-api/types/prayer_request_chats';
 import clsx from 'clsx';
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 enum Tab {
   Mine = 'mine',
   All = 'all',
 }
 
-export function DashboardPage() {
+export function PortalPage() {
   const { session, sessionLoading } = useContext(SessionContext);
-  const navigate = useNavigate();
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequestChat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>(Tab.Mine);
 
   useEffect(() => {
-    if (sessionLoading) return;
+    if (sessionLoading || !session?.user) return;
 
-    if (!session?.user) {
-      navigate('/login');
-      return;
-    }
-
-    PrayerRequestChatsApi.getDashboardRequests()
+    PrayerRequestChatsApi.getPortalRequests()
       .then(res => setPrayerRequests(res.prayerRequests))
       .catch(() => setError('Failed to load prayer requests.'))
       .finally(() => setLoading(false));
-  }, [session, sessionLoading, navigate]);
+  }, [session, sessionLoading]);
 
   const handleOpenChat = useCallback((requestId: string) => {
     window.open(`/chats/${requestId}`, '_blank');
@@ -56,7 +49,7 @@ export function DashboardPage() {
   return (
     <div className={classes.container}>
       <div className={classes.content}>
-        <h1 className={classes.title}>Dashboard</h1>
+        <h1 className={classes.title}>Portal</h1>
 
         <div className={classes.tabs}>
           <button

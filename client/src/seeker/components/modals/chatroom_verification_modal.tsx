@@ -1,19 +1,17 @@
-import classes from '@client/components/modals/contact_info_modal.module.less';
-import { ModalContext } from '@client/contexts/modal_context_provider';
 import { useContactForm } from '@client/hooks/use_contact_form';
+import classes from '@client/seeker/components/modals/contact_info_modal.module.less';
 import { Button, ButtonStyle } from '@client/shared-components/button';
 import { CheckboxView } from '@client/shared-components/checkbox_view';
 import { ModalContainer } from '@client/shared-components/modal_container';
 import { TextInput } from '@client/shared-components/text_input';
 import clsx from 'clsx';
-import { useCallback, useContext, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 interface Props {
   onSubmit: (email: string | undefined, phone: string | undefined) => void;
 }
 
-export function ContactInfoModal({ onSubmit }: Props) {
-  const { closeModal } = useContext(ModalContext);
+export function ChatroomVerificationModal({ onSubmit }: Props) {
   const {
     email,
     phone,
@@ -27,13 +25,12 @@ export function ContactInfoModal({ onSubmit }: Props) {
     isValidPhoneNumber,
   } = useContactForm();
 
-  const onSend = useCallback(() => {
+  const onVerify = useCallback(() => {
     const result = handleSubmit();
     if (result) {
       onSubmit(result.email, result.phone);
-      closeModal();
     }
-  }, [handleSubmit, onSubmit, closeModal]);
+  }, [handleSubmit, onSubmit]);
 
   const disabled = useMemo(
     () => (contactMethods.email && !email) || (contactMethods.text && !isValidPhoneNumber(phone)),
@@ -44,17 +41,19 @@ export function ContactInfoModal({ onSubmit }: Props) {
     (e: React.KeyboardEvent) => {
       if (e.key === 'Enter' && !e.shiftKey && !disabled) {
         e.preventDefault();
-        onSend();
+        onVerify();
       }
     },
-    [onSend, disabled]
+    [onVerify, disabled]
   );
 
   return (
-    <ModalContainer>
+    <ModalContainer isUncloseable>
       <div className={classes.container}>
-        <h2>How can we reach you?</h2>
-        <p>(Optional): Select how you would like to be notified when a church responds to your prayer request.</p>
+        <h2>Verify Your Identity</h2>
+        <p>
+          Please enter the email or phone number you used when creating this prayer request to verify your identity.
+        </p>
 
         <div className={classes.form}>
           <div className={classes.checkboxGroup}>
@@ -103,11 +102,8 @@ export function ContactInfoModal({ onSubmit }: Props) {
         </div>
 
         <div className={classes.actions}>
-          <Button buttonStyle={ButtonStyle.Secondary} onClick={closeModal}>
-            Cancel
-          </Button>
-          <Button buttonStyle={ButtonStyle.Primary} onClick={onSend} disabled={disabled}>
-            Submit
+          <Button buttonStyle={ButtonStyle.Primary} onClick={onVerify} disabled={disabled}>
+            Verify
           </Button>
         </div>
       </div>

@@ -1,7 +1,7 @@
-import { ChatroomVerificationModal } from '@client/components/modals/chatroom_verification_modal';
-import { ConfirmationModal } from '@client/components/modals/confirmation_modal';
-import { ContactInfoModal } from '@client/components/modals/contact_info_modal';
 import { ModalContext, ModalPayload, ModalType } from '@client/contexts/modal_context_provider';
+import { ChatroomVerificationModal } from '@client/seeker/components/modals/chatroom_verification_modal';
+import { ConfirmationModal } from '@client/seeker/components/modals/confirmation_modal';
+import { ContactInfoModal } from '@client/seeker/components/modals/contact_info_modal';
 import { useCallback, useState } from 'react';
 
 type ModalState = {

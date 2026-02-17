@@ -2,6 +2,19 @@
 @import (reference) '../styles/constants.module.less';
 @import (reference) '../styles/colors.module.less';
 
+.layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
 .headerContainer {
   display: flex;
   height: @header-height;
@@ -42,7 +55,7 @@
   gap: 32px;
 }
 
-.text {
+.navLink {
   text-decoration: none;
   color: @color-text-primary;
   font-weight: 500;
@@ -63,13 +76,28 @@
   gap: 16px;
 }
 
-.portalLink {
-  text-decoration: none;
-  color: @color-text-secondary;
+.userName {
   font-size: 14px;
   font-weight: 500;
+  color: @color-text-primary;
+}
+
+.logoutButton {
+  padding: 6px 12px;
+  border: 1px solid @color-border-light;
+  border-radius: 6px;
+  background: none;
+  color: @color-text-secondary;
+  font-size: 13px;
+  cursor: pointer;
 
   &:hover {
-    color: @color-text-primary;
+    background: @color-background-body;
   }
+}
+
+.content {
+  margin-top: @header-height;
+  padding: 24px 32px;
+  flex: 1;
 }

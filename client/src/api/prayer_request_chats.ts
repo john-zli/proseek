@@ -5,10 +5,10 @@ import type {
   CreatePrayerRequestChatMessageParams,
   CreatePrayerRequestChatParams,
   CreatePrayerRequestChatResponse,
-  DashboardPrayerRequestsResponse,
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatMessagesResponse,
   ListPrayerRequestChatsResponse,
+  PortalPrayerRequestsResponse,
   VerifyPrayerRequestChatParams,
   VerifyPrayerRequestChatResponse,
 } from '@common/server-api/types/prayer_request_chats';
@@ -16,14 +16,14 @@ import type {
 export type CaptchaProtected<T> = T & { token: string };
 
 export const PrayerRequestChatsApi = {
-  // Get dashboard prayer requests for the authenticated church user
-  getDashboardRequests: async (): Promise<DashboardPrayerRequestsResponse> => {
+  // Get portal prayer requests for the authenticated church user
+  getPortalRequests: async (): Promise<PortalPrayerRequestsResponse> => {
     try {
-      const response = await api.get<DashboardPrayerRequestsResponse>('/prayer-requests/dashboard');
+      const response = await api.get<PortalPrayerRequestsResponse>('/prayer-requests/portal');
       return response;
     } catch (error) {
       console.error(error);
-      throw new Error('Failed to fetch dashboard prayer requests');
+      throw new Error('Failed to fetch portal prayer requests');
     }
   },
 

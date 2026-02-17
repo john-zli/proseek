@@ -1,4 +1,4 @@
-import classes from '@client/components/modals/confirmation_modal.module.less';
+import classes from '@client/seeker/components/modals/confirmation_modal.module.less';
 import { ModalContainer } from '@client/shared-components/modal_container';
 
 interface Props {
