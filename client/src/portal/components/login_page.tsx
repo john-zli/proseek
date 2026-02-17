@@ -23,7 +23,7 @@ export function LoginPage() {
       await UsersApi.login({ email, password });
       await refetchSession();
 
-      navigate('/portal/dashboard');
+      navigate('/portal');
     } catch (err) {
       setError((err as Error).message);
     }

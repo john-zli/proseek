@@ -77,7 +77,7 @@ export interface ListPrayerRequestChatMessagesResponse {
   messages: PrayerRequestChatMessage[];
 }
 
-export interface DashboardPrayerRequestsResponse {
+export interface PortalPrayerRequestsResponse {
   prayerRequests: PrayerRequestChat[];
 }
 

@@ -385,7 +385,7 @@ describe('prayer request chats routes', () => {
     });
   });
 
-  describe('GET /dashboard', () => {
+  describe('GET /portal', () => {
     test('should return prayer requests for the authenticated user church', async () => {
       const churchId = await createChurch({
         name: 'Test Church',
@@ -429,7 +429,7 @@ describe('prayer request chats routes', () => {
         },
       });
 
-      await testRoute(prayerRequestChatsRouter(services), 'GET', '/dashboard', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'GET', '/portal', req, res, next);
 
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
       const responseBody = res.json.mock.calls[0][0] as { prayerRequests: { requestId: string }[] };
@@ -442,7 +442,7 @@ describe('prayer request chats routes', () => {
         session: {},
       });
 
-      await testRoute(prayerRequestChatsRouter(services), 'GET', '/dashboard', req, res, next);
+      await testRoute(prayerRequestChatsRouter(services), 'GET', '/portal', req, res, next);
 
       expect(next.mock.calls[0][0]).toBeInstanceOf(RouteError);
       expect((next.mock.calls[0][0] as RouteError).status).toBe(HttpStatusCodes.UNAUTHORIZED);

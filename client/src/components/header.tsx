@@ -1,8 +1,17 @@
 import classes from '@client/components/header.module.less';
+import { Button, ButtonStyle } from '@client/shared-components/button';
 import { Link } from '@client/shared-components/link';
 import clsx from 'clsx';
+import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export function Header() {
+  const navigate = useNavigate();
+
+  const navigateToPortal = useCallback(() => {
+    navigate('/portal');
+  }, [navigate]);
+
   return (
     <div className={classes.headerContainer}>
       <div className={classes.nav}>
@@ -21,9 +30,9 @@ export function Header() {
         </div>
 
         <div className={classes.rightContainer}>
-          <Link className={classes.portalLink} href="/portal/login">
-            Church Member? Sign in
-          </Link>
+          <Button buttonStyle={ButtonStyle.Primary} onClick={navigateToPortal}>
+            Church Portal
+          </Button>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import { PrayerRequestChatsApi } from '@client/api/prayer_request_chats';
 import { SessionContext } from '@client/contexts/session_context_provider';
 import { formatDate, maskEmail } from '@client/format_helpers';
-import classes from '@client/portal/components/dashboard_page.module.less';
+import classes from '@client/portal/components/portal_page.module.less';
 import { LoadingSpinner } from '@client/shared-components/loading_spinner';
 import type { PrayerRequestChat } from '@common/server-api/types/prayer_request_chats';
 import clsx from 'clsx';
@@ -12,7 +12,7 @@ enum Tab {
   All = 'all',
 }
 
-export function DashboardPage() {
+export function PortalPage() {
   const { session, sessionLoading } = useContext(SessionContext);
   const [prayerRequests, setPrayerRequests] = useState<PrayerRequestChat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +22,7 @@ export function DashboardPage() {
   useEffect(() => {
     if (sessionLoading || !session?.user) return;
 
-    PrayerRequestChatsApi.getDashboardRequests()
+    PrayerRequestChatsApi.getPortalRequests()
       .then(res => setPrayerRequests(res.prayerRequests))
       .catch(() => setError('Failed to load prayer requests.'))
       .finally(() => setLoading(false));
@@ -49,7 +49,7 @@ export function DashboardPage() {
   return (
     <div className={classes.container}>
       <div className={classes.content}>
-        <h1 className={classes.title}>Dashboard</h1>
+        <h1 className={classes.title}>Portal</h1>
 
         <div className={classes.tabs}>
           <button

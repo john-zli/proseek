@@ -1,11 +1,11 @@
 import classes from '@client/App.module.less';
-import { DashboardPage } from '@client/portal/components/dashboard_page';
 import { InvitePage } from '@client/portal/components/invite_page';
 import { LoginPage } from '@client/portal/components/login_page';
+import { PortalPage } from '@client/portal/components/portal_page';
 import { PortalLayout } from '@client/portal/portal_layout';
 import { PrayerChat } from '@client/seeker/components/prayer_chat';
 import { SeekerLayout } from '@client/seeker/seeker_layout';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
 function App() {
   return (
@@ -24,8 +24,7 @@ function App() {
 
           {/* Portal - authenticated pages */}
           <Route path="/portal" element={<PortalLayout />}>
-            <Route index element={<Navigate to="/portal/dashboard" replace />} />
-            <Route path="dashboard" element={<DashboardPage />} />
+            <Route index element={<PortalPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

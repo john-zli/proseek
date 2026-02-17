@@ -11,7 +11,6 @@ export function pageRouter(_services: IServicesBuilder): Router {
 
   // Portal routes
   router.get('/portal', serveStaticHtmlFile());
-  router.get('/portal/dashboard', serveStaticHtmlFile());
   router.get('/portal/login', serveStaticHtmlFile());
   router.get('/portal/invite', serveStaticHtmlFile());
 

@@ -39,11 +39,11 @@ export function PortalLayout() {
             <div className={classes.navLinks}>
               <Link
                 className={clsx(classes.navLink, {
-                  [classes.active]: location.pathname === '/portal/dashboard',
+                  [classes.active]: location.pathname === '/portal',
                 })}
-                href="/portal/dashboard"
+                href="/portal"
               >
-                Dashboard
+                Portal
               </Link>
             </div>
           </div>

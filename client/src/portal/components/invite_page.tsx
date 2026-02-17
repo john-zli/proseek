@@ -65,7 +65,7 @@ export function InvitePage() {
         invitationCode: code,
       });
       await refetchSession();
-      navigate('/portal/dashboard');
+      navigate('/portal');
     } catch (err) {
       setSubmitError((err as Error).message);
     } finally {
