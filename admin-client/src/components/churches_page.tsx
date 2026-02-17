@@ -2,12 +2,14 @@ import classes from './shared_page.module.less';
 import { AdminApi, CreateChurchParams, UpdateChurchParams } from '@admin-client/api/admin_api';
 import { Church } from '@common/server-api/types/churches';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 type ChurchFormData = CreateChurchParams & { county?: string };
 
 const emptyForm: ChurchFormData = { name: '', address: '', city: '', state: '', zip: '', county: '', email: '' };
 
 export function ChurchesPage() {
+  const navigate = useNavigate();
   const [churches, setChurches] = useState<Church[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -211,7 +213,11 @@ export function ChurchesPage() {
             </tr>
           ) : (
             churches.map(church => (
-              <tr key={church.churchId}>
+              <tr
+                key={church.churchId}
+                onClick={() => navigate(`/churches/${church.churchId}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <td className={classes.idCell}>{church.churchId}</td>
                 <td>{church.name}</td>
                 <td>{church.city}</td>
@@ -219,12 +225,21 @@ export function ChurchesPage() {
                 <td>{church.zip}</td>
                 <td>{church.email}</td>
                 <td>
-                  <button className={classes.actionButton} onClick={() => handleEdit(church)}>
+                  <button
+                    className={classes.actionButton}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleEdit(church);
+                    }}
+                  >
                     Edit
                   </button>
                   <button
                     className={`${classes.actionButton} ${classes.deleteButton}`}
-                    onClick={() => handleDelete(church.churchId)}
+                    onClick={e => {
+                      e.stopPropagation();
+                      handleDelete(church.churchId);
+                    }}
                   >
                     Delete
                   </button>

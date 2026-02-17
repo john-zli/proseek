@@ -1,5 +1,5 @@
 import { nonQuery, queryRows, queryScalar, querySingleRow } from './db_query_helper';
-import { InvitationInfo, SanitizedUser, SessionUser, User } from '@common/server-api/types/users';
+import { InvitationInfo, SanitizedUser, SessionUser, User, UserChurchMembership } from '@common/server-api/types/users';
 
 const ColumnKeyMappings = {
   User: {
@@ -41,6 +41,11 @@ const ColumnKeyMappings = {
     targetEmail: 'target_email',
     churchName: 'church_name',
     churchId: 'church_id',
+  },
+  UserChurchMembership: {
+    churchId: 'church_id',
+    churchName: 'church_name',
+    role: 'role',
   },
 };
 
@@ -166,6 +171,17 @@ const SqlCommands = {
                 modification_timestamp = now()
     WHERE       user_id = $1::uuid
                 AND deletion_timestamp IS NULL;`,
+  ListChurchesForUser: `
+    SELECT      ch.church_id,
+                ch.name AS church_name,
+                cm.role
+    FROM        core.churches ch
+    JOIN        core.church_members cm
+                ON cm.church_id = ch.church_id
+                AND cm.user_id = $1::uuid
+                AND cm.deletion_timestamp IS NULL
+    WHERE       ch.deletion_timestamp IS NULL
+    ORDER BY    ch.name ASC;`,
 };
 
 export async function listUsersFromChurch(churchId: string): Promise<SanitizedUser[]> {
@@ -308,5 +324,14 @@ export async function deleteUser(userId: string): Promise<void> {
     commandIdentifier: 'DeleteUser',
     query: SqlCommands.DeleteUser,
     params: [userId],
+  });
+}
+
+export async function listChurchesForUser(userId: string): Promise<UserChurchMembership[]> {
+  return queryRows<UserChurchMembership>({
+    commandIdentifier: 'ListChurchesForUser',
+    query: SqlCommands.ListChurchesForUser,
+    params: [userId],
+    mapping: ColumnKeyMappings.UserChurchMembership,
   });
 }

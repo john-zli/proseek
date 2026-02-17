@@ -19,7 +19,7 @@ export function churchRouter(): Router {
     }
   });
 
-  // Get church by ID
+  // Get church by ID with members
   router.get('/:churchId', validate(ChurchIdParamsSchema), async (req, res, next) => {
     try {
       const church = await churchesStorage.getChurchById(req.params.churchId);
@@ -28,7 +28,8 @@ export function churchRouter(): Router {
         return next(new RouteError(HttpStatusCodes.NOT_FOUND, 'Church not found'));
       }
 
-      res.json(church);
+      const members = await churchesStorage.listChurchMembers(req.params.churchId);
+      res.json({ ...church, members });
     } catch (error) {
       return next(new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, error as Error));
     }
