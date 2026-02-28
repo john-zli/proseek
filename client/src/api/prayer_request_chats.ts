@@ -78,7 +78,7 @@ export const PrayerRequestChatsApi = {
         message: params.message,
         messageId: params.messageId,
         messageTimestamp: params.messageTimestamp,
-        assignedUserId: params.assignedUserId,
+        userId: params.userId,
       });
     } catch (error) {
       console.error(error);

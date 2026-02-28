@@ -5,6 +5,7 @@ import clearIcon from '@client/assets/clear.svg';
 import sendIcon from '@client/assets/send.svg';
 import { ModalContext, ModalType } from '@client/contexts/modal_context_provider';
 import { SessionContext } from '@client/contexts/session_context_provider';
+import { useChatSocket } from '@client/hooks/use_chat_socket';
 import { Button, ButtonStyle } from '@client/shared-components/button';
 import { Callout } from '@client/shared-components/callout';
 import { withTooltip } from '@client/shared-components/with_tooltip';
@@ -19,7 +20,8 @@ interface PrayerRequestChatMessage {
   requestId?: string;
   message: string;
   messageTimestamp: number;
-  assignedUserId?: string;
+  userId?: string | null;
+  senderName?: string | null;
   deletionTimestamp?: number;
 }
 
@@ -45,6 +47,49 @@ export const PrayerChat = (props: Props) => {
   const { solve } = useCaptcha();
   const navigate = useNavigate();
   const { chatroomId } = useParams();
+
+  const isMyMessage = useCallback(
+    (message: PrayerRequestChatMessage) => {
+      if (session?.user) {
+        return message.userId === session.user.userId;
+      }
+      return !message.userId;
+    },
+    [session?.user]
+  );
+
+  // Real-time message handler
+  const handleSocketMessage = useCallback(
+    (payload: {
+      messageId: string;
+      requestId: string;
+      message: string;
+      messageTimestamp: number;
+      userId: string | null;
+      senderName: string | null;
+    }) => {
+      setMessages(prev => {
+        // Deduplicate — skip if we already have this message (optimistic add)
+        if (prev.some(m => m.messageId === payload.messageId)) {
+          return prev;
+        }
+        return [
+          ...prev,
+          {
+            messageId: payload.messageId,
+            requestId: payload.requestId,
+            message: payload.message,
+            messageTimestamp: payload.messageTimestamp,
+            userId: payload.userId,
+            senderName: payload.senderName,
+          },
+        ];
+      });
+    },
+    []
+  );
+
+  useChatSocket({ chatroomId, isVerified, onMessage: handleSocketMessage });
 
   const handleVerification = useCallback(
     async (email: string | undefined, phone: string | undefined) => {
@@ -92,7 +137,8 @@ export const PrayerChat = (props: Props) => {
         requestId: message.requestId,
         message: message.message,
         messageTimestamp: message.messageTimestamp,
-        assignedUserId: message.assignedUserId ?? undefined,
+        userId: message.userId,
+        senderName: message.senderName,
         deletionTimestamp: message.deletionTimestamp ?? undefined,
       }))
     );
@@ -142,10 +188,11 @@ export const PrayerChat = (props: Props) => {
 
     const messageId = uuidv4();
     const messageTimestamp = Date.now();
-    const assignedUserId = session?.user?.userId;
+    const userId = session?.user?.userId;
+    const senderName = session?.user?.firstName ?? null;
     setMessages(prev => [
       ...prev,
-      { messageId, requestId: chatroomId, message: inputValue, messageTimestamp, assignedUserId },
+      { messageId, requestId: chatroomId, message: inputValue, messageTimestamp, userId, senderName },
     ]);
     setInputValue('');
     setIsExpanded(true);
@@ -158,7 +205,7 @@ export const PrayerChat = (props: Props) => {
         messageTimestamp,
       });
     }
-  }, [inputValue, chatroomId, session?.user?.userId]);
+  }, [inputValue, chatroomId, session?.user?.userId, session?.user?.firstName]);
 
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);
@@ -328,14 +375,17 @@ export const PrayerChat = (props: Props) => {
               className={`${classes.messagesContainer} ${hasScroll ? classes.hasScrollbar : ''}`}
             >
               <div className={classes.messages}>
-                {messages?.map(message => (
-                  <div
-                    key={message.messageId}
-                    className={`${classes.message} ${!message.assignedUserId ? classes.userMessage : classes.aiMessage}`}
-                  >
-                    {message.message}
-                  </div>
-                ))}
+                {messages?.map(message => {
+                  const mine = isMyMessage(message);
+                  return (
+                    <div key={message.messageId} className={classes.messageWrapper}>
+                      {!mine && message.senderName && <span className={classes.senderName}>{message.senderName}</span>}
+                      <div className={`${classes.message} ${mine ? classes.userMessage : classes.aiMessage}`}>
+                        {message.message}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
             <div className={clsx(classes.inputForm, classes.expanded)}>
