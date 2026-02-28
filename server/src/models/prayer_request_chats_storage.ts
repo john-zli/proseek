@@ -31,7 +31,8 @@ const ColumnKeyMappings = {
     requestId: 'request_id',
     message: 'message',
     messageTimestamp: 'message_timestamp',
-    assignedUserId: 'assigned_user_id',
+    userId: 'user_id',
+    senderName: 'sender_name',
     deletionTimestamp: 'deletion_timestamp',
   },
 };
@@ -104,22 +105,24 @@ const SqlCommands = {
     WHERE request_id = $2::uuid;`,
 
   ListPrayerRequestChatMessages: `
-    SELECT      prayer_request_chat_messages.message_id,
-                prayer_request_chat_messages.request_id,
-                prayer_request_chat_messages.message,
-                EXTRACT(EPOCH FROM prayer_request_chat_messages.message_timestamp)::bigint AS message_timestamp,
-                prayer_request_chat_messages.assigned_user_id,
-                EXTRACT(EPOCH FROM prayer_request_chat_messages.deletion_timestamp)::bigint AS deletion_timestamp
-    FROM        core.prayer_request_chat_messages
-    WHERE       prayer_request_chat_messages.request_id = $1::uuid
-    ORDER BY    prayer_request_chat_messages.message_timestamp ASC;`,
+    SELECT      m.message_id,
+                m.request_id,
+                m.message,
+                EXTRACT(EPOCH FROM m.message_timestamp)::bigint AS message_timestamp,
+                m.user_id,
+                u.first_name AS sender_name,
+                EXTRACT(EPOCH FROM m.deletion_timestamp)::bigint AS deletion_timestamp
+    FROM        core.prayer_request_chat_messages m
+    LEFT JOIN   core.users u ON m.user_id = u.user_id
+    WHERE       m.request_id = $1::uuid
+    ORDER BY    m.message_timestamp ASC;`,
 
   CreatePrayerRequestChatMessage: `
     INSERT INTO core.prayer_request_chat_messages (
       message_id,
       request_id,
       message,
-      assigned_user_id,
+      user_id,
       message_timestamp
     ) VALUES ($1::uuid, $2::uuid, $3::text, $4::uuid, to_timestamp($5::bigint / 1000) AT TIME ZONE 'UTC');`,
 };
@@ -199,11 +202,11 @@ export async function listPrayerRequestChatMessages(
 }
 
 export async function createPrayerRequestChatMessage(params: CreatePrayerRequestChatMessageParams): Promise<void> {
-  const { requestId, message, assignedUserId, messageTimestamp, messageId } = params;
+  const { requestId, message, userId, messageTimestamp, messageId } = params;
   return nonQuery({
     commandIdentifier: 'CreatePrayerRequestChatMessage',
     query: SqlCommands.CreatePrayerRequestChatMessage,
-    params: [messageId, requestId, message, assignedUserId, messageTimestamp],
+    params: [messageId, requestId, message, userId, messageTimestamp],
   });
 }
 

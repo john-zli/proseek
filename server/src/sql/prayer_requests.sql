@@ -30,16 +30,15 @@ CREATE TABLE IF NOT EXISTS core.prayer_request_chat_messages (
   request_id                uuid                NOT NULL,
   message                   text                NOT NULL,
   message_timestamp         timestamp           NOT NULL DEFAULT now(),
-  -- Since we are only doing 1:1 chats for now, if this is null it must be
-  -- the user speaking. Otherwise, it is the prayer team.
-  assigned_user_id          uuid,
+  -- The user who sent this message. Null means the seeker (anonymous).
+  user_id                   uuid,
 
   -- If deleted, we can have the UI show "deleted" instead of the message.
   deletion_timestamp        timestamp,
 
   CONSTRAINT request_fk FOREIGN KEY (request_id)
     REFERENCES core.prayer_request_chats(request_id) ON DELETE CASCADE,
-  CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id)
+  CONSTRAINT user_fk FOREIGN KEY (user_id)
     REFERENCES core.users(user_id)
 );
 
