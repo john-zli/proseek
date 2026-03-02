@@ -20,6 +20,7 @@ export function PortalPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<Tab>(Tab.Mine);
+  const [assigningIds, setAssigningIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (sessionLoading || !session?.user || !churchId) return;
@@ -32,6 +33,46 @@ export function PortalPage() {
 
   const handleOpenChat = useCallback((requestId: string) => {
     window.open(`/chats/${requestId}`, '_blank');
+  }, []);
+
+  const handleClaim = useCallback(
+    async (e: React.MouseEvent, requestId: string) => {
+      e.stopPropagation();
+      if (!session?.user) return;
+      setAssigningIds(prev => new Set(prev).add(requestId));
+      try {
+        await PrayerRequestChatsApi.assignPrayerRequestChatroomToUser({ requestId, userId: session.user.userId });
+        setPrayerRequests(prev =>
+          prev.map(r => (r.requestId === requestId ? { ...r, assignedUserId: session.user!.userId } : r))
+        );
+      } catch {
+        // silently fail — user can retry
+      } finally {
+        setAssigningIds(prev => {
+          const next = new Set(prev);
+          next.delete(requestId);
+          return next;
+        });
+      }
+    },
+    [session?.user]
+  );
+
+  const handleUnclaim = useCallback(async (e: React.MouseEvent, requestId: string) => {
+    e.stopPropagation();
+    setAssigningIds(prev => new Set(prev).add(requestId));
+    try {
+      await PrayerRequestChatsApi.unassignPrayerRequestChatroom(requestId);
+      setPrayerRequests(prev => prev.map(r => (r.requestId === requestId ? { ...r, assignedUserId: null } : r)));
+    } catch {
+      // silently fail — user can retry
+    } finally {
+      setAssigningIds(prev => {
+        const next = new Set(prev);
+        next.delete(requestId);
+        return next;
+      });
+    }
   }, []);
 
   const filteredRequests = useMemo(() => {
@@ -80,27 +121,53 @@ export function PortalPage() {
 
         {!error && filteredRequests.length > 0 && (
           <div className={classes.requestsList}>
-            {filteredRequests.map(request => (
-              <div
-                key={request.requestId}
-                className={classes.requestCard}
-                onClick={() => handleOpenChat(request.requestId)}
-              >
-                <div className={classes.requestInfo}>
-                  <div className={classes.requestLocation}>
-                    {[request.city, request.zip].filter(Boolean).join(', ') || 'Unknown location'}
+            {filteredRequests.map(request => {
+              const isAssignedToMe = request.assignedUserId === session?.user?.userId;
+              const isAssignedToOther = request.assignedUserId !== null && !isAssignedToMe;
+              const isBusy = assigningIds.has(request.requestId);
+
+              return (
+                <div
+                  key={request.requestId}
+                  className={classes.requestCard}
+                  onClick={() => handleOpenChat(request.requestId)}
+                >
+                  <div className={classes.requestInfo}>
+                    <div className={classes.requestLocation}>
+                      {[request.city, request.zip].filter(Boolean).join(', ') || 'Unknown location'}
+                    </div>
+                    <div className={classes.requestMeta}>
+                      <span>{formatDate(request.creationTimestamp)}</span>
+                      {request.requestContactEmail && (
+                        <span className={classes.requestContact}>{maskEmail(request.requestContactEmail)}</span>
+                      )}
+                    </div>
                   </div>
-                  <div className={classes.requestMeta}>
-                    <span>{formatDate(request.creationTimestamp)}</span>
-                    {request.requestContactEmail && (
-                      <span className={classes.requestContact}>{maskEmail(request.requestContactEmail)}</span>
+                  <div className={classes.cardActions}>
+                    {isAssignedToOther && <span className={classes.badge}>Assigned</span>}
+                    {isAssignedToMe && (
+                      <button
+                        className={classes.unclaimButton}
+                        disabled={isBusy}
+                        onClick={e => handleUnclaim(e, request.requestId)}
+                      >
+                        {isBusy ? '...' : 'Unclaim'}
+                      </button>
                     )}
+                    {!request.assignedUserId && (
+                      <button
+                        className={classes.claimButton}
+                        disabled={isBusy}
+                        onClick={e => handleClaim(e, request.requestId)}
+                      >
+                        {isBusy ? '...' : 'Claim'}
+                      </button>
+                    )}
+                    <span className={classes.openIcon}>&rsaquo;</span>
                   </div>
                 </div>
-                {request.assignedUserId && <span className={classes.badge}>Assigned</span>}
-                <span className={classes.openIcon}>&rsaquo;</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

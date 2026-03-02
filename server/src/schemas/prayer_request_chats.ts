@@ -39,6 +39,13 @@ export const AssignPrayerRequestChatSchema = z.object({
   }),
 });
 
+// Schema for unassigning a prayer request chat
+export const UnassignPrayerRequestChatSchema = z.object({
+  params: z.object({
+    requestId: z.string().min(1, 'Request ID is required'),
+  }),
+});
+
 // Schema for creating a new prayer request chat message
 export const CreatePrayerRequestChatMessageSchema = z.object({
   params: z.object({

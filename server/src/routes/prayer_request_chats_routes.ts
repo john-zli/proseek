@@ -5,6 +5,7 @@ import {
   getPrayerRequestChat,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
+  unassignPrayerRequestChat,
   verifyPrayerRequestChat,
 } from '../models/prayer_request_chats_storage';
 import {
@@ -13,6 +14,7 @@ import {
   CreatePrayerRequestChatSchema,
   ListPrayerRequestChatMessagesSchema,
   ListPrayerRequestChatsSchema,
+  UnassignPrayerRequestChatSchema,
   VerifyPrayerRequestChatSchema,
 } from '../schemas/prayer_request_chats';
 import { RouteError } from '@server/common/route_errors';
@@ -63,6 +65,23 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
 
       try {
         await assignPrayerRequestChat({ requestId, userId });
+        res.status(HttpStatusCodes.OK).json({ success: true });
+      } catch (error) {
+        return next(error);
+      }
+    }
+  );
+
+  // Unassign a prayer request from its current user
+  router.post(
+    '/:requestId/unassign',
+    validate(UnassignPrayerRequestChatSchema),
+    ensureAuthenticated,
+    async (req, res, next) => {
+      const { requestId } = req.params;
+
+      try {
+        await unassignPrayerRequestChat(requestId);
         res.status(HttpStatusCodes.OK).json({ success: true });
       } catch (error) {
         return next(error);

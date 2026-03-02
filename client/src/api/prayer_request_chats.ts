@@ -54,6 +54,16 @@ export const PrayerRequestChatsApi = {
     }
   },
 
+  // Unassign a prayer request from its current user
+  unassignPrayerRequestChatroom: async (requestId: string): Promise<void> => {
+    try {
+      await api.post(`/prayer-requests/${requestId}/unassign`, {});
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to unassign prayer request');
+    }
+  },
+
   // Verify chatroom access
   verifyChatroomAccess: async (
     params: CaptchaProtected<VerifyPrayerRequestChatParams>

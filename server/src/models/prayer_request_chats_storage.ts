@@ -103,6 +103,12 @@ const SqlCommands = {
         modification_timestamp = CURRENT_TIMESTAMP
     WHERE request_id = $2::uuid;`,
 
+  UnassignPrayerRequestChat: `
+    UPDATE core.prayer_request_chats
+    SET assigned_user_id = NULL,
+        modification_timestamp = CURRENT_TIMESTAMP
+    WHERE request_id = $1::uuid;`,
+
   ListPrayerRequestChatMessages: `
     SELECT      prayer_request_chat_messages.message_id,
                 prayer_request_chat_messages.request_id,
@@ -152,6 +158,14 @@ export async function assignPrayerRequestChat(params: AssignPrayerRequestChatToU
     commandIdentifier: 'AssignPrayerRequestChatToUser',
     query: SqlCommands.AssignPrayerRequestChatToUser,
     params: [userId, requestId],
+  });
+}
+
+export async function unassignPrayerRequestChat(requestId: string): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'UnassignPrayerRequestChat',
+    query: SqlCommands.UnassignPrayerRequestChat,
+    params: [requestId],
   });
 }
 
