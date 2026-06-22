@@ -10,6 +10,7 @@ import {
   assignPrayerRequestChat,
   createPrayerRequestChat,
   createPrayerRequestChatMessage,
+  getPrayerRequestChat,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
 } from '@server/models/prayer_request_chats_storage';
@@ -604,6 +605,232 @@ describe('prayer request chats routes', () => {
         messageId,
         userId: user.userId,
       });
+    });
+  });
+
+  describe('POST /:requestId/pray', () => {
+    test('should mark prayer request as prayed for', async () => {
+      const churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+        email: 'test@church.com',
+      });
+
+      const user = await createAdminUser({
+        churchId,
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        gender: Gender.Male,
+        passwordHash: 'password',
+      });
+
+      const prayerRequestChatId = await createPrayerRequestChat({
+        requestContactEmail: 'requester@example.com',
+        zip: '12345',
+        city: 'Anytown',
+        region: 'CA',
+        messages: [],
+        churchId,
+      });
+
+      const req = createMockRequest({
+        params: { requestId: prayerRequestChatId },
+        session: {
+          user: {
+            userId: user.userId,
+            churchIds: [churchId],
+            firstName: 'Test',
+            lastName: 'User',
+            email: 'test@example.com',
+            gender: Gender.Male,
+          },
+        },
+      });
+
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/:requestId/pray', req, res, next);
+
+      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
+
+      const result = await getPrayerRequestChat(prayerRequestChatId);
+      expect(result?.prayedForTimestamp).not.toBeNull();
+    });
+
+    test('should return 403 if user belongs to a different church', async () => {
+      const churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+        email: 'test@church.com',
+      });
+
+      const otherChurchId = await createChurch({
+        name: 'Other Church',
+        address: '456 Other St',
+        city: 'Othertown',
+        state: 'CA',
+        zip: '54321',
+        county: 'Other County',
+        email: 'other@church.com',
+      });
+
+      const user = await createAdminUser({
+        churchId: otherChurchId,
+        firstName: 'Other',
+        lastName: 'User',
+        email: 'other@example.com',
+        gender: Gender.Male,
+        passwordHash: 'password',
+      });
+
+      const prayerRequestChatId = await createPrayerRequestChat({
+        requestContactEmail: 'requester@example.com',
+        zip: '12345',
+        city: 'Anytown',
+        region: 'CA',
+        messages: [],
+        churchId,
+      });
+
+      const req = createMockRequest({
+        params: { requestId: prayerRequestChatId },
+        session: {
+          user: {
+            userId: user.userId,
+            churchIds: [otherChurchId],
+            firstName: 'Other',
+            lastName: 'User',
+            email: 'other@example.com',
+            gender: Gender.Male,
+          },
+        },
+      });
+
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/:requestId/pray', req, res, next);
+
+      const lastNextCall = next.mock.calls[next.mock.calls.length - 1][0];
+      expect(lastNextCall).toBeInstanceOf(RouteError);
+      expect((lastNextCall as RouteError).status).toBe(HttpStatusCodes.FORBIDDEN);
+    });
+  });
+
+  describe('POST /:requestId/hide', () => {
+    test('should hide prayer request from church view', async () => {
+      const churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+        email: 'test@church.com',
+      });
+
+      const user = await createAdminUser({
+        churchId,
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        gender: Gender.Male,
+        passwordHash: 'password',
+      });
+
+      const prayerRequestChatId = await createPrayerRequestChat({
+        requestContactEmail: 'requester@example.com',
+        zip: '12345',
+        city: 'Anytown',
+        region: 'CA',
+        messages: [],
+        churchId,
+      });
+
+      const req = createMockRequest({
+        params: { requestId: prayerRequestChatId },
+        session: {
+          user: {
+            userId: user.userId,
+            churchIds: [churchId],
+            firstName: 'Test',
+            lastName: 'User',
+            email: 'test@example.com',
+            gender: Gender.Male,
+          },
+        },
+      });
+
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/:requestId/hide', req, res, next);
+
+      expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.OK);
+
+      const requests = await listPrayerRequestChats({ churchId });
+      expect(requests.map(r => r.requestId)).not.toContain(prayerRequestChatId);
+    });
+
+    test('should return 403 if user belongs to a different church', async () => {
+      const churchId = await createChurch({
+        name: 'Test Church',
+        address: '123 Main St',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '12345',
+        county: 'Anytown',
+        email: 'test@church.com',
+      });
+
+      const otherChurchId = await createChurch({
+        name: 'Other Church',
+        address: '456 Other St',
+        city: 'Othertown',
+        state: 'CA',
+        zip: '54321',
+        county: 'Other County',
+        email: 'other@church.com',
+      });
+
+      const user = await createAdminUser({
+        churchId: otherChurchId,
+        firstName: 'Other',
+        lastName: 'User',
+        email: 'other@example.com',
+        gender: Gender.Male,
+        passwordHash: 'password',
+      });
+
+      const prayerRequestChatId = await createPrayerRequestChat({
+        requestContactEmail: 'requester@example.com',
+        zip: '12345',
+        city: 'Anytown',
+        region: 'CA',
+        messages: [],
+        churchId,
+      });
+
+      const req = createMockRequest({
+        params: { requestId: prayerRequestChatId },
+        session: {
+          user: {
+            userId: user.userId,
+            churchIds: [otherChurchId],
+            firstName: 'Other',
+            lastName: 'User',
+            email: 'other@example.com',
+            gender: Gender.Male,
+          },
+        },
+      });
+
+      await testRoute(prayerRequestChatsRouter(services), 'POST', '/:requestId/hide', req, res, next);
+
+      const lastNextCall = next.mock.calls[next.mock.calls.length - 1][0];
+      expect(lastNextCall).toBeInstanceOf(RouteError);
+      expect((lastNextCall as RouteError).status).toBe(HttpStatusCodes.FORBIDDEN);
     });
   });
 });

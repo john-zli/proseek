@@ -97,4 +97,22 @@ export const PrayerRequestChatsApi = {
       throw new Error('Failed to list prayer request chat messages');
     }
   },
+
+  prayForRequest: async (requestId: string): Promise<void> => {
+    try {
+      await api.post(`/prayer-requests/${requestId}/pray`, {});
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to mark prayer request as prayed for');
+    }
+  },
+
+  hideRequest: async (requestId: string): Promise<void> => {
+    try {
+      await api.post(`/prayer-requests/${requestId}/hide`, {});
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to hide prayer request');
+    }
+  },
 };

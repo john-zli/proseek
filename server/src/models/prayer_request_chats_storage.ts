@@ -25,6 +25,9 @@ const ColumnKeyMappings = {
     creationTimestamp: 'creation_timestamp',
     modificationTimestamp: 'modification_timestamp',
     matchNotificationTimestamp: 'match_notification_timestamp',
+    prayedForTimestamp: 'prayed_for_timestamp',
+    prayedForNotificationTimestamp: 'prayed_for_notification_timestamp',
+    hiddenTimestamp: 'hidden_timestamp',
   },
   PrayerRequestChatMessage: {
     messageId: 'message_id',
@@ -49,12 +52,16 @@ const SqlCommands = {
                 prayer_request_chats.city,
                 EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp)::bigint AS creation_timestamp,
                 EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp)::bigint AS modification_timestamp,
-                EXTRACT(EPOCH FROM prayer_request_chats.match_notification_timestamp)::bigint AS match_notification_timestamp
+                EXTRACT(EPOCH FROM prayer_request_chats.match_notification_timestamp)::bigint AS match_notification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.prayed_for_timestamp)::bigint AS prayed_for_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.prayed_for_notification_timestamp)::bigint AS prayed_for_notification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.hidden_timestamp)::bigint AS hidden_timestamp
     FROM        core.prayer_request_chats
     WHERE       ($1::uuid IS NULL OR prayer_request_chats.assigned_user_id = $1::uuid) AND
                 ($2::uuid IS NULL OR prayer_request_chats.assigned_church_id = $2::uuid) AND
                 ($3::boolean IS NOT TRUE OR
-                 ($3::boolean AND prayer_request_chats.match_notification_timestamp IS NULL))
+                 ($3::boolean AND prayer_request_chats.match_notification_timestamp IS NULL)) AND
+                ($4::boolean IS TRUE OR prayer_request_chats.hidden_timestamp IS NULL)
     ORDER BY    prayer_request_chats.creation_timestamp DESC;`,
   GetPrayerRequestChat: `
     SELECT      prayer_request_chats.request_id,
@@ -67,7 +74,10 @@ const SqlCommands = {
                 prayer_request_chats.city,
                 EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp)::bigint AS creation_timestamp,
                 EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp)::bigint AS modification_timestamp,
-                EXTRACT(EPOCH FROM prayer_request_chats.match_notification_timestamp)::bigint AS match_notification_timestamp
+                EXTRACT(EPOCH FROM prayer_request_chats.match_notification_timestamp)::bigint AS match_notification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.prayed_for_timestamp)::bigint AS prayed_for_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.prayed_for_notification_timestamp)::bigint AS prayed_for_notification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.hidden_timestamp)::bigint AS hidden_timestamp
     FROM        core.prayer_request_chats
     WHERE       prayer_request_chats.request_id = $1::uuid;`,
   VerifyPrayerRequestChat: `
@@ -104,6 +114,44 @@ const SqlCommands = {
         modification_timestamp = CURRENT_TIMESTAMP
     WHERE request_id = $2::uuid;`,
 
+  MarkPrayerRequestPrayedFor: `
+    UPDATE core.prayer_request_chats
+    SET prayed_for_timestamp = CURRENT_TIMESTAMP,
+        modification_timestamp = CURRENT_TIMESTAMP
+    WHERE request_id = $1::uuid;`,
+
+  HidePrayerRequest: `
+    UPDATE core.prayer_request_chats
+    SET hidden_timestamp = CURRENT_TIMESTAMP,
+        modification_timestamp = CURRENT_TIMESTAMP
+    WHERE request_id = $1::uuid;`,
+
+  ListUnnotifiedPrayedForRequests: `
+    SELECT      prayer_request_chats.request_id,
+                prayer_request_chats.assigned_user_id,
+                prayer_request_chats.assigned_church_id,
+                prayer_request_chats.responded,
+                prayer_request_chats.request_contact_email,
+                prayer_request_chats.request_contact_phone,
+                prayer_request_chats.zip,
+                prayer_request_chats.city,
+                EXTRACT(EPOCH FROM prayer_request_chats.creation_timestamp)::bigint AS creation_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.modification_timestamp)::bigint AS modification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.match_notification_timestamp)::bigint AS match_notification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.prayed_for_timestamp)::bigint AS prayed_for_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.prayed_for_notification_timestamp)::bigint AS prayed_for_notification_timestamp,
+                EXTRACT(EPOCH FROM prayer_request_chats.hidden_timestamp)::bigint AS hidden_timestamp
+    FROM        core.prayer_request_chats
+    WHERE       prayer_request_chats.prayed_for_timestamp IS NOT NULL
+                AND prayer_request_chats.prayed_for_notification_timestamp IS NULL
+                AND prayer_request_chats.request_contact_email IS NOT NULL
+    ORDER BY    prayer_request_chats.prayed_for_timestamp ASC;`,
+
+  UpdatePrayedForNotificationTimestamps: `
+    UPDATE core.prayer_request_chats
+    SET prayed_for_notification_timestamp = CURRENT_TIMESTAMP
+    WHERE request_id = ANY($1::uuid[]) AND prayed_for_notification_timestamp IS NULL;`,
+
   ListPrayerRequestChatMessages: `
     SELECT      m.message_id,
                 m.request_id,
@@ -130,11 +178,11 @@ const SqlCommands = {
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
 // Also different kind of db query wrappers.
 export async function listPrayerRequestChats(params: ListPrayerRequestChatsParams): Promise<PrayerRequestChat[]> {
-  const { userId, churchId, onlyUnnotified } = params;
+  const { userId, churchId, onlyUnnotified, showHidden } = params;
   return queryRows<PrayerRequestChat>({
     commandIdentifier: 'ListPrayerRequestChats',
     query: SqlCommands.ListPrayerRequestChats,
-    params: [userId, churchId, onlyUnnotified],
+    params: [userId, churchId, onlyUnnotified, showHidden],
     mapping: ColumnKeyMappings.PrayerRequestChat,
   });
 }
@@ -155,6 +203,39 @@ export async function assignPrayerRequestChat(params: AssignPrayerRequestChatToU
     commandIdentifier: 'AssignPrayerRequestChatToUser',
     query: SqlCommands.AssignPrayerRequestChatToUser,
     params: [userId, requestId],
+  });
+}
+
+export async function markPrayerRequestPrayedFor(requestId: string): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'MarkPrayerRequestPrayedFor',
+    query: SqlCommands.MarkPrayerRequestPrayedFor,
+    params: [requestId],
+  });
+}
+
+export async function hidePrayerRequest(requestId: string): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'HidePrayerRequest',
+    query: SqlCommands.HidePrayerRequest,
+    params: [requestId],
+  });
+}
+
+export async function listUnnotifiedPrayedForRequests(): Promise<PrayerRequestChat[]> {
+  return queryRows<PrayerRequestChat>({
+    commandIdentifier: 'ListUnnotifiedPrayedForRequests',
+    query: SqlCommands.ListUnnotifiedPrayedForRequests,
+    params: [],
+    mapping: ColumnKeyMappings.PrayerRequestChat,
+  });
+}
+
+export async function updatePrayedForNotificationTimestamps(requestIds: string[]): Promise<void> {
+  await nonQuery({
+    commandIdentifier: 'UpdatePrayedForNotificationTimestamps',
+    query: SqlCommands.UpdatePrayedForNotificationTimestamps,
+    params: [requestIds],
   });
 }
 

@@ -59,6 +59,18 @@ export const ListPrayerRequestChatMessagesSchema = z.object({
   }),
 });
 
+export const PrayForPrayerRequestSchema = z.object({
+  params: z.object({
+    requestId: z.string().uuid(),
+  }),
+});
+
+export const HidePrayerRequestSchema = z.object({
+  params: z.object({
+    requestId: z.string().uuid(),
+  }),
+});
+
 export const VerifyPrayerRequestChatSchema = z.object({
   params: z.object({
     requestId: z.string().min(1, 'Request ID is required'),

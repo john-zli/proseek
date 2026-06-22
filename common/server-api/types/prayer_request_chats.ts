@@ -10,6 +10,9 @@ export interface PrayerRequestChat {
   creationTimestamp: number;
   modificationTimestamp: number;
   matchNotificationTimestamp: number | null;
+  prayedForTimestamp: number | null;
+  prayedForNotificationTimestamp: number | null;
+  hiddenTimestamp: number | null;
 }
 
 interface PrayerRequestChatMessageParams
@@ -36,6 +39,7 @@ export interface ListPrayerRequestChatsParams {
   userId?: string;
   churchId?: string;
   onlyUnnotified?: boolean;
+  showHidden?: boolean;
 }
 
 // Chat Message Types
