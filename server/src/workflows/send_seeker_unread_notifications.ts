@@ -1,7 +1,6 @@
 import config from '@server/config';
 import {
   listChatsNeedingUnreadNotification,
-  listPrayerRequestChatMessages,
   updateSeekerUnreadNotificationTimestamps,
 } from '@server/models/prayer_request_chats_storage';
 import { logger } from '@server/services/logger';
@@ -33,26 +32,11 @@ export async function sendSeekerUnreadNotifications(
       continue;
     }
 
-    const messages = await listPrayerRequestChatMessages({ requestId: chat.requestId });
-
-    // Find the seeker's most recent message timestamp
-    const seekerMessages = messages.filter(m => m.userId === null && m.deletionTimestamp === null);
-    const lastSeekerTimestamp =
-      seekerMessages.length > 0 ? Math.max(...seekerMessages.map(m => m.messageTimestamp)) : 0;
-
-    // Find the first unread church message (first church message after seeker's last message)
-    const firstUnreadChurchMessage = messages.find(
-      m => m.userId !== null && m.deletionTimestamp === null && m.messageTimestamp > lastSeekerTimestamp
-    );
-
     const chatLink = `${config.clientUrl}/chats/${chat.requestId}`;
-    const senderName = firstUnreadChurchMessage?.senderName ?? 'A church member';
-    const preview = firstUnreadChurchMessage?.message;
 
     const html = `
-      <h2>You have a new message on ProSeek</h2>
-      <p>${senderName} has sent you a message in your prayer chat.</p>
-      ${preview ? `<p style="margin: 8px 0; padding: 12px; background: #f5f5f5; border-radius: 4px; border-left: 3px solid #4A90D9;">${preview}</p>` : ''}
+      <h2>You have unread messages for your prayer request</h2>
+      <p>A church member has responded to your prayer request on ProSeek.</p>
       <p><a href="${chatLink}" style="display: inline-block; padding: 10px 20px; background: #4A90D9; color: white; text-decoration: none; border-radius: 4px;">View Your Prayer Chat</a></p>
     `;
 
