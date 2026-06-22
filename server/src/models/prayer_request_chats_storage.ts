@@ -6,8 +6,10 @@ import {
   CreatePrayerRequestChatParams,
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatsParams,
+  ParticipantType,
   PrayerRequestChat,
   PrayerRequestChatMessage,
+  ReadReceipt,
   VerifyPrayerRequestChatParams,
 } from '@common/server-api/types/prayer_request_chats';
 
@@ -37,6 +39,11 @@ const ColumnKeyMappings = {
     userId: 'user_id',
     senderName: 'sender_name',
     deletionTimestamp: 'deletion_timestamp',
+  },
+  ReadReceipt: {
+    participantType: 'participant_type',
+    userId: 'user_id',
+    lastReadMessageId: 'last_read_message_id',
   },
 };
 
@@ -215,6 +222,19 @@ const SqlCommands = {
       user_id,
       message_timestamp
     ) VALUES ($1::uuid, $2::uuid, $3::text, $4::uuid, to_timestamp($5::bigint / 1000) AT TIME ZONE 'UTC');`,
+
+  UpsertReadReceipt: `
+    INSERT INTO core.prayer_request_chat_read_receipts (request_id, participant_type, user_id, last_read_message_id)
+    VALUES ($1::uuid, $2::varchar, $3::uuid, $4::uuid)
+    ON CONFLICT (request_id, participant_type)
+    DO UPDATE SET user_id = EXCLUDED.user_id, last_read_message_id = EXCLUDED.last_read_message_id;`,
+
+  GetReadReceipts: `
+    SELECT  participant_type,
+            user_id,
+            last_read_message_id
+    FROM    core.prayer_request_chat_read_receipts
+    WHERE   request_id = $1::uuid;`,
 };
 
 // TODO(johnli): Add abstractions for db to transform fields to camelCase.
@@ -339,6 +359,29 @@ export async function createPrayerRequestChatMessage(params: CreatePrayerRequest
     commandIdentifier: 'CreatePrayerRequestChatMessage',
     query: SqlCommands.CreatePrayerRequestChatMessage,
     params: [messageId, requestId, message, userId, messageTimestamp],
+  });
+}
+
+export async function upsertReadReceipt(params: {
+  requestId: string;
+  participantType: ParticipantType;
+  userId: string | null;
+  lastReadMessageId: string;
+}): Promise<void> {
+  const { requestId, participantType, userId, lastReadMessageId } = params;
+  await nonQuery({
+    commandIdentifier: 'UpsertReadReceipt',
+    query: SqlCommands.UpsertReadReceipt,
+    params: [requestId, participantType, userId, lastReadMessageId],
+  });
+}
+
+export async function getReadReceipts(requestId: string): Promise<ReadReceipt[]> {
+  return queryRows<ReadReceipt>({
+    commandIdentifier: 'GetReadReceipts',
+    query: SqlCommands.GetReadReceipts,
+    params: [requestId],
+    mapping: ColumnKeyMappings.ReadReceipt,
   });
 }
 

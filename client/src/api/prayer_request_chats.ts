@@ -5,6 +5,7 @@ import type {
   CreatePrayerRequestChatMessageParams,
   CreatePrayerRequestChatParams,
   CreatePrayerRequestChatResponse,
+  GetReadReceiptsResponse,
   ListPrayerRequestChatMessagesParams,
   ListPrayerRequestChatMessagesResponse,
   ListPrayerRequestChatsResponse,
@@ -113,6 +114,16 @@ export const PrayerRequestChatsApi = {
     } catch (error) {
       console.error(error);
       throw new Error('Failed to hide prayer request');
+    }
+  },
+
+  getReadReceipts: async (requestId: string): Promise<GetReadReceiptsResponse> => {
+    try {
+      const response = await api.get<GetReadReceiptsResponse>(`/prayer-requests/${requestId}/read-receipts`);
+      return response;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Failed to get read receipts');
     }
   },
 };

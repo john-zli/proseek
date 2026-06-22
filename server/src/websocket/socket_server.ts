@@ -1,5 +1,6 @@
+import { ParticipantType, ReadReceiptPayload } from '@common/server-api/types/prayer_request_chats';
 import { sessionMiddleware } from '@server/middleware/session';
-import { getPrayerRequestChat } from '@server/models/prayer_request_chats_storage';
+import { getPrayerRequestChat, upsertReadReceipt } from '@server/models/prayer_request_chats_storage';
 import { logger } from '@server/services/logger';
 import type { Server as HttpServer } from 'http';
 import { Server } from 'socket.io';
@@ -58,6 +59,25 @@ export function setupSocketServer(httpServer: HttpServer, options?: SetupSocketS
         socket.emit('join_error', { message: 'Failed to join room' });
       }
     });
+
+    socket.on(
+      'mark_read',
+      async ({ requestId, lastReadMessageId }: { requestId: string; lastReadMessageId: string }) => {
+        try {
+          if (!requestId || !lastReadMessageId) return;
+
+          const participantType: ParticipantType = session?.user ? 'church' : 'seeker';
+          const userId = session?.user?.userId ?? null;
+
+          await upsertReadReceipt({ requestId, participantType, userId, lastReadMessageId });
+
+          const payload: ReadReceiptPayload = { requestId, participantType, userId, lastReadMessageId };
+          io!.to(requestId).emit('read_receipt', payload);
+        } catch (error) {
+          logger.error(error, 'Error marking message as read');
+        }
+      }
+    );
   });
 
   return io;
