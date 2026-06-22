@@ -541,7 +541,7 @@ describe('prayer request chats routes', () => {
   });
 
   describe('POST /:requestId/message (with authenticated user)', () => {
-    test('should include assignedUserId from session when authenticated', async () => {
+    test('should include userId from session when authenticated', async () => {
       const churchId = await createChurch({
         name: 'Test Church',
         address: '123 Main St',
@@ -596,13 +596,13 @@ describe('prayer request chats routes', () => {
 
       expect(res.status.mock.calls[0][0]).toBe(HttpStatusCodes.CREATED);
 
-      // Verify message was saved with assignedUserId
+      // Verify message was saved with userId
       const messages = await listPrayerRequestChatMessages({ requestId: prayerRequestChatId });
       expect(messages).toHaveLength(1);
       expect(messages[0]).toMatchObject({
         message: 'Church response',
         messageId,
-        assignedUserId: user.userId,
+        userId: user.userId,
       });
     });
   });

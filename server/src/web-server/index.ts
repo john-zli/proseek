@@ -2,17 +2,22 @@ import config from '../config';
 import { startServer } from './server';
 import { logger } from '@server/services/logger';
 import { ServicesBuilder } from '@server/services/services_builder';
+import { setupSocketServer } from '@server/websocket/socket_server';
+import type { Server } from 'http';
 
 const port = config.port;
+
+let httpServer: Server | null = null;
 
 async function start() {
   try {
     const services = new ServicesBuilder();
     // Start the server
     const app = startServer(services);
-    app.listen(port, () => {
+    httpServer = app.listen(port, () => {
       logger.info(`Server started on port ${port}`);
     });
+    setupSocketServer(httpServer);
   } catch (error) {
     logger.error('Failed to start server:', error);
     process.exit(1);
@@ -23,6 +28,9 @@ async function start() {
 async function shutdown() {
   logger.info('Shutting down server...');
   try {
+    if (httpServer) {
+      httpServer.close();
+    }
     logger.info('Server and queue closed successfully');
     process.exit(0);
   } catch (error) {

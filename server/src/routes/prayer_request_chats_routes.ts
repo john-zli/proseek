@@ -15,6 +15,7 @@ import {
   ListPrayerRequestChatsSchema,
   VerifyPrayerRequestChatSchema,
 } from '../schemas/prayer_request_chats';
+import { ChatMessagePayload } from '@common/server-api/types/prayer_request_chats';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createPrayerRequestChatController } from '@server/controllers/create-prayer-request-controller/create_prayer_request_chat_controller';
@@ -22,6 +23,7 @@ import { ensureAuthenticated } from '@server/middleware/auth';
 import { verifyCaptcha } from '@server/middleware/verify_captcha';
 import { logger } from '@server/services/logger';
 import { IServicesBuilder } from '@server/services/services_builder';
+import { getIO } from '@server/websocket/socket_server';
 import { Router } from 'express';
 
 export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
@@ -74,7 +76,8 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
   router.post('/:requestId/message', validate(CreatePrayerRequestChatMessageSchema), async (req, res, next) => {
     const { requestId } = req.params;
     const { message, messageId, messageTimestamp } = req.body;
-    const assignedUserId = req.session.user?.userId;
+    const userId = req.session.user?.userId;
+    const senderName = req.session.user?.firstName ?? null;
 
     try {
       await createPrayerRequestChatMessage({
@@ -82,8 +85,23 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
         message,
         messageId,
         messageTimestamp,
-        assignedUserId,
+        userId,
       });
+
+      // Broadcast to all connected clients in this chat room
+      const io = getIO();
+      if (io) {
+        const payload: ChatMessagePayload = {
+          messageId,
+          requestId,
+          message,
+          messageTimestamp,
+          userId: userId ?? null,
+          senderName,
+        };
+        io.to(requestId).emit('new_message', payload);
+      }
+
       res.status(HttpStatusCodes.CREATED).send();
     } catch (error) {
       return next(error);

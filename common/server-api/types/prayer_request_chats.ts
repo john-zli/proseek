@@ -13,8 +13,8 @@ export interface PrayerRequestChat {
 }
 
 interface PrayerRequestChatMessageParams
-  extends Omit<PrayerRequestChatMessage, 'requestId' | 'assignedUserId' | 'deletionTimestamp'> {
-  assignedUserId?: string;
+  extends Omit<PrayerRequestChatMessage, 'requestId' | 'userId' | 'senderName' | 'deletionTimestamp'> {
+  userId?: string;
 }
 
 export interface CreatePrayerRequestChatParams {
@@ -44,7 +44,8 @@ export interface PrayerRequestChatMessage {
   requestId: string;
   message: string;
   messageTimestamp: number;
-  assignedUserId: string | null;
+  userId: string | null;
+  senderName: string | null;
   deletionTimestamp: number | null;
 }
 
@@ -52,8 +53,18 @@ export interface CreatePrayerRequestChatMessageParams {
   messageId: string;
   requestId: string;
   message: string;
-  assignedUserId?: string;
+  userId?: string;
   messageTimestamp: number;
+}
+
+// Socket event payload
+export interface ChatMessagePayload {
+  messageId: string;
+  requestId: string;
+  message: string;
+  messageTimestamp: number;
+  userId: string | null;
+  senderName: string | null;
 }
 
 export interface ListPrayerRequestChatMessagesParams {

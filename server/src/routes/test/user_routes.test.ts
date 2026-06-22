@@ -387,6 +387,7 @@ describe('user routes', () => {
       expect(res.json.mock.calls[0][0]).toEqual({
         targetEmail: 'invitee@example.com',
         churchName: 'Test Church',
+        churchId,
       });
     });
 

@@ -87,7 +87,8 @@ describe('prayer_request_chats_storage', () => {
           requestId,
           message: 'Hello',
           messageTimestamp: 1700000000, // Expect the seconds value
-          assignedUserId: null,
+          userId: null,
+          senderName: null,
           deletionTimestamp: null,
         },
         {
@@ -95,7 +96,8 @@ describe('prayer_request_chats_storage', () => {
           requestId,
           message: 'World',
           messageTimestamp: 1700000001, // Expect the seconds value
-          assignedUserId: null,
+          userId: null,
+          senderName: null,
           deletionTimestamp: null,
         },
       ]);
@@ -288,7 +290,8 @@ describe('prayer_request_chats_storage', () => {
         requestId,
         message,
         messageTimestamp: 1700000001,
-        assignedUserId: null,
+        userId: null,
+        senderName: null,
         deletionTimestamp: null,
       });
     });

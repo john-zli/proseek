@@ -13,7 +13,7 @@ export const CreatePrayerRequestChatSchema = z.object({
         message: z.string().min(1, 'Message is required'),
         messageId: z.string().uuid(),
         messageTimestamp: z.number().int().nonnegative(),
-        assignedUserId: z.string().uuid().optional(),
+        userId: z.string().uuid().optional(),
       })
     ),
     zip: z.string().optional(),
@@ -46,7 +46,7 @@ export const CreatePrayerRequestChatMessageSchema = z.object({
   }),
   body: z.object({
     message: z.string().min(1, 'Message is required'),
-    assignedUserId: z.string().optional(),
+    userId: z.string().optional(),
     messageId: z.string().uuid(),
     messageTimestamp: z.number().int().nonnegative(),
   }),
