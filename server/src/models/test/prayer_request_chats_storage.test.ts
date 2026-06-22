@@ -154,7 +154,8 @@ describe('prayer_request_chats_storage', () => {
       expect(pending.map(r => r.requestId)).not.toContain(requestId);
 
       // Seeker replies (engages) — timestamp must be after the notification we just set
-      const seekerReplyTimestamp = Date.now() + 5000;
+      const notified = await getPrayerRequestChat(requestId);
+      const seekerReplyTimestamp = notified!.seekerUnreadNotificationTimestamp! * 1000 + 5000;
       await createPrayerRequestChatMessage({
         messageId: uuidv4(),
         requestId,

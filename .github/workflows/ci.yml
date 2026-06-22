@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    environment: CI
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Set up test database
+        working-directory: server
+        env:
+          PGPASSWORD: ${{ secrets.PGPASSWORD }}
+          DATABASE_CONNECTION_STRING: ${{ secrets.DATABASE_CONNECTION_STRING }}
+        run: |
+          psql -h localhost -U postgres -c "CREATE USER proseek_admin WITH PASSWORD 'password';"
+          psql -h localhost -U postgres -c "CREATE DATABASE proseek_test OWNER proseek_admin;"
+          psql -h localhost -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE proseek_test TO proseek_admin;"
+          NODE_ENV=test bash scripts/migrations.sh
+
+      - name: Run tests
+        working-directory: server
+        env:
+          DATABASE_CONNECTION_STRING: ${{ secrets.DATABASE_CONNECTION_STRING }}
+        run: bun run test
+
+  lint-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Type check
+        working-directory: server
+        run: bun run type-check
