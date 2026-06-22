@@ -7,12 +7,13 @@ import {
   createPrayerRequestChatMessage,
   getPrayerRequestChat,
   hidePrayerRequest,
+  listChatsNeedingUnreadNotification,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
   listUnnotifiedPrayedForRequests,
   markPrayerRequestPrayedFor,
-  updateMatchNotificationTimestamps,
   updatePrayedForNotificationTimestamps,
+  updateSeekerUnreadNotificationTimestamps,
   verifyPrayerRequestChat,
 } from '../prayer_request_chats_storage';
 import { createAdminUser } from '../users_storage';
@@ -79,10 +80,10 @@ describe('prayer_request_chats_storage', () => {
           city: 'Test City',
           creationTimestamp: expect.any(Number),
           modificationTimestamp: expect.any(Number),
-          matchNotificationTimestamp: null,
           prayedForTimestamp: null,
           prayedForNotificationTimestamp: null,
           hiddenTimestamp: null,
+          seekerUnreadNotificationTimestamp: null,
         },
       ]);
 
@@ -109,46 +110,102 @@ describe('prayer_request_chats_storage', () => {
         },
       ]);
     });
+  });
 
-    test('should list only unnotified prayer requests if specified', async () => {
-      const messageTimestamp = 1700000000 * 1000;
-      const params = {
-        requestContactEmail: 'user@example.com',
-        requestContactPhone: '123-456-7890',
+  describe('listChatsNeedingUnreadNotification', () => {
+    test("should return chats where a church message exists after the seeker's last message", async () => {
+      const seekerMsgId = uuidv4();
+      const requestId = await createPrayerRequestChat({
+        requestContactEmail: 'seeker@example.com',
         zip: '12345',
         city: 'Test City',
-        messages: [
-          {
-            messageId: uuidv4(),
-            message: 'Hello',
-            messageTimestamp,
-          },
-        ],
-      };
-      const requestId = await createPrayerRequestChat(params);
-      let prayerRequests = await listPrayerRequestChats({ onlyUnnotified: true });
-      expect(prayerRequests).toEqual([
-        {
-          requestId,
-          assignedUserId: null,
-          assignedChurchId: null,
-          requestContactEmail: 'user@example.com',
-          requestContactPhone: '123-456-7890',
-          responded: false,
-          zip: '12345',
-          city: 'Test City',
-          creationTimestamp: expect.any(Number),
-          modificationTimestamp: expect.any(Number),
-          matchNotificationTimestamp: null,
-          prayedForTimestamp: null,
-          prayedForNotificationTimestamp: null,
-          hiddenTimestamp: null,
-        },
-      ]);
+        churchId,
+        messages: [{ messageId: seekerMsgId, message: 'Please pray for me', messageTimestamp: 1700000000 * 1000 }],
+      });
 
-      await updateMatchNotificationTimestamps([requestId]);
-      prayerRequests = await listPrayerRequestChats({ onlyUnnotified: true });
-      expect(prayerRequests).toEqual([]);
+      // No church reply yet — should not appear
+      let pending = await listChatsNeedingUnreadNotification();
+      expect(pending.map(r => r.requestId)).not.toContain(requestId);
+
+      // Church member replies
+      const user = await createAdminUser({
+        churchId,
+        firstName: 'Church',
+        lastName: 'Member',
+        email: 'member@church.com',
+        gender: Gender.Male,
+        passwordHash: 'password',
+      });
+      await createPrayerRequestChatMessage({
+        messageId: uuidv4(),
+        requestId,
+        message: 'We are praying for you',
+        userId: user.userId,
+        messageTimestamp: 1700000001 * 1000,
+      });
+
+      // Now should appear
+      pending = await listChatsNeedingUnreadNotification();
+      expect(pending.map(r => r.requestId)).toContain(requestId);
+
+      // After marking as notified, should not appear again
+      await updateSeekerUnreadNotificationTimestamps([requestId]);
+      pending = await listChatsNeedingUnreadNotification();
+      expect(pending.map(r => r.requestId)).not.toContain(requestId);
+
+      // Seeker replies (engages) — timestamp must be after the notification we just set
+      const seekerReplyTimestamp = Date.now() + 5000;
+      await createPrayerRequestChatMessage({
+        messageId: uuidv4(),
+        requestId,
+        message: 'Thank you',
+        messageTimestamp: seekerReplyTimestamp,
+      });
+
+      // Still no new church message yet — should not appear
+      pending = await listChatsNeedingUnreadNotification();
+      expect(pending.map(r => r.requestId)).not.toContain(requestId);
+
+      // Church replies again after the seeker's engagement
+      await createPrayerRequestChatMessage({
+        messageId: uuidv4(),
+        requestId,
+        message: 'God bless you',
+        userId: user.userId,
+        messageTimestamp: seekerReplyTimestamp + 1000,
+      });
+
+      // New sequence after seeker engagement — should appear again
+      pending = await listChatsNeedingUnreadNotification();
+      expect(pending.map(r => r.requestId)).toContain(requestId);
+    });
+
+    test('should not return chats with no contact info', async () => {
+      const requestId = await createPrayerRequestChat({
+        zip: '12345',
+        city: 'Test City',
+        churchId,
+        messages: [{ messageId: uuidv4(), message: 'Please pray', messageTimestamp: 1700000000 * 1000 }],
+      });
+
+      const user = await createAdminUser({
+        churchId,
+        firstName: 'Church',
+        lastName: 'Member',
+        email: 'member2@church.com',
+        gender: Gender.Male,
+        passwordHash: 'password',
+      });
+      await createPrayerRequestChatMessage({
+        messageId: uuidv4(),
+        requestId,
+        message: 'We pray for you',
+        userId: user.userId,
+        messageTimestamp: 1700000001 * 1000,
+      });
+
+      const pending = await listChatsNeedingUnreadNotification();
+      expect(pending.map(r => r.requestId)).not.toContain(requestId);
     });
   });
 
@@ -198,10 +255,10 @@ describe('prayer_request_chats_storage', () => {
           city: 'Test City',
           creationTimestamp: expect.any(Number),
           modificationTimestamp: expect.any(Number),
-          matchNotificationTimestamp: null,
           prayedForTimestamp: null,
           prayedForNotificationTimestamp: null,
           hiddenTimestamp: null,
+          seekerUnreadNotificationTimestamp: null,
         },
       ]);
     });
@@ -341,10 +398,10 @@ describe('prayer_request_chats_storage', () => {
         city: 'Test City',
         creationTimestamp: expect.any(Number),
         modificationTimestamp: expect.any(Number),
-        matchNotificationTimestamp: null,
         prayedForTimestamp: null,
         prayedForNotificationTimestamp: null,
         hiddenTimestamp: null,
+        seekerUnreadNotificationTimestamp: null,
       });
     });
 

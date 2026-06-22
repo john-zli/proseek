@@ -9,10 +9,10 @@ export interface PrayerRequestChat {
   city: string | null;
   creationTimestamp: number;
   modificationTimestamp: number;
-  matchNotificationTimestamp: number | null;
   prayedForTimestamp: number | null;
   prayedForNotificationTimestamp: number | null;
   hiddenTimestamp: number | null;
+  seekerUnreadNotificationTimestamp: number | null;
 }
 
 interface PrayerRequestChatMessageParams
@@ -38,7 +38,6 @@ export interface AssignPrayerRequestChatToUserParams {
 export interface ListPrayerRequestChatsParams {
   userId?: string;
   churchId?: string;
-  onlyUnnotified?: boolean;
   showHidden?: boolean;
 }
 
