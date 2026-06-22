@@ -3,6 +3,7 @@ import config from '@server/config';
 // Workflow types
 export enum WorkflowName {
   SendChurchMatchNotifications = 'SendChurchMatchNotifications',
+  SendPrayedForNotifications = 'SendPrayedForNotifications',
   InviteUser = 'InviteUser',
 }
 
@@ -29,6 +30,7 @@ export interface InviteUserPayload extends Record<string, unknown> {
 
 export interface WorkflowParamsForWorkflowName {
   [WorkflowName.SendChurchMatchNotifications]: undefined;
+  [WorkflowName.SendPrayedForNotifications]: undefined;
   [WorkflowName.InviteUser]: InviteUserPayload;
 }
 
@@ -43,13 +45,17 @@ interface WorkflowSchedule {
   endDate?: Date;
 }
 
-export type RecurringWorkflowName = WorkflowName.SendChurchMatchNotifications;
+export type RecurringWorkflowName = WorkflowName.SendChurchMatchNotifications | WorkflowName.SendPrayedForNotifications;
 
 // Workflow schedules
 export const RECURRING_WORKFLOW_SCHEDULES: Record<RecurringWorkflowName, WorkflowSchedule> = {
   [WorkflowName.SendChurchMatchNotifications]: {
     every: 5 * 60 * 1000, // Every 5 minutes
     name: WorkflowName.SendChurchMatchNotifications,
+  },
+  [WorkflowName.SendPrayedForNotifications]: {
+    every: 5 * 60 * 1000, // Every 5 minutes
+    name: WorkflowName.SendPrayedForNotifications,
   },
 };
 // Redis configuration

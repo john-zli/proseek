@@ -34,6 +34,33 @@ export function PortalPage() {
     window.open(`/chats/${requestId}`, '_blank');
   }, []);
 
+  const handlePrayFor = useCallback(async (requestId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await PrayerRequestChatsApi.prayForRequest(requestId);
+      setPrayerRequests(prev =>
+        prev.map(r => (r.requestId === requestId ? { ...r, prayedForTimestamp: Date.now() / 1000 } : r))
+      );
+    } catch {
+      // silently fail — user can retry
+    }
+  }, []);
+
+  const handleHide = useCallback(async (requestId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (
+      !window.confirm('Remove this prayer request from your view? The person who submitted it will not be notified.')
+    ) {
+      return;
+    }
+    try {
+      await PrayerRequestChatsApi.hideRequest(requestId);
+      setPrayerRequests(prev => prev.filter(r => r.requestId !== requestId));
+    } catch {
+      // silently fail — user can retry
+    }
+  }, []);
+
   const filteredRequests = useMemo(() => {
     return activeTab === Tab.Mine
       ? prayerRequests?.filter(r => r.assignedUserId === session?.user?.userId)
@@ -97,7 +124,27 @@ export function PortalPage() {
                     )}
                   </div>
                 </div>
-                {request.assignedUserId && <span className={classes.badge}>Assigned</span>}
+                <div className={classes.cardActions}>
+                  {request.assignedUserId && <span className={classes.badge}>Assigned</span>}
+                  {request.prayedForTimestamp ? (
+                    <span className={classes.prayedForBadge}>🙏 Prayed For</span>
+                  ) : (
+                    <button
+                      className={classes.actionBtn}
+                      onClick={e => handlePrayFor(request.requestId, e)}
+                      title="Mark as prayed for"
+                    >
+                      🙏
+                    </button>
+                  )}
+                  <button
+                    className={classes.actionBtn}
+                    onClick={e => handleHide(request.requestId, e)}
+                    title="Remove from view"
+                  >
+                    ✕
+                  </button>
+                </div>
                 <span className={classes.openIcon}>&rsaquo;</span>
               </div>
             ))}

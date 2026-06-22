@@ -15,9 +15,12 @@ CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
   request_contact_phone         varchar(20),
 
   -- Metadata
-  creation_timestamp            timestamp           NOT NULL DEFAULT now(),
-  modification_timestamp        timestamp           NOT NULL DEFAULT now(),
-  match_notification_timestamp  timestamp,
+  creation_timestamp                timestamp           NOT NULL DEFAULT now(),
+  modification_timestamp            timestamp           NOT NULL DEFAULT now(),
+  match_notification_timestamp      timestamp,
+  prayed_for_timestamp              timestamp,
+  prayed_for_notification_timestamp timestamp,
+  hidden_timestamp                  timestamp,
 
   CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id)
     REFERENCES core.users(user_id) ON DELETE SET NULL,
@@ -107,6 +110,34 @@ BEGIN
       AND indexname = 'prayer_request_chats_creation_timestamp_idx'
   ) THEN
     CREATE INDEX prayer_request_chats_creation_timestamp_idx ON core.prayer_request_chats(creation_timestamp);
+  END IF;
+END $$;
+
+-- Add prayed_for_timestamp, prayed_for_notification_timestamp, hidden_timestamp columns
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'core' AND table_name = 'prayer_request_chats' AND column_name = 'prayed_for_timestamp'
+  ) THEN
+    ALTER TABLE core.prayer_request_chats ADD COLUMN prayed_for_timestamp timestamp;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'core' AND table_name = 'prayer_request_chats' AND column_name = 'prayed_for_notification_timestamp'
+  ) THEN
+    ALTER TABLE core.prayer_request_chats ADD COLUMN prayed_for_notification_timestamp timestamp;
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'core' AND table_name = 'prayer_request_chats' AND column_name = 'hidden_timestamp'
+  ) THEN
+    ALTER TABLE core.prayer_request_chats ADD COLUMN hidden_timestamp timestamp;
   END IF;
 END $$;
 

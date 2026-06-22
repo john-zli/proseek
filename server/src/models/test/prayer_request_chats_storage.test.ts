@@ -6,9 +6,13 @@ import {
   createPrayerRequestChat,
   createPrayerRequestChatMessage,
   getPrayerRequestChat,
+  hidePrayerRequest,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
+  listUnnotifiedPrayedForRequests,
+  markPrayerRequestPrayedFor,
   updateMatchNotificationTimestamps,
+  updatePrayedForNotificationTimestamps,
   verifyPrayerRequestChat,
 } from '../prayer_request_chats_storage';
 import { createAdminUser } from '../users_storage';
@@ -76,6 +80,9 @@ describe('prayer_request_chats_storage', () => {
           creationTimestamp: expect.any(Number),
           modificationTimestamp: expect.any(Number),
           matchNotificationTimestamp: null,
+          prayedForTimestamp: null,
+          prayedForNotificationTimestamp: null,
+          hiddenTimestamp: null,
         },
       ]);
 
@@ -133,6 +140,9 @@ describe('prayer_request_chats_storage', () => {
           creationTimestamp: expect.any(Number),
           modificationTimestamp: expect.any(Number),
           matchNotificationTimestamp: null,
+          prayedForTimestamp: null,
+          prayedForNotificationTimestamp: null,
+          hiddenTimestamp: null,
         },
       ]);
 
@@ -189,6 +199,9 @@ describe('prayer_request_chats_storage', () => {
           creationTimestamp: expect.any(Number),
           modificationTimestamp: expect.any(Number),
           matchNotificationTimestamp: null,
+          prayedForTimestamp: null,
+          prayedForNotificationTimestamp: null,
+          hiddenTimestamp: null,
         },
       ]);
     });
@@ -329,12 +342,95 @@ describe('prayer_request_chats_storage', () => {
         creationTimestamp: expect.any(Number),
         modificationTimestamp: expect.any(Number),
         matchNotificationTimestamp: null,
+        prayedForTimestamp: null,
+        prayedForNotificationTimestamp: null,
+        hiddenTimestamp: null,
       });
     });
 
     test('should return null for non-existent request ID', async () => {
       const result = await getPrayerRequestChat(uuidv4());
       expect(result).toBeNull();
+    });
+  });
+
+  describe('markPrayerRequestPrayedFor', () => {
+    test('should set prayed_for_timestamp and appear in unnotified list', async () => {
+      const requestId = await createPrayerRequestChat({
+        requestContactEmail: 'seeker@example.com',
+        zip: '12345',
+        city: 'Test City',
+        messages: [],
+        churchId,
+      });
+
+      let unnotified = await listUnnotifiedPrayedForRequests();
+      expect(unnotified.map(r => r.requestId)).not.toContain(requestId);
+
+      await markPrayerRequestPrayedFor(requestId);
+
+      const result = await getPrayerRequestChat(requestId);
+      expect(result?.prayedForTimestamp).not.toBeNull();
+
+      unnotified = await listUnnotifiedPrayedForRequests();
+      expect(unnotified.map(r => r.requestId)).toContain(requestId);
+    });
+
+    test('should be removed from unnotified list after notification timestamp is set', async () => {
+      const requestId = await createPrayerRequestChat({
+        requestContactEmail: 'seeker@example.com',
+        zip: '12345',
+        city: 'Test City',
+        messages: [],
+        churchId,
+      });
+
+      await markPrayerRequestPrayedFor(requestId);
+      await updatePrayedForNotificationTimestamps([requestId]);
+
+      const unnotified = await listUnnotifiedPrayedForRequests();
+      expect(unnotified.map(r => r.requestId)).not.toContain(requestId);
+
+      const result = await getPrayerRequestChat(requestId);
+      expect(result?.prayedForNotificationTimestamp).not.toBeNull();
+    });
+  });
+
+  describe('hidePrayerRequest', () => {
+    test('should set hidden_timestamp and exclude from default list', async () => {
+      const requestId = await createPrayerRequestChat({
+        requestContactEmail: 'seeker@example.com',
+        zip: '12345',
+        city: 'Test City',
+        messages: [],
+        churchId,
+      });
+
+      let requests = await listPrayerRequestChats({ churchId });
+      expect(requests.map(r => r.requestId)).toContain(requestId);
+
+      await hidePrayerRequest(requestId);
+
+      requests = await listPrayerRequestChats({ churchId });
+      expect(requests.map(r => r.requestId)).not.toContain(requestId);
+    });
+
+    test('should be visible when showHidden is true', async () => {
+      const requestId = await createPrayerRequestChat({
+        requestContactEmail: 'seeker@example.com',
+        zip: '12345',
+        city: 'Test City',
+        messages: [],
+        churchId,
+      });
+
+      await hidePrayerRequest(requestId);
+
+      const requests = await listPrayerRequestChats({ churchId, showHidden: true });
+      expect(requests.map(r => r.requestId)).toContain(requestId);
+
+      const result = requests.find(r => r.requestId === requestId);
+      expect(result?.hiddenTimestamp).not.toBeNull();
     });
   });
 });

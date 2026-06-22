@@ -3,16 +3,20 @@ import {
   assignPrayerRequestChat,
   createPrayerRequestChatMessage,
   getPrayerRequestChat,
+  hidePrayerRequest,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
+  markPrayerRequestPrayedFor,
   verifyPrayerRequestChat,
 } from '../models/prayer_request_chats_storage';
 import {
   AssignPrayerRequestChatSchema,
   CreatePrayerRequestChatMessageSchema,
   CreatePrayerRequestChatSchema,
+  HidePrayerRequestSchema,
   ListPrayerRequestChatMessagesSchema,
   ListPrayerRequestChatsSchema,
+  PrayForPrayerRequestSchema,
   VerifyPrayerRequestChatSchema,
 } from '../schemas/prayer_request_chats';
 import { ChatMessagePayload } from '@common/server-api/types/prayer_request_chats';
@@ -122,6 +126,40 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
 
       const chatMessages = await listPrayerRequestChatMessages({ requestId });
       res.status(HttpStatusCodes.OK).json({ messages: chatMessages });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  // Mark a prayer request as prayed for
+  router.post('/:requestId/pray', validate(PrayForPrayerRequestSchema), ensureAuthenticated, async (req, res, next) => {
+    const { requestId } = req.params;
+
+    try {
+      const prayerRequest = await getPrayerRequestChat(requestId);
+      if (!prayerRequest?.assignedChurchId || !req.session.user!.churchIds.includes(prayerRequest.assignedChurchId)) {
+        return next(new RouteError(HttpStatusCodes.FORBIDDEN, 'You do not have access to this prayer request'));
+      }
+
+      await markPrayerRequestPrayedFor(requestId);
+      res.status(HttpStatusCodes.OK).json({ success: true });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  // Hide a prayer request (shadow ban — seeker is unaffected)
+  router.post('/:requestId/hide', validate(HidePrayerRequestSchema), ensureAuthenticated, async (req, res, next) => {
+    const { requestId } = req.params;
+
+    try {
+      const prayerRequest = await getPrayerRequestChat(requestId);
+      if (!prayerRequest?.assignedChurchId || !req.session.user!.churchIds.includes(prayerRequest.assignedChurchId)) {
+        return next(new RouteError(HttpStatusCodes.FORBIDDEN, 'You do not have access to this prayer request'));
+      }
+
+      await hidePrayerRequest(requestId);
+      res.status(HttpStatusCodes.OK).json({ success: true });
     } catch (error) {
       return next(error);
     }
