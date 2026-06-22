@@ -22,7 +22,7 @@ describe('workflows_storage', () => {
   describe('insertWorkflowRun', () => {
     test('should insert a workflow run and return runId', async () => {
       const runId = await insertWorkflowRun({
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: false,
       });
 
@@ -32,7 +32,7 @@ describe('workflows_storage', () => {
       expect(queuedRuns).toHaveLength(1);
       expect(queuedRuns[0]).toEqual({
         runId,
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: false,
         payload: null,
       });
@@ -47,7 +47,7 @@ describe('workflows_storage', () => {
 
     test('should not return runs that have been started', async () => {
       const runId = await insertWorkflowRun({
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: true,
       });
 
@@ -67,7 +67,7 @@ describe('workflows_storage', () => {
 
     beforeEach(async () => {
       runId = await insertWorkflowRun({
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: true,
       });
     });
@@ -76,7 +76,7 @@ describe('workflows_storage', () => {
       const workflowRun = await getWorkflowRunById(runId);
       expect(workflowRun).toEqual({
         runId,
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: true,
         status: WorkflowStatus.Queued,
         payload: null,
@@ -95,7 +95,7 @@ describe('workflows_storage', () => {
 
     beforeEach(async () => {
       runId = await insertWorkflowRun({
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: true,
       });
     });
@@ -106,7 +106,7 @@ describe('workflows_storage', () => {
       const workflowRun = await getWorkflowRunById(runId);
       expect(workflowRun).toEqual({
         runId,
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: true,
         status: WorkflowStatus.Running,
         payload: null,
@@ -125,7 +125,7 @@ describe('workflows_storage', () => {
 
     beforeEach(async () => {
       runId = await insertWorkflowRun({
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: true,
       });
 
@@ -142,7 +142,7 @@ describe('workflows_storage', () => {
       const workflowRun = await getWorkflowRunById(runId);
       expect(workflowRun).toEqual({
         runId,
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: true,
         status: WorkflowStatus.Completed,
         payload: null,
@@ -165,7 +165,7 @@ describe('workflows_storage', () => {
       const workflowRun = await getWorkflowRunById(runId);
       expect(workflowRun).toEqual({
         runId,
-        workflowName: WorkflowName.SendChurchMatchNotifications,
+        workflowName: WorkflowName.SendPrayedForNotifications,
         isRecurring: true,
         status: WorkflowStatus.Failed,
         payload: null,

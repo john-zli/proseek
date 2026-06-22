@@ -15,12 +15,12 @@ CREATE TABLE IF NOT EXISTS core.prayer_request_chats (
   request_contact_phone         varchar(20),
 
   -- Metadata
-  creation_timestamp                timestamp           NOT NULL DEFAULT now(),
-  modification_timestamp            timestamp           NOT NULL DEFAULT now(),
-  match_notification_timestamp      timestamp,
-  prayed_for_timestamp              timestamp,
-  prayed_for_notification_timestamp timestamp,
-  hidden_timestamp                  timestamp,
+  creation_timestamp                    timestamp   NOT NULL DEFAULT now(),
+  modification_timestamp                timestamp   NOT NULL DEFAULT now(),
+  prayed_for_timestamp                  timestamp,
+  prayed_for_notification_timestamp     timestamp,
+  hidden_timestamp                      timestamp,
+  seeker_unread_notification_timestamp  timestamp,
 
   CONSTRAINT assigned_user_fk FOREIGN KEY (assigned_user_id)
     REFERENCES core.users(user_id) ON DELETE SET NULL,
@@ -113,31 +113,25 @@ BEGIN
   END IF;
 END $$;
 
--- Add prayed_for_timestamp, prayed_for_notification_timestamp, hidden_timestamp columns
+-- Drop match_notification_timestamp (church match notifications removed)
 DO $$ BEGIN
-  IF NOT EXISTS (
+  IF EXISTS (
     SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'core' AND table_name = 'prayer_request_chats' AND column_name = 'prayed_for_timestamp'
+    WHERE table_schema = 'core' AND table_name = 'prayer_request_chats'
+      AND column_name = 'match_notification_timestamp'
   ) THEN
-    ALTER TABLE core.prayer_request_chats ADD COLUMN prayed_for_timestamp timestamp;
+    ALTER TABLE core.prayer_request_chats DROP COLUMN match_notification_timestamp;
   END IF;
 END $$;
 
+-- Add seeker_unread_notification_timestamp
 DO $$ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'core' AND table_name = 'prayer_request_chats' AND column_name = 'prayed_for_notification_timestamp'
+    WHERE table_schema = 'core' AND table_name = 'prayer_request_chats'
+      AND column_name = 'seeker_unread_notification_timestamp'
   ) THEN
-    ALTER TABLE core.prayer_request_chats ADD COLUMN prayed_for_notification_timestamp timestamp;
-  END IF;
-END $$;
-
-DO $$ BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-    WHERE table_schema = 'core' AND table_name = 'prayer_request_chats' AND column_name = 'hidden_timestamp'
-  ) THEN
-    ALTER TABLE core.prayer_request_chats ADD COLUMN hidden_timestamp timestamp;
+    ALTER TABLE core.prayer_request_chats ADD COLUMN seeker_unread_notification_timestamp timestamp;
   END IF;
 END $$;
 
@@ -152,6 +146,54 @@ BEGIN
       AND indexname = 'prayer_request_chat_messages_message_timestamp_idx'
   ) THEN
     CREATE INDEX prayer_request_chat_messages_message_timestamp_idx ON core.prayer_request_chat_messages(message_timestamp);
+  END IF;
+END $$;
+
+-- Composite index for sender+timestamp lookups in correlated subqueries
+-- (e.g. MAX(message_timestamp) WHERE request_id=X AND user_id IS [NOT] NULL AND deletion_timestamp IS NULL)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname = 'core'
+      AND tablename = 'prayer_request_chat_messages'
+      AND indexname = 'prayer_request_chat_messages_request_sender_time_idx'
+  ) THEN
+    CREATE INDEX prayer_request_chat_messages_request_sender_time_idx
+      ON core.prayer_request_chat_messages(request_id, user_id, message_timestamp)
+      WHERE deletion_timestamp IS NULL;
+  END IF;
+END $$;
+
+-- Partial index to speed up ListUnnotifiedPrayedForRequests
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname = 'core'
+      AND tablename = 'prayer_request_chats'
+      AND indexname = 'prayer_request_chats_prayed_for_unnotified_idx'
+  ) THEN
+    CREATE INDEX prayer_request_chats_prayed_for_unnotified_idx
+      ON core.prayer_request_chats(prayed_for_timestamp)
+      WHERE prayed_for_notification_timestamp IS NULL
+        AND prayed_for_timestamp IS NOT NULL
+        AND (request_contact_email IS NOT NULL OR request_contact_phone IS NOT NULL);
+  END IF;
+END $$;
+
+-- Partial index to narrow outer scan of ListChatsNeedingUnreadNotification
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_indexes
+    WHERE schemaname = 'core'
+      AND tablename = 'prayer_request_chats'
+      AND indexname = 'prayer_request_chats_seeker_unread_candidates_idx'
+  ) THEN
+    CREATE INDEX prayer_request_chats_seeker_unread_candidates_idx
+      ON core.prayer_request_chats(creation_timestamp)
+      WHERE (request_contact_email IS NOT NULL OR request_contact_phone IS NOT NULL);
   END IF;
 END $$;
 

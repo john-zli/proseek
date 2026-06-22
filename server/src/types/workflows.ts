@@ -2,8 +2,8 @@ import config from '@server/config';
 
 // Workflow types
 export enum WorkflowName {
-  SendChurchMatchNotifications = 'SendChurchMatchNotifications',
   SendPrayedForNotifications = 'SendPrayedForNotifications',
+  SendSeekerUnreadNotifications = 'SendSeekerUnreadNotifications',
   InviteUser = 'InviteUser',
 }
 
@@ -29,8 +29,8 @@ export interface InviteUserPayload extends Record<string, unknown> {
 }
 
 export interface WorkflowParamsForWorkflowName {
-  [WorkflowName.SendChurchMatchNotifications]: undefined;
   [WorkflowName.SendPrayedForNotifications]: undefined;
+  [WorkflowName.SendSeekerUnreadNotifications]: undefined;
   [WorkflowName.InviteUser]: InviteUserPayload;
 }
 
@@ -45,17 +45,19 @@ interface WorkflowSchedule {
   endDate?: Date;
 }
 
-export type RecurringWorkflowName = WorkflowName.SendChurchMatchNotifications | WorkflowName.SendPrayedForNotifications;
+export type RecurringWorkflowName =
+  | WorkflowName.SendPrayedForNotifications
+  | WorkflowName.SendSeekerUnreadNotifications;
 
 // Workflow schedules
 export const RECURRING_WORKFLOW_SCHEDULES: Record<RecurringWorkflowName, WorkflowSchedule> = {
-  [WorkflowName.SendChurchMatchNotifications]: {
-    every: 5 * 60 * 1000, // Every 5 minutes
-    name: WorkflowName.SendChurchMatchNotifications,
-  },
   [WorkflowName.SendPrayedForNotifications]: {
     every: 5 * 60 * 1000, // Every 5 minutes
     name: WorkflowName.SendPrayedForNotifications,
+  },
+  [WorkflowName.SendSeekerUnreadNotifications]: {
+    cron: '0 9 * * *', // Daily at 9am UTC
+    name: WorkflowName.SendSeekerUnreadNotifications,
   },
 };
 // Redis configuration
