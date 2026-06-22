@@ -60,6 +60,26 @@ export interface CreatePrayerRequestChatMessageParams {
   messageTimestamp: number;
 }
 
+// Read receipt types
+export type ParticipantType = 'seeker' | 'church';
+
+export interface ReadReceipt {
+  participantType: ParticipantType;
+  userId: string | null;
+  lastReadMessageId: string;
+}
+
+export interface ReadReceiptPayload {
+  requestId: string;
+  participantType: ParticipantType;
+  userId: string | null;
+  lastReadMessageId: string;
+}
+
+export interface GetReadReceiptsResponse {
+  readReceipts: ReadReceipt[];
+}
+
 // Socket event payload
 export interface ChatMessagePayload {
   messageId: string;

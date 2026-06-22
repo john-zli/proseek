@@ -10,6 +10,7 @@ import { Button, ButtonStyle } from '@client/shared-components/button';
 import { Callout } from '@client/shared-components/callout';
 import { withTooltip } from '@client/shared-components/with_tooltip';
 import { useCaptcha } from '@client/widget/use_captcha';
+import type { ParticipantType, ReadReceipt, ReadReceiptPayload } from '@common/server-api/types/prayer_request_chats';
 import clsx from 'clsx';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -33,6 +34,7 @@ export const PrayerChat = (props: Props) => {
   const { startsExpanded = false } = props;
   const [isExpanded, setIsExpanded] = useState(startsExpanded);
   const [messages, setMessages] = useState<PrayerRequestChatMessage[]>([]);
+  const [readReceipts, setReadReceipts] = useState<ReadReceipt[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [hasScroll, setHasScroll] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -57,6 +59,12 @@ export const PrayerChat = (props: Props) => {
     },
     [session?.user]
   );
+
+  const myParticipantType: ParticipantType = session?.user ? 'church' : 'seeker';
+  const otherParticipantType: ParticipantType = myParticipantType === 'church' ? 'seeker' : 'church';
+  const otherLastReadMessageId = readReceipts.find(r => r.participantType === otherParticipantType)?.lastReadMessageId;
+
+  const emitMarkReadRef = useRef<(messageId: string) => void>(() => {});
 
   // Real-time message handler
   const handleSocketMessage = useCallback(
@@ -85,11 +93,33 @@ export const PrayerChat = (props: Props) => {
           },
         ];
       });
+      // Mark as read immediately since we're actively viewing the chat
+      emitMarkReadRef.current(payload.messageId);
     },
     []
   );
 
-  useChatSocket({ chatroomId, isVerified, onMessage: handleSocketMessage });
+  const handleSocketReadReceipt = useCallback((payload: ReadReceiptPayload) => {
+    setReadReceipts(prev => {
+      const next = prev.filter(r => r.participantType !== payload.participantType);
+      return [
+        ...next,
+        {
+          participantType: payload.participantType,
+          userId: payload.userId,
+          lastReadMessageId: payload.lastReadMessageId,
+        },
+      ];
+    });
+  }, []);
+
+  const { emitMarkRead } = useChatSocket({
+    chatroomId,
+    isVerified,
+    onMessage: handleSocketMessage,
+    onReadReceipt: handleSocketReadReceipt,
+  });
+  emitMarkReadRef.current = emitMarkRead;
 
   const handleVerification = useCallback(
     async (email: string | undefined, phone: string | undefined) => {
@@ -127,22 +157,31 @@ export const PrayerChat = (props: Props) => {
       return;
     }
 
-    const response = await PrayerRequestChatsApi.listMessages({
-      requestId: chatroomId,
-    });
+    const [messagesResponse, receiptsResponse] = await Promise.all([
+      PrayerRequestChatsApi.listMessages({ requestId: chatroomId }),
+      PrayerRequestChatsApi.getReadReceipts(chatroomId),
+    ]);
+
     setChatroomInitialized(true);
-    setMessages(
-      response.messages.map(message => ({
-        messageId: message.messageId,
-        requestId: message.requestId,
-        message: message.message,
-        messageTimestamp: message.messageTimestamp,
-        userId: message.userId,
-        senderName: message.senderName,
-        deletionTimestamp: message.deletionTimestamp ?? undefined,
-      }))
-    );
-  }, [chatroomId, chatroomInitialized, isVerified]);
+    setReadReceipts(receiptsResponse.readReceipts);
+
+    const loadedMessages = messagesResponse.messages.map(message => ({
+      messageId: message.messageId,
+      requestId: message.requestId,
+      message: message.message,
+      messageTimestamp: message.messageTimestamp,
+      userId: message.userId,
+      senderName: message.senderName,
+      deletionTimestamp: message.deletionTimestamp ?? undefined,
+    }));
+    setMessages(loadedMessages);
+
+    // Mark all loaded messages as read by emitting the last message's ID
+    const lastMessage = loadedMessages[loadedMessages.length - 1];
+    if (lastMessage) {
+      emitMarkRead(lastMessage.messageId);
+    }
+  }, [chatroomId, chatroomInitialized, isVerified, emitMarkRead]);
 
   // Only show verification on initial page load with chatroomId in URL
   useEffect(() => {
@@ -377,12 +416,14 @@ export const PrayerChat = (props: Props) => {
               <div className={classes.messages}>
                 {messages?.map(message => {
                   const mine = isMyMessage(message);
+                  const isLastReadByOther = mine && message.messageId === otherLastReadMessageId;
                   return (
                     <div key={message.messageId} className={classes.messageWrapper}>
                       {!mine && message.senderName && <span className={classes.senderName}>{message.senderName}</span>}
                       <div className={`${classes.message} ${mine ? classes.userMessage : classes.aiMessage}`}>
                         {message.message}
                       </div>
+                      {isLastReadByOther && <span className={classes.readReceipt}>✓</span>}
                     </div>
                   );
                 })}

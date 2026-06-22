@@ -197,6 +197,25 @@ BEGIN
   END IF;
 END $$;
 
+-- participant_type is the PK discriminator instead of user_id because seekers are anonymous
+-- (no user_id). user_id is stored alongside for church members so we know who last marked read.
+-- Future migration: if multi-member chat is needed, change PK to (request_id, user_id) with
+-- a partial unique index for the seeker (null user_id) case.
+CREATE TABLE IF NOT EXISTS core.prayer_request_chat_read_receipts (
+  request_id            uuid        NOT NULL,
+  participant_type      varchar(10) NOT NULL CHECK (participant_type IN ('seeker', 'church')),
+  user_id               uuid,
+  last_read_message_id  uuid        NOT NULL,
+
+  PRIMARY KEY (request_id, participant_type),
+  CONSTRAINT read_receipt_request_fk FOREIGN KEY (request_id)
+    REFERENCES core.prayer_request_chats(request_id) ON DELETE CASCADE,
+  CONSTRAINT read_receipt_message_fk FOREIGN KEY (last_read_message_id)
+    REFERENCES core.prayer_request_chat_messages(message_id) ON DELETE CASCADE,
+  CONSTRAINT read_receipt_user_fk FOREIGN KEY (user_id)
+    REFERENCES core.users(user_id) ON DELETE SET NULL
+);
+
 -- Function to create a prayer request and assign it to a nearby church
 CREATE OR REPLACE FUNCTION core.create_prayer_request_chat_with_church_assignment(
   PARAM_contact_email       varchar(100),

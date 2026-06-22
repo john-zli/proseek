@@ -3,6 +3,7 @@ import {
   assignPrayerRequestChat,
   createPrayerRequestChatMessage,
   getPrayerRequestChat,
+  getReadReceipts,
   hidePrayerRequest,
   listPrayerRequestChatMessages,
   listPrayerRequestChats,
@@ -13,13 +14,14 @@ import {
   AssignPrayerRequestChatSchema,
   CreatePrayerRequestChatMessageSchema,
   CreatePrayerRequestChatSchema,
+  GetReadReceiptsSchema,
   HidePrayerRequestSchema,
   ListPrayerRequestChatMessagesSchema,
   ListPrayerRequestChatsSchema,
   PrayForPrayerRequestSchema,
   VerifyPrayerRequestChatSchema,
 } from '../schemas/prayer_request_chats';
-import { ChatMessagePayload } from '@common/server-api/types/prayer_request_chats';
+import { ChatMessagePayload, GetReadReceiptsResponse } from '@common/server-api/types/prayer_request_chats';
 import { RouteError } from '@server/common/route_errors';
 import HttpStatusCodes from '@server/common/status_codes';
 import { createPrayerRequestChatController } from '@server/controllers/create-prayer-request-controller/create_prayer_request_chat_controller';
@@ -126,6 +128,17 @@ export function prayerRequestChatsRouter(services: IServicesBuilder): Router {
 
       const chatMessages = await listPrayerRequestChatMessages({ requestId });
       res.status(HttpStatusCodes.OK).json({ messages: chatMessages });
+    } catch (error) {
+      return next(error);
+    }
+  });
+
+  router.get('/:requestId/read-receipts', validate(GetReadReceiptsSchema), async (req, res, next) => {
+    const { requestId } = req.params;
+
+    try {
+      const readReceipts = await getReadReceipts(requestId);
+      res.status(HttpStatusCodes.OK).json({ readReceipts } satisfies GetReadReceiptsResponse);
     } catch (error) {
       return next(error);
     }
